@@ -4,6 +4,7 @@ mod ray;
 mod camera;
 mod prim;
 mod material;
+mod intersection;
 mod sphere;
 
 fn main() {

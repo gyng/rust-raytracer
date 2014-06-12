@@ -1,8 +1,6 @@
-use vec3::Vec3;
 use ray::Ray;
-use material::Material;
+use intersection::Intersection;
 
 pub trait Prim {
-    fn intersects(&self, ray: &Ray) -> f64;
-    fn material<'a>(&'a self) -> &'a Box<Material>;
+    fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Intersection<'a>;
 }
