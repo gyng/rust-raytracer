@@ -54,8 +54,9 @@ impl Renderer {
         let mut tile: Vec<int> = Vec::with_capacity(tile_size as uint);
 
         for y in range(from_y, to_y) {
+            let inv_y = to_y - y;
             for x in range(from_x, to_x) {
-                let ray = camera.get_ray(x, y);
+                let ray = camera.get_ray(x, inv_y);
                 // Hardcoded reflect/refract depth, octree to come
                 let color = Renderer::trace(&scene, &ray, shadows, 2, 4);
 
