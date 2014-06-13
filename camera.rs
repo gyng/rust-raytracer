@@ -43,9 +43,9 @@ impl Camera {
     pub fn get_ray(&self, x: int, y: int) -> Ray {
         Ray {
             origin: self.position,
-            direction: self.eye +
+            direction: (self.eye +
                 self.right.scale(x as f64 * self.pixel_width - self.half_width) +
-                self.up.scale(y as f64 * self.pixel_height - self.half_height).unit()
+                self.up.scale(y as f64 * self.pixel_height - self.half_height)).unit()
         }
     }
 
