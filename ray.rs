@@ -20,6 +20,7 @@ impl Ray {
             nearest_hit = match intersection {
                 Some(intersection) => {
                     if intersection.t > t_min && intersection.t < nearest_t {
+                        nearest_t = intersection.t;
                         Some(intersection)
                     } else {
                         nearest_hit
@@ -27,11 +28,6 @@ impl Ray {
                 }
 
                 None => {nearest_hit}
-            };
-
-            nearest_t = match nearest_hit {
-                Some(nearest_hit) => {nearest_hit.t}
-                None => {nearest_t}
             };
         }
 
