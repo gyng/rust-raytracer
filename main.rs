@@ -1,3 +1,5 @@
+extern crate time;
+
 use vec3::Vec3;
 use pointlight::PointLight;
 use sphere::Sphere;
@@ -23,8 +25,11 @@ mod renderer;
 mod export;
 
 fn main() {
+    let start_time = ::time::get_time().sec;
+
     let image_width = 480;
     let image_height = 360;
+    let out_file = "test.ppm";
 
     let max_lights = 10;
     let max_prims = 1000;
@@ -47,7 +52,7 @@ fn main() {
     prims.push(box Sphere {center: Vec3 {x: 70.0, y: 17.0, z: 80.0}, radius: 17.0, material: box blue});
 
     let camera = camera::Camera::new(
-        Vec3 {x: 50.0, y: 25.0, z: 300.0},
+        Vec3 {x: 50.0, y: 25.0, z: 150.0},
         Vec3 {x: 50.0, y: 50.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
         45.0,
@@ -69,6 +74,18 @@ fn main() {
         threads: 1
     };
     let image_data = renderer.render(camera, scene);
+    let render_time = ::time::get_time().sec;
 
-    ::export::to_ppm(image_data, image_width, image_height, "test.ppm");
+    ::export::to_ppm(image_data, image_width, image_height, out_file);
+    let export_time = ::time::get_time().sec;
+
+    println!("Start: {}, Render done: {} ({}s), Write done: {} ({}s), Total: {}s, written to {}",
+        start_time,
+        render_time,
+        render_time - start_time,
+        export_time,
+        export_time - render_time,
+        export_time - start_time,
+        out_file
+    );
 }
