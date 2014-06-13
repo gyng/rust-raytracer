@@ -14,7 +14,6 @@ pub struct Renderer {
 impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Vec<int> {
         // ABANDONED THREADING SUPPORT
-        // Behold the Cave of Caerbannog...
 
         // let (tx, rx): (Sender<Vec<int>>, Receiver<Vec<int>>) = channel();
 
@@ -51,17 +50,17 @@ impl Renderer {
         let tile_size = width * height * 3;
         let mut tile: Vec<int> = Vec::with_capacity(tile_size as uint);
 
-        for x in range(from_x, to_x) {
-            for y in range(from_y, to_y) {
+        for y in range(from_y, to_y) {
+            for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, y);
                 // Hardcoded reflect/refract depth, octree to come
                 let color = Renderer::trace(&scene, &ray, 2, 4);
 
                 // TODO: factor out floor to avoid premature precision loss
-                let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
-                tile.push((color.x * 255.0).floor() as int);
-                tile.push((color.y * 255.0).floor() as int);
-                tile.push((color.z * 255.0).floor() as int);
+                // let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
+                tile.push((color.x * 255.0) as int);
+                tile.push((color.y * 255.0) as int);
+                tile.push((color.z * 255.0) as int);
             }
         }
 
@@ -82,6 +81,7 @@ impl Renderer {
         match nearest_hit {
             Some(nearest_hit) => {
                 let mut result = Vec3 {x: 0.0, y: 0.0, z: 0.0};
+
                 for light in scene.lights.iter() {
                     let n = nearest_hit.n.unit();
                     let i = (ray.direction.scale(-1.0)).unit();

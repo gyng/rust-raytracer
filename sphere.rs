@@ -29,12 +29,11 @@ impl Prim for Sphere {
             if t1 >= t_min && t1 <= t_max ||
                t2 >= t_min && t2 <= t_max {
                 // Valid intersection(s): get nearer intersection
-                let t = t1.abs().min(t2.abs());
+                let t = if t1.abs() < t2.abs() { t1 } else { t2 };
                 let intersection_point = ray.origin + ray.direction.scale(t);
                 let n = intersection_point - self.center;
 
                 Some(Intersection {
-                    intersects: true,
                     n: n,
                     t: t,
                     position: intersection_point,

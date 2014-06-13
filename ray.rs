@@ -10,32 +10,29 @@ pub struct Ray {
 
 impl Ray {
     pub fn get_nearest_hit<'a>(&self, scene: &'a Scene) -> Option<Intersection<'a>> {
-        // TODO: replace scene with candidate objects
-        let t_min = 0.001;
-        let mut nearest_t = INFINITY;
+        let t_min = 0.000001;
         let mut nearest_hit = None;
+        let mut nearest_t = INFINITY;
 
         for prim in scene.prims.iter() {
             let intersection = prim.intersects(self, t_min, nearest_t);
 
-            match intersection {
+            nearest_hit = match intersection {
                 Some(intersection) => {
-                    if nearest_t == INFINITY || (intersection.t > t_min && intersection.t < nearest_t) {
-                        nearest_hit = Some(intersection);
-                        nearest_t = intersection.t;
+                    if intersection.t > t_min && intersection.t < nearest_t {
+                        Some(intersection)
+                    } else {
+                        nearest_hit
                     }
-                    // match nearest_hit {
-                    //     Some(nearest_hit) => {
-                    //         if intersection.t > t_min && intersection.t < nearest_t {
-                    //             nearest_hit = intersection;
-                    //             nearest_t = nearest_hit.t;
-                    //         }
-                    //     }
-                    //     None => {}
-                    // }
                 }
-                None => {}
-            }
+
+                None => {nearest_hit}
+            };
+
+            nearest_t = match nearest_hit {
+                Some(nearest_hit) => {nearest_hit.t}
+                None => {nearest_t}
+            };
         }
 
         nearest_hit

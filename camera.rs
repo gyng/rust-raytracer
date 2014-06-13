@@ -8,12 +8,13 @@ pub struct Camera {
     pub fov_deg: f64,
     pub image_width: int,
     pub image_height: int,
-    eye: Vec3,
-    right: Vec3,
-    half_width: f64,
-    half_height: f64,
-    pixel_width: f64,
-    pixel_height: f64
+
+    pub eye: Vec3,
+    pub right: Vec3,
+    pub half_width: f64,
+    pub half_height: f64,
+    pub pixel_width: f64,
+    pub pixel_height: f64
 }
 
 impl Camera {
@@ -44,7 +45,7 @@ impl Camera {
             origin: self.position,
             direction: self.eye +
                 self.right.scale(x as f64 * self.pixel_width - self.half_width) +
-                self.up.scale(y as f64 * self.pixel_width - self.half_height)
+                self.up.scale(y as f64 * self.pixel_height - self.half_height).unit()
         }
     }
 
