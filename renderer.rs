@@ -13,13 +13,13 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Vec<int> {
-        // ABANDONED THREADING SUPPORT
+        // // ABANDONED THREADING SUPPORT
 
         // let (tx, rx): (Sender<Vec<int>>, Receiver<Vec<int>>) = channel();
 
-        // Copy camera and scene for now for each thread
-        // Use a per-tile task -- don't see utility in a per-trace/per-pixel task
-        // due to low processor count
+        // // Copy camera and scene for now for each thread
+        // // Use a per-tile task -- don't see utility in a per-trace/per-pixel task
+        // // due to low processor count
         // for thread_no in range(0, 1) {
         //     let child_tx = tx.clone();
 
@@ -29,16 +29,19 @@ impl Renderer {
         //     });
         // }
 
-        // TODO: Composite tiles
-        // for range(0, 1) {
+        // // TODO: Composite tiles
+        // // for range(0, 1) {
         //     let mut composite = rx.recv();
-        // }
+        // // }
 
-        Renderer::render_tile(camera, scene, 0, 0, camera.image_width, camera.image_height)
+        // composite
+
+        Renderer::render_tile(camera, scene, true, 0, 0, camera.image_width, camera.image_height)
     }
 
     fn render_tile(camera: Camera,
                    scene: Scene,
+                   shadows: bool,
                    from_x: int,
                    from_y: int,
                    to_x: int,
@@ -54,7 +57,7 @@ impl Renderer {
             for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, y);
                 // Hardcoded reflect/refract depth, octree to come
-                let color = Renderer::trace(&scene, &ray, 2, 4);
+                let color = Renderer::trace(&scene, &ray, shadows, 2, 4);
 
                 // TODO: factor out floor to avoid premature precision loss
                 // let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
@@ -69,6 +72,7 @@ impl Renderer {
 
     fn trace(scene: &Scene,
              ray: &Ray,
+             shadows: bool,
              reflect_depth: int,
              refract_depth: int)
              -> Vec3 {
@@ -81,12 +85,32 @@ impl Renderer {
         match nearest_hit {
             Some(nearest_hit) => {
                 let mut result = Vec3 {x: 0.0, y: 0.0, z: 0.0};
+                let mut shadow = Vec3 {x: 1.0, y: 1.0, z: 1.0};
 
                 for light in scene.lights.iter() {
                     let n = nearest_hit.n.unit();
                     let i = (ray.direction.scale(-1.0)).unit();
                     let l = (light.position() - nearest_hit.position).unit();
-                    result = result + nearest_hit.material.sample(n, i, l);
+
+                    if (shadows) {
+                        // L has to be unit vector for t_max 1:1 correspondence to
+                        // distance to light to work. Shadow feelers only search up
+                        // until light source
+                        let shadow_ray = Ray {origin: nearest_hit.position, direction: l};
+                        let distance_to_light = (light.position() - nearest_hit.position).len();
+
+                        // Check against candidate primitives in scene for occlusion
+                        // and multiply shadow color by occluders' shadow colors
+                        for prim in scene.prims.iter() {
+                            let occulusion = prim.intersects(&shadow_ray, 0.0001, distance_to_light);
+                            shadow = match occulusion {
+                                Some(occulusion) => {shadow * occulusion.material.transmission()}
+                                None => {shadow}
+                            }
+                        }
+                    }
+
+                    result = result + light.color() * nearest_hit.material.sample(n, i, l) * shadow;
                 }
 
                 result

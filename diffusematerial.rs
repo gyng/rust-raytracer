@@ -13,4 +13,8 @@ impl Material for DiffuseMaterial {
         let clamped_n_dot_l = n.dot(&l).max(0.0);
         self.ambient.scale(self.k_a) + self.diffuse.scale(clamped_n_dot_l).scale(self.k_d)
     }
+
+    fn transmission(&self) -> Vec3 {
+        Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    }
 }
