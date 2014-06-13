@@ -87,9 +87,11 @@ impl Renderer {
                 let mut result = Vec3 {x: 0.0, y: 0.0, z: 0.0};
                 let mut shadow = Vec3 {x: 1.0, y: 1.0, z: 1.0};
 
+                let n = nearest_hit.n.unit();
+                let i = (ray.direction.scale(-1.0)).unit();
+
+                // Local lighting computation: surface shading, shadows
                 for light in scene.lights.iter() {
-                    let n = nearest_hit.n.unit();
-                    let i = (ray.direction.scale(-1.0)).unit();
                     let l = (light.position() - nearest_hit.position).unit();
 
                     if (shadows) {
@@ -111,6 +113,15 @@ impl Renderer {
                     }
 
                     result = result + light.color() * nearest_hit.material.sample(n, i, l) * shadow;
+                }
+
+                // Global reflection
+                if nearest_hit.material.is_specular() {
+                    let r = Vec3::reflect(&ray.direction.scale(-1.0), &n);
+                    let reflect_ray = Ray{origin: nearest_hit.position, direction: r};
+                    let reflection = Renderer::trace(scene, &reflect_ray, shadows, reflect_depth - 1, refract_depth);
+
+                    result = result + nearest_hit.material.global_specular(&reflection);
                 }
 
                 result
