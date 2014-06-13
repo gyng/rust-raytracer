@@ -1,3 +1,7 @@
+/// Vec3 is three words: should parameters to functions be references or values?
+/// My understanding is that structs of 1 (or 2?) words should be passed by value,
+/// while larger structs should be passed by reference.
+#[deriving(Clone)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -43,7 +47,7 @@ impl Vec3 {
         }
     }
 
-    // V, N should be unit vectors
+    /// V, N should be unit vectors
     //
     //  ^  ^
     // V \ | N

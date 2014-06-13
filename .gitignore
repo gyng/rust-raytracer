@@ -1,4 +1,5 @@
 main.exe
+*.ppm
 
 # Windows image file caches
 Thumbs.db

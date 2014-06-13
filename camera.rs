@@ -17,25 +17,26 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn set_position(&mut self, new_position: Vec3) -> () {
-        self.position = new_position;
-        self.update_eye_vector();
-    }
+    pub fn new(position: Vec3, look_at: Vec3, up: Vec3, fov_deg: f64, image_width: int, image_height: int) -> Camera {
+        let mut camera = Camera {
+            position: position,
+            look_at: look_at,
+            up: up,
+            fov_deg: fov_deg,
+            image_width: image_width,
+            image_height: image_height,
+            eye: Vec3 {x: 0.0, y: 0.0, z: 0.0},
+            right: Vec3 {x: 0.0, y: 0.0, z: 0.0},
+            half_width: 0.0,
+            half_height: 0.0,
+            pixel_width: 0.0,
+            pixel_height: 0.0
+        };
 
-    pub fn set_look_at(&mut self, new_look_at: Vec3) -> () {
-        self.look_at = new_look_at;
-        self.update_eye_vector();
-    }
+        camera.update_eye_vector();
+        camera.update_internal_sizes();
 
-    pub fn set_fov(&mut self, new_fov_deg: f64) -> () {
-        self.fov_deg = new_fov_deg;
-        self.update_internal_sizes();
-    }
-
-    pub fn set_image_size(&mut self, width: int, height: int) -> () {
-        self.image_width = width;
-        self.image_height = height;
-        self.update_internal_sizes();
+        camera
     }
 
     pub fn get_ray(&self, x: int, y: int) -> Ray {

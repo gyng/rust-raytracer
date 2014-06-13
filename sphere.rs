@@ -11,7 +11,7 @@ pub struct Sphere {
 }
 
 impl Prim for Sphere {
-    fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Intersection<'a> {
+    fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Intersection<'a>> {
         let i = ray.origin - self.center;
         let a = 1.0;
         let b = 2.0 * ray.direction.dot(&i);
@@ -19,13 +19,7 @@ impl Prim for Sphere {
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant <= 0.0 {
-            Intersection {
-                intersects: false,
-                n: None,
-                t: None,
-                position: None,
-                material: None
-            }
+            None
         } else {
             // Up to two intersections
             let disc_sqrt = discriminant.sqrt();
@@ -37,23 +31,17 @@ impl Prim for Sphere {
                 // Valid intersection(s): get nearer intersection
                 let t = t1.abs().min(t2.abs());
                 let intersection_point = ray.origin + ray.direction.scale(t);
-                let n = (intersection_point - self.center).unit();
+                let n = intersection_point - self.center;
 
-                Intersection {
+                Some(Intersection {
                     intersects: true,
-                    n: Some(n),
-                    t: Some(t),
-                    position: Some(intersection_point),
-                    material: Some(&'a self.material)
-                }
+                    n: n,
+                    t: t,
+                    position: intersection_point,
+                    material: &'a self.material
+                })
             } else {
-                Intersection {
-                    intersects: false,
-                    n: None,
-                    t: None,
-                    position: None,
-                    material: None
-                }
+                None
             }
         }
     }
