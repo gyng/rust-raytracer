@@ -66,13 +66,13 @@ impl Renderer {
             for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, inv_y);
                 // Hardcoded reflect/refract depth, octree to come
-                let color = Renderer::trace(&scene, &ray, shadows, reflect_depth, refract_depth);
+                let color = Renderer::trace(&scene, &ray, shadows, reflect_depth, refract_depth, false);
 
                 // TODO: factor out floor to avoid premature precision loss
                 // let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
-                tile.push((color.x * 255.0) as int);
-                tile.push((color.y * 255.0) as int);
-                tile.push((color.z * 255.0) as int);
+                tile.push((color.x.max(0.0).min(1.0) * 255.0) as int);
+                tile.push((color.y.max(0.0).min(1.0) * 255.0) as int);
+                tile.push((color.z.max(0.0).min(1.0) * 255.0) as int);
             }
         }
 
@@ -83,9 +83,11 @@ impl Renderer {
              ray: &Ray,
              shadows: bool,
              reflect_depth: int,
-             refract_depth: int)
+             refract_depth: int,
+             inside: bool)
              -> Vec3 {
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
+        let epsilon = ::std::f64::EPSILON * 10000.0;
 
         match ray.get_nearest_hit(scene) {
             Some(nearest_hit) => {
@@ -107,7 +109,6 @@ impl Renderer {
                         // Check against candidate primitives in scene for occlusion
                         // and multiply shadow color by occluders' shadow colors
                         shadow = scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
-                            let epsilon = ::std::f64::EPSILON * 10000.0;
                             let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
                             match occlusion {
                                 Some(occulusion) => {shadow_acc * occulusion.material.transmission()}
@@ -120,12 +121,22 @@ impl Renderer {
                 });
 
                 // Global reflection
+                // Something wrong here
                 if nearest_hit.material.is_reflective() {
-                    let r = Vec3::reflect(&ray.direction.scale(-1.0), &n);
-                    let reflect_ray = Ray{origin: nearest_hit.position, direction: r};
-                    let reflection = Renderer::trace(scene, &reflect_ray, shadows, reflect_depth - 1, refract_depth);
+                    let r = Vec3::reflect(&i, &n);
+                    let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                    let reflection = Renderer::trace(scene, &reflect_ray, shadows, reflect_depth - 1, refract_depth, inside);
 
                     result = result + nearest_hit.material.global_specular(&reflection);
+                }
+
+                // Global refraction
+                if nearest_hit.material.is_refractive() {
+                    let t = Vec3::refract(&i, &n, nearest_hit.material.ior(), inside);
+                    let refract_ray = Ray {origin: nearest_hit.position + t.scale(epsilon), direction: t};
+                    let refraction = Renderer::trace(scene, &refract_ray, shadows, reflect_depth, refract_depth, !inside);
+
+                    result = result + nearest_hit.material.global_transmissive(&refraction);
                 }
 
                 result

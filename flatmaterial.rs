@@ -14,11 +14,23 @@ impl Material for FlatMaterial {
         false
     }
 
+    fn is_refractive(&self) -> bool {
+        false
+    }
+
     fn global_specular(&self, color: &Vec3) -> Vec3 {
+        Vec3::zero()
+    }
+
+    fn global_transmissive(&self, color: &Vec3) -> Vec3 {
         Vec3::zero()
     }
 
     fn transmission(&self) -> Vec3 {
         Vec3::zero()
+    }
+
+    fn ior(&self) -> f64 {
+        1.0
     }
 }

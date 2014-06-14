@@ -72,13 +72,33 @@ impl Vec3 {
     }
 
     /// V, N should be unit vectors
-    //
-    //  ^  ^
-    // V \ | N
-    //    \|
-    // =========
+    ///
+    ///  ^  ^
+    /// V \ | N
+    ///    \|
+    /// =========
     pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
         n.scale(2.0 * (n.dot(v))) - *v
+    }
+
+    /// V, N should be unit vectors
+    /// ior: Refractive index
+    /// inside: Is the ray inside an object (ie. going out of an object)?
+    pub fn refract(v: &Vec3, n: &Vec3, ior: f64, inside: bool) -> Vec3 {
+        let (n1, n2, n_dot_v, nn) = if !inside {
+            (1.0, ior, n.dot(v), *n)
+        } else {
+            (ior, 1.0, n.scale(-1.0).dot(v), n.scale(-1.0))
+        };
+
+        let ratio = n1 / n2;
+        let disc = 1.0 - ((ratio * ratio) * (1.0 - n_dot_v * n_dot_v));
+
+        if disc < 0.0 {
+            Vec3::reflect(v, n)
+        } else {
+            v.scale(-ratio) + nn.scale(ratio * n_dot_v - disc.sqrt())
+        }
     }
 }
 

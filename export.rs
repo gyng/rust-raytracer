@@ -16,7 +16,7 @@ pub fn to_ppm(image_data: Vec<int>, width: int, height: int, filename: &str) -> 
 
     f.write(header.as_bytes());
     for oct in image_data.iter() {
-        f.write_int(*min(oct, &max_color)); // Clamp to ..255
+        f.write_int(*oct);
         f.write(" ".as_bytes());
     }
 }
