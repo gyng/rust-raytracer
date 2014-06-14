@@ -48,8 +48,6 @@ impl Material for CookTorranceMaterial {
 
         let brdf = f * d * g / (n_dot_v * n_dot_l);
 
-        // println!("f{} d{} g{} ndotv{} ndotl{} brdf{}", f, d, g, n_dot_v, n_dot_l, brdf);
-        println!("{}", brdf)
         self.specular.scale(self.k_s * brdf) + diffuse + ambient
     }
 
