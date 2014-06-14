@@ -9,6 +9,30 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
+        Vec3 {
+            x: x,
+            y: y,
+            z: z
+        }
+    }
+
+    pub fn zero() -> Vec3 {
+        Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
+    }
+
+    pub fn one() -> Vec3 {
+        Vec3 {
+            x: 1.0,
+            y: 1.0,
+            z: 1.0
+        }
+    }
+
     pub fn len(&self) -> f64 {
         (self.x * self.x +
          self.y * self.y +

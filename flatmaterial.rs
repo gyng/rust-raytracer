@@ -10,15 +10,15 @@ impl Material for FlatMaterial {
         self.color
     }
 
-    fn is_specular(&self) -> bool {
+    fn is_reflective(&self) -> bool {
         false
     }
 
     fn global_specular(&self, color: &Vec3) -> Vec3 {
-        Vec3 {x: 0.0, y: 0.0, z: 0.0}
+        Vec3::zero()
     }
 
     fn transmission(&self) -> Vec3 {
-        Vec3 {x: 0.0, y: 0.0, z: 0.0}
+        Vec3::zero()
     }
 }

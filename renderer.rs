@@ -36,12 +36,20 @@ impl Renderer {
 
         // composite
 
-        Renderer::render_tile(camera, scene, true, 0, 0, camera.image_width, camera.image_height)
+        Renderer::render_tile(camera,
+                              scene,
+                              self.shadows,
+                              self.reflect_depth,
+                              self.refract_depth,
+                              0, 0,
+                              camera.image_width, camera.image_height)
     }
 
     fn render_tile(camera: Camera,
                    scene: Scene,
                    shadows: bool,
+                   reflect_depth: int,
+                   refract_depth: int,
                    from_x: int,
                    from_y: int,
                    to_x: int,
@@ -58,7 +66,7 @@ impl Renderer {
             for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, inv_y);
                 // Hardcoded reflect/refract depth, octree to come
-                let color = Renderer::trace(&scene, &ray, shadows, 2, 4);
+                let color = Renderer::trace(&scene, &ray, shadows, reflect_depth, refract_depth);
 
                 // TODO: factor out floor to avoid premature precision loss
                 // let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
@@ -77,22 +85,16 @@ impl Renderer {
              reflect_depth: int,
              refract_depth: int)
              -> Vec3 {
-        if reflect_depth <= 0 || refract_depth <= 0 {
-            return Vec3 {x: 0.0, y: 0.0, z: 0.0}
-        }
+        if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
-        let nearest_hit = ray.get_nearest_hit(scene);
-
-        match nearest_hit {
+        match ray.get_nearest_hit(scene) {
             Some(nearest_hit) => {
-                let mut result = Vec3 {x: 0.0, y: 0.0, z: 0.0};
-                let mut shadow = Vec3 {x: 1.0, y: 1.0, z: 1.0};
-
                 let n = nearest_hit.n.unit();
                 let i = (ray.direction.scale(-1.0)).unit();
 
                 // Local lighting computation: surface shading, shadows
-                for light in scene.lights.iter() {
+                let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
+                    let mut shadow = Vec3::one();
                     let l = (light.position() - nearest_hit.position).unit();
 
                     if (shadows) {
@@ -104,20 +106,21 @@ impl Renderer {
 
                         // Check against candidate primitives in scene for occlusion
                         // and multiply shadow color by occluders' shadow colors
-                        for prim in scene.prims.iter() {
-                            let occulusion = prim.intersects(&shadow_ray, 0.0001, distance_to_light);
-                            shadow = match occulusion {
-                                Some(occulusion) => {shadow * occulusion.material.transmission()}
-                                None => {shadow}
+                        shadow = scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
+                            let epsilon = ::std::f64::EPSILON * 10000.0;
+                            let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
+                            match occlusion {
+                                Some(occulusion) => {shadow_acc * occulusion.material.transmission()}
+                                None => shadow_acc
                             }
-                        }
+                        });
                     }
 
-                    result = result + light.color() * nearest_hit.material.sample(n, i, l) * shadow;
-                }
+                    color_acc + light.color() * nearest_hit.material.sample(n, i, l) * shadow
+                });
 
                 // Global reflection
-                if nearest_hit.material.is_specular() {
+                if nearest_hit.material.is_reflective() {
                     let r = Vec3::reflect(&ray.direction.scale(-1.0), &n);
                     let reflect_ray = Ray{origin: nearest_hit.position, direction: r};
                     let reflection = Renderer::trace(scene, &reflect_ray, shadows, reflect_depth - 1, refract_depth);
@@ -128,9 +131,7 @@ impl Renderer {
                 result
             }
 
-            None => {
-                scene.background
-            }
+            None => {scene.background}
         }
     }
 }

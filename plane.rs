@@ -3,7 +3,6 @@ use ray::Ray;
 use material::Material;
 use prim::Prim;
 use intersection::Intersection;
-use std::f64::INFINITY;
 
 pub struct Plane {
     pub a: f64,
