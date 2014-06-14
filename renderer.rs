@@ -2,14 +2,16 @@ use camera::Camera;
 use scene::Scene;
 use ray::Ray;
 use vec3::Vec3;
+use std::rand::{task_rng, Rng};
 // use std::sync::Arc;
 
 pub struct Renderer {
-    pub reflect_depth: int,
-    pub refract_depth: int,
-    pub use_octree: bool,
-    pub shadow_samples: int,
-    pub threads: int
+    pub reflect_depth: int,  // Maximum reflection recursions.
+    pub refract_depth: int,  // Maximum refraction recursions. A sphere takes up 2 recursions.
+    pub use_octree: bool,    // Unimplemented. Use octree/k-d tree?
+    pub shadow_samples: int, // Number of samples for soft shadows and area lights.
+    pub pixel_samples: int,  // The square of this is the number of samples per pixel.
+    pub threads: int         // Unimplemented. Number of threads to use.
 }
 
 impl Renderer {
@@ -42,6 +44,7 @@ impl Renderer {
         Renderer::render_tile(camera,
                               scene,
                               self.shadow_samples,
+                              self.pixel_samples,
                               self.reflect_depth,
                               self.refract_depth,
                               0, 0,
@@ -51,6 +54,7 @@ impl Renderer {
     fn render_tile(camera: Camera,
                    scene: Scene,
                    shadow_samples: int,
+                   pixel_samples: int,
                    reflect_depth: int,
                    refract_depth: int,
                    from_x: int,
@@ -58,7 +62,6 @@ impl Renderer {
                    to_x: int,
                    to_y: int)
                    -> Vec<int> {
-        // TODO: replace int with uint or better
         let width  = to_x - from_x;
         let height = to_y - from_y;
         let tile_size = width * height * 3;
@@ -67,8 +70,31 @@ impl Renderer {
         for y in range(from_y, to_y) {
             let inv_y = to_y - y;
             for x in range(from_x, to_x) {
-                let ray = camera.get_ray(x, inv_y);
-                let color = Renderer::trace(&scene, &ray, shadow_samples, reflect_depth, refract_depth, false);
+                let mut color = Vec3::zero();
+
+                // Supersampling, jitter algorithm
+                let mut rng = task_rng();
+                let pixel_width = 1.0 / pixel_samples as f64;
+
+                for _ in range(0, pixel_samples) {
+                    for _ in range(0, pixel_samples) {
+                        let j_x_rng: f64 = rng.gen();
+                        let j_y_rng: f64 = rng.gen();
+                        let mut j_x: f64 = x as f64 + j_x_rng * pixel_width as f64;
+                        let mut j_y: f64 = inv_y as f64 + j_y_rng * pixel_width as f64;
+
+                        // Unwanted jitter if not anti-aliasing
+                        if pixel_samples == 1 {
+                            j_x = x as f64;
+                            j_y = inv_y as f64;
+                        }
+
+                        let ray = camera.get_ray(j_x, j_y);
+                        let result = Renderer::trace(&scene, &ray, shadow_samples, reflect_depth, refract_depth, false);
+                        color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
+                    }
+                }
+
                 tile.push((color.x * 255.0) as int);
                 tile.push((color.y * 255.0) as int);
                 tile.push((color.z * 255.0) as int);
@@ -99,7 +125,7 @@ impl Renderer {
 
                     if shadow_samples > 0 {
                         // Point light speedup
-                        let shadow_sample_tries = if (light.is_point()) { 1 } else { shadow_samples };
+                        let shadow_sample_tries = if light.is_point() { 1 } else { shadow_samples };
 
                         // Take average shadow color after jittering/sampling light position
                         for _ in range(0, shadow_sample_tries) {

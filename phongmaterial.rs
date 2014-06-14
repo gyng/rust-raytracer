@@ -2,11 +2,11 @@ use vec3::Vec3;
 use material::Material;
 
 pub struct PhongMaterial {
-    pub k_a: f64,           // Ambient ratio
-    pub k_d: f64,           // Diffuse ratio
-    pub k_s: f64,           // Local specular ratio
-    pub k_sg: f64,          // Global specular ratio (mirror reflection)
-    pub k_tg: f64,          // Global transmissive ratio (refraction)
+    pub k_a: f64,           // Ambient coefficient
+    pub k_d: f64,           // Diffuse coefficient
+    pub k_s: f64,           // Local specular coefficient
+    pub k_sg: f64,          // Global specular coefficient (mirror reflection)
+    pub k_tg: f64,          // Global transmissive coefficient (refraction)
     pub ambient: Vec3,      // Ambient color
     pub diffuse: Vec3,      // Diffuse color
     pub transmission: Vec3, // Transmissive color

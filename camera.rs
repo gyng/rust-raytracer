@@ -40,12 +40,12 @@ impl Camera {
         camera
     }
 
-    pub fn get_ray(&self, x: int, y: int) -> Ray {
+    pub fn get_ray(&self, x: f64, y: f64) -> Ray {
         Ray {
             origin: self.position,
             direction: (self.eye +
-                self.right.scale(x as f64 * self.pixel_width - self.half_width) +
-                self.up.scale(y as f64 * self.pixel_height - self.half_height)).unit()
+                self.right.scale(x * self.pixel_width - self.half_width) +
+                self.up.scale(y * self.pixel_height - self.half_height)).unit()
         }
     }
 

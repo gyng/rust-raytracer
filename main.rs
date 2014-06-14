@@ -45,7 +45,7 @@ fn main() {
     let green   = PhongMaterial {k_a: 0.0, k_d: 0.9, k_s: 0.1, k_sg: 0.1, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 1.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let blue    = PhongMaterial {k_a: 0.0, k_d: 0.4, k_s: 0.6, k_sg: 0.0, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 0.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let shiny   = PhongMaterial {k_a: 0.0, k_d: 0.5, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, shininess: 50.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
-    let refract = PhongMaterial {k_a: 0.0, k_d: 0.0, k_s: 0.3, k_sg: 0.0, k_tg: 1.0, shininess: 40.0, ior: 3.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3 {x: 0.8, y: 0.8, z: 0.8}};
+    let refract = PhongMaterial {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 0.0, k_tg: 1.0, shininess: 40.0, ior: 3.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3 {x: 0.8, y: 0.8, z: 0.8}};
 
     let mut prims: Vec<Box<Prim>> = Vec::with_capacity(max_prims);
     prims.push(box Plane {a: 0.0,  b:  0.0, c: 1.0, d: 0.0,   material: box grey  }); // Ahead
@@ -77,6 +77,7 @@ fn main() {
         refract_depth: 8,
         use_octree: false,
         shadow_samples: 16,
+        pixel_samples: 2,
         threads: 1
     };
     let image_data = renderer.render(camera, scene);
