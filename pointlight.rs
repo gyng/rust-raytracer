@@ -14,4 +14,12 @@ impl Light for PointLight {
     fn color(&self) -> Vec3 {
         self.color
     }
+
+    fn center(&self) -> Vec3 {
+        self.position
+    }
+
+    fn is_point(&self) -> bool {
+        true
+    }
 }

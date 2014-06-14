@@ -8,7 +8,7 @@ pub struct Renderer {
     pub reflect_depth: int,
     pub refract_depth: int,
     pub use_octree: bool,
-    pub shadows: bool,
+    pub shadow_samples: int,
     pub threads: int
 }
 
@@ -28,7 +28,7 @@ impl Renderer {
         //         let local_scene = &*local_arc;
         //         let result = Renderer::render_tile(camera,
         //                                            local_scene,
-        //                                            self.shadows,
+        //                                            self.shadow_samples,
         //                                            self.reflect_depth,
         //                                            self.refract_depth,
         //                                            0, 0,
@@ -41,7 +41,7 @@ impl Renderer {
 
         Renderer::render_tile(camera,
                               scene,
-                              self.shadows,
+                              self.shadow_samples,
                               self.reflect_depth,
                               self.refract_depth,
                               0, 0,
@@ -50,7 +50,7 @@ impl Renderer {
 
     fn render_tile(camera: Camera,
                    scene: Scene,
-                   shadows: bool,
+                   shadow_samples: int,
                    reflect_depth: int,
                    refract_depth: int,
                    from_x: int,
@@ -68,10 +68,10 @@ impl Renderer {
             let inv_y = to_y - y;
             for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, inv_y);
-                let color = Renderer::trace(&scene, &ray, shadows, reflect_depth, refract_depth, false);
-                tile.push((color.x.max(0.0).min(1.0) * 255.0) as int);
-                tile.push((color.y.max(0.0).min(1.0) * 255.0) as int);
-                tile.push((color.z.max(0.0).min(1.0) * 255.0) as int);
+                let color = Renderer::trace(&scene, &ray, shadow_samples, reflect_depth, refract_depth, false);
+                tile.push((color.x * 255.0) as int);
+                tile.push((color.y * 255.0) as int);
+                tile.push((color.z * 255.0) as int);
             }
         }
 
@@ -80,7 +80,7 @@ impl Renderer {
 
     fn trace(scene: &Scene,
              ray: &Ray,
-             shadows: bool,
+             shadow_samples: int,
              reflect_depth: int,
              refract_depth: int,
              inside: bool)
@@ -95,36 +95,48 @@ impl Renderer {
 
                 // Local lighting computation: surface shading, shadows
                 let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
-                    let mut shadow = Vec3::one();
-                    let l = (light.position() - nearest_hit.position).unit();
+                    let mut shadow = Vec3::zero();
 
-                    if (shadows) {
-                        // L has to be unit vector for t_max 1:1 correspondence to
-                        // distance to light to work. Shadow feelers only search up
-                        // until light source
-                        let shadow_ray = Ray {origin: nearest_hit.position, direction: l};
-                        let distance_to_light = (light.position() - nearest_hit.position).len();
+                    if shadow_samples > 0 {
+                        // Point light speedup
+                        let shadow_sample_tries = if (light.is_point()) { 1 } else { shadow_samples };
 
-                        // Check against candidate primitives in scene for occlusion
-                        // and multiply shadow color by occluders' shadow colors
-                        shadow = scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
-                            let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
-                            match occlusion {
-                                Some(occulusion) => {shadow_acc * occulusion.material.transmission()}
-                                None => shadow_acc
-                            }
-                        });
+                        // Take average shadow color after jittering/sampling light position
+                        for _ in range(0, shadow_sample_tries) {
+                            // L has to be a unit vector for t_max 1:1 correspondence to
+                            // distance to light to work. Shadow feelers only search up
+                            // until light source.
+                            let sampled_light_position = light.position();
+                            let shadow_l = (sampled_light_position - nearest_hit.position).unit();
+                            let shadow_ray = Ray {origin: nearest_hit.position, direction: shadow_l};
+                            let distance_to_light = (sampled_light_position - nearest_hit.position).len();
+
+                            // Check against candidate primitives in scene for occlusion
+                            // and multiply shadow color by occluders' shadow colors
+                            shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
+                                let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
+                                match occlusion {
+                                    Some(occulusion) => {shadow_acc * occulusion.material.transmission()}
+                                    None => shadow_acc
+                                }
+                            });
+                        }
+
+                        shadow = shadow.scale(1.0 / shadow_sample_tries as f64);
+                    } else {
+                        shadow = Vec3::one();
                     }
+
+                    let l = (light.center() - nearest_hit.position).unit();
 
                     color_acc + light.color() * nearest_hit.material.sample(n, i, l) * shadow
                 });
 
                 // Global reflection
-                // Something wrong here
                 if nearest_hit.material.is_reflective() {
                     let r = Vec3::reflect(&i, &n);
                     let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
-                    let reflection = Renderer::trace(scene, &reflect_ray, shadows, reflect_depth - 1, refract_depth, inside);
+                    let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples, reflect_depth - 1, refract_depth, inside);
 
                     result = result + nearest_hit.material.global_specular(&reflection);
                 }
@@ -133,7 +145,7 @@ impl Renderer {
                 if nearest_hit.material.is_refractive() {
                     let t = Vec3::refract(&i, &n, nearest_hit.material.ior(), inside);
                     let refract_ray = Ray {origin: nearest_hit.position + t.scale(epsilon), direction: t};
-                    let refraction = Renderer::trace(scene, &refract_ray, shadows, reflect_depth, refract_depth, !inside);
+                    let refraction = Renderer::trace(scene, &refract_ray, shadow_samples, reflect_depth, refract_depth, !inside);
 
                     result = result + nearest_hit.material.global_transmissive(&refraction);
                 }

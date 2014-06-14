@@ -1,7 +1,8 @@
 use std::io::{File, Truncate, Write};
-use std::cmp::min;
+use std::cmp::{min, max};
 
 pub fn to_ppm(image_data: Vec<int>, width: int, height: int, filename: &str) -> () {
+    let min_color = 0;
     let max_color = 255;
     let header = format!("P3 {} {} {}\n", width, height, max_color);
 
@@ -16,7 +17,7 @@ pub fn to_ppm(image_data: Vec<int>, width: int, height: int, filename: &str) -> 
 
     f.write(header.as_bytes());
     for oct in image_data.iter() {
-        f.write_int(*oct);
+        f.write_int(*max(min(oct, &max_color), &min_color));
         f.write(" ".as_bytes());
     }
 }
