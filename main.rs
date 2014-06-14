@@ -31,8 +31,8 @@ mod export;
 fn main() {
     let start_time = ::time::get_time().sec;
 
-    let image_width = 300;
-    let image_height = 300;
+    let image_width = 600;
+    let image_height = 600;
     let out_file = "test.ppm";
 
     let max_lights = 10;
@@ -81,8 +81,8 @@ fn main() {
         reflect_depth: 4,
         refract_depth: 8,
         use_octree: false,
-        shadow_samples: 1,
-        pixel_samples: 1,
+        shadow_samples: 64,
+        pixel_samples: 2,
         threads: 1
     };
     let image_data = renderer.render(camera, scene);
