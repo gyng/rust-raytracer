@@ -15,7 +15,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Refractions
 * Soft shadows
 * Supersampling
-* Cook-Torrance material
+* Cook-Torrance, Phong materials
 * Sphere, plane primitives
 * Point, sphere lights
 
@@ -24,8 +24,8 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Threading (can't get it to work)
 * Spatial partitioning (octree/k-d tree)
 * Textures
+* Proper Fresnel reflectance
 * Triangles
 * OBJ meshes
 * Scene description
-* Motion blur and animation
 * Lenses
