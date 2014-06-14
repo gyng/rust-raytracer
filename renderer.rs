@@ -2,6 +2,7 @@ use camera::Camera;
 use scene::Scene;
 use ray::Ray;
 use vec3::Vec3;
+// use std::sync::Arc;
 
 pub struct Renderer {
     pub reflect_depth: int,
@@ -14,27 +15,29 @@ pub struct Renderer {
 impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Vec<int> {
         // // ABANDONED THREADING SUPPORT
+        // let scene_arc = Arc::new(scene);
+        // let (tx, rx) = channel();
+        // let (arc_tx, arc_rx) = channel();
+        // arc_tx.send(scene_arc);
 
-        // let (tx, rx): (Sender<Vec<int>>, Receiver<Vec<int>>) = channel();
-
-        // // Copy camera and scene for now for each thread
-        // // Use a per-tile task -- don't see utility in a per-trace/per-pixel task
-        // // due to low processor count
-        // for thread_no in range(0, 1) {
+        // // for thread_no in range(0, 1) {
         //     let child_tx = tx.clone();
 
         //     spawn(proc() {
-        //         let result = Renderer::render_tile(camera, scene, 0, 0, camera.image_width, camera.image_height);
+        //         let local_arc = arc_rx.recv();
+        //         let local_scene = &*local_arc;
+        //         let result = Renderer::render_tile(camera,
+        //                                            local_scene,
+        //                                            self.shadows,
+        //                                            self.reflect_depth,
+        //                                            self.refract_depth,
+        //                                            0, 0,
+        //                                            camera.image_width, camera.image_height);
         //         child_tx.send(result);
         //     });
-        // }
-
-        // // TODO: Composite tiles
-        // // for range(0, 1) {
-        //     let mut composite = rx.recv();
         // // }
 
-        // composite
+        // rx.recv()
 
         Renderer::render_tile(camera,
                               scene,
@@ -65,11 +68,7 @@ impl Renderer {
             let inv_y = to_y - y;
             for x in range(from_x, to_x) {
                 let ray = camera.get_ray(x, inv_y);
-                // Hardcoded reflect/refract depth, octree to come
                 let color = Renderer::trace(&scene, &ray, shadows, reflect_depth, refract_depth, false);
-
-                // TODO: factor out floor to avoid premature precision loss
-                // let index = ((x - from_x) * 3) + ((y - from_y) * width * 3);
                 tile.push((color.x.max(0.0).min(1.0) * 255.0) as int);
                 tile.push((color.y.max(0.0).min(1.0) * 255.0) as int);
                 tile.push((color.z.max(0.0).min(1.0) * 255.0) as int);
