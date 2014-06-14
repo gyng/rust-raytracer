@@ -12,26 +12,24 @@ pub struct CookTorranceMaterial {
     pub diffuse: Vec3,       // Diffuse color
     pub transmission: Vec3,  // Transmissive color
     pub specular: Vec3,      // Specular color
-    pub roughness: f64,      //
-    pub gauss_constant: f64, //
-    pub ior: f64             // Index of refraction
+    pub roughness: f64,      // Smaller = shininer => smaller highlight spot on surface
+    pub gauss_constant: f64, // Controls curve of distribution of microfacets
+    pub ior: f64             // Index of refraction, also used for specular highlights
 }
 
 impl Material for CookTorranceMaterial {
     fn sample(&self, n: Vec3, i: Vec3, l: Vec3) -> Vec3 {
-        let h = (l + i).unit();
-
-        // Blinn-Phong approximation
         let ambient  = self.ambient.scale(self.k_a);
         let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l));
 
         // Specular calculations
+        let h = (l + i).unit();
         let n_dot_h = n.dot(&h);
         let n_dot_l = n.dot(&l);
         let v_dot_h = i.dot(&h);
         let n_dot_v = n.dot(&i);
 
-        // Approximate Fresnel term, Schlick's approximation
+        // Fresnel term (Schlick's approximation)
         let n1 = 1.0;
         let n2 = self.ior;
         let f0 = ((n1 - n2) / (n1 + n2)).powf(2.0);
