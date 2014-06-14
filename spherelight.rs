@@ -11,14 +11,11 @@ pub struct SphereLight {
 impl Light for SphereLight {
     fn position(&self) -> Vec3 {
         let mut rng = task_rng();
-        let j_x: f64 = rng.gen();
-        let j_y: f64 = rng.gen();
-        let j_z: f64 = rng.gen();
 
         let jitter = Vec3 {
-            x: self.radius * (j_x - 0.5),
-            y: self.radius * (j_y - 0.5),
-            z: self.radius * (j_z - 0.5)
+            x: self.radius * (rng.gen::<f64>() - 0.5),
+            y: self.radius * (rng.gen::<f64>() - 0.5),
+            z: self.radius * (rng.gen::<f64>() - 0.5)
         };
 
         self.position + jitter

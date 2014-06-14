@@ -78,10 +78,8 @@ impl Renderer {
 
                 for _ in range(0, pixel_samples) {
                     for _ in range(0, pixel_samples) {
-                        let j_x_rng: f64 = rng.gen();
-                        let j_y_rng: f64 = rng.gen();
-                        let mut j_x: f64 = x as f64 + j_x_rng * pixel_width as f64;
-                        let mut j_y: f64 = inv_y as f64 + j_y_rng * pixel_width as f64;
+                        let mut j_x = x as f64 + rng.gen::<f64>() * pixel_width as f64;
+                        let mut j_y = inv_y as f64 + rng.gen::<f64>() * pixel_width as f64;
 
                         // Unwanted jitter if not anti-aliasing
                         if pixel_samples == 1 {
