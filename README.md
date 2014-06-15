@@ -18,7 +18,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Soft shadows
 * Supersampling
 * Cook-Torrance, Phong materials
-* Sphere, plane primitives
+* Sphere, plane, triangle primitives
 * Point, sphere lights
 
 ## Missing/potential features
@@ -27,7 +27,6 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Spatial partitioning (octree/k-d tree)
 * Textures
 * Proper Fresnel reflectance
-* Triangles
 * OBJ meshes
 * Scene description
 * Lenses
