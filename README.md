@@ -5,11 +5,13 @@ rust-raytracer
 
 Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 
-### Compilation
+## Usage
 
-`rustc main.rs`
+1. Compile: `rustc main.rs`
+2. Scene is created in `my_scene.rs`
+3. Run compiled program
 
-### Features
+## Features
 
 * Reflections
 * Refractions
@@ -19,7 +21,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Sphere, plane primitives
 * Point, sphere lights
 
-### Missing/potential features
+## Missing/potential features
 
 * Threading (can't get it to work)
 * Spatial partitioning (octree/k-d tree)
