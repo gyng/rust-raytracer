@@ -11,8 +11,8 @@ mod vec3;
 
 fn main() {
     let start_time = ::time::get_time().sec;
-    let image_width = 400;
-    let image_height = 400;
+    let image_width = 600;
+    let image_height = 600;
     let out_file = "test.ppm";
 
     println!("Render started at {}", start_time);

@@ -1,5 +1,5 @@
 use geometry::Prim;
-use geometry::Prims::{Plane, Sphere};
+use geometry::Prims::{Plane, Sphere, Triangle};
 use light::Light;
 // use light::Lights::{PointLight, SphereLight}; // All lights
 use light::Lights::{SphereLight};
@@ -27,8 +27,8 @@ pub fn get_scene() -> Scene {
     // lights.push(box PointLight {position: Vec3 {x: 50.0, y: 20.0, z: 50.0}, color: Vec3::one()});
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
 
-    let grey    = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 0.6, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero()};
-    let blue    = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 0.6, roughness: 0.08, ior: 2.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 0.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
+    let grey    = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero()};
+    let blue    = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 0.8, k_sg: 0.0, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 0.1, y: 0.1, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let red     = PhongMaterial {k_a: 0.0, k_d: 0.6, k_s: 0.4, k_sg: 0.3, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 0.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let green   = PhongMaterial {k_a: 0.0, k_d: 0.9, k_s: 0.1, k_sg: 0.1, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 1.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let shiny   = PhongMaterial {k_a: 0.0, k_d: 0.5, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, shininess: 50.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
@@ -44,6 +44,12 @@ pub fn get_scene() -> Scene {
     prims.push(box Sphere {center: Vec3 {x: 70.0, y: 17.0, z: 60.0}, radius: 17.0, material: box refract});
     prims.push(box Sphere {center: Vec3 {x: 50.0, y: 50.0, z: 20.0}, radius: 10.0, material: box blue});
     prims.push(box Sphere {center: Vec3 {x: 20.0, y: 13.0, z: 90.0}, radius: 13.0, material: box blue});
+    prims.push(box Triangle::auto_normal(Vec3 {x: 15.0, y: 50.0, z: 40.0}, Vec3 {x: 35.0, y: 50.0, z: 35.0}, Vec3 {x: 20.0, y: 95.0, z: 20.0}, box blue));
+    prims.push(box Triangle::auto_normal(
+        Vec3 {x: 20.0, y: 95.0, z: 20.0},
+        Vec3 {x: 15.0, y: 50.0, z: 40.0},
+        Vec3 {x: 35.0, y: 50.0, z: 35.0},
+        box blue));
 
     Scene {
         lights: lights,
