@@ -1,11 +1,12 @@
-use vec3::Vec3;
 use material::Material;
+use vec3::Vec3;
 
 pub struct FlatMaterial {
     pub color: Vec3
 }
 
 impl Material for FlatMaterial {
+    #[allow(unused_variable)]
     fn sample(&self, n: Vec3, i: Vec3, l: Vec3) -> Vec3 {
         self.color
     }
@@ -18,10 +19,12 @@ impl Material for FlatMaterial {
         false
     }
 
+    #[allow(unused_variable)]
     fn global_specular(&self, color: &Vec3) -> Vec3 {
         Vec3::zero()
     }
 
+    #[allow(unused_variable)]
     fn global_transmissive(&self, color: &Vec3) -> Vec3 {
         Vec3::zero()
     }

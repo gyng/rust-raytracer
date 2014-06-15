@@ -1,6 +1,7 @@
 use std::io::{File, Truncate, Write};
 use std::cmp::{min, max};
 
+#[allow(unused_must_use)]
 pub fn to_ppm(image_data: Vec<int>, width: int, height: int, filename: &str) -> () {
     let min_color = 0;
     let max_color = 255;

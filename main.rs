@@ -1,38 +1,25 @@
 extern crate time;
 
-use vec3::Vec3;
-use pointlight::PointLight;
-use spherelight::SphereLight;
-use sphere::Sphere;
-use plane::Plane;
-use phongmaterial::PhongMaterial;
-use cooktorrancematerial::CookTorranceMaterial;
+use geometry::Prim;
+use geometry::Prims::{Plane, Sphere};
 use light::Light;
-use prim::Prim;
+use light::Lights::{PointLight, SphereLight};
+use material::Materials::{FlatMaterial, PhongMaterial, CookTorranceMaterial};
+use vec3::Vec3;
 
-mod vec3;
-mod ray;
-mod camera;
-mod prim;
-mod sphere;
-mod plane;
+mod geometry;
 mod light;
-mod pointlight;
-mod spherelight;
 mod material;
-mod flatmaterial;
-mod phongmaterial;
-mod cooktorrancematerial;
-mod intersection;
+mod raytracer;
 mod scene;
-mod renderer;
-mod export;
+mod util;
+mod vec3;
 
 fn main() {
     let start_time = ::time::get_time().sec;
 
-    let image_width = 600;
-    let image_height = 600;
+    let image_width = 100;
+    let image_height = 100;
     let out_file = "test.ppm";
 
     let max_lights = 10;
@@ -42,8 +29,6 @@ fn main() {
     // lights.push(box PointLight {position: Vec3 {x: 50.0, y: 20.0, z: 50.0}, color: Vec3::one()});
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
 
-    // let grey    = PhongMaterial {k_a: 0.0, k_d: 1.0, k_s: 0.0, k_sg: 0.0, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero()};
-    // let blue    = PhongMaterial {k_a: 0.0, k_d: 0.4, k_s: 0.6, k_sg: 0.0, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 0.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let grey    = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 0.6, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero()};
     let blue    = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 0.6, roughness: 0.08, ior: 2.0, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 0.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let red     = PhongMaterial {k_a: 0.0, k_d: 0.6, k_s: 0.4, k_sg: 0.3, k_tg: 0.0, shininess: 10.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 0.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero()};
@@ -62,7 +47,7 @@ fn main() {
     prims.push(box Sphere {center: Vec3 {x: 50.0, y: 50.0, z: 20.0}, radius: 10.0, material: box blue});
     prims.push(box Sphere {center: Vec3 {x: 20.0, y: 13.0, z: 90.0}, radius: 13.0, material: box blue});
 
-    let camera = camera::Camera::new(
+    let camera = scene::Camera::new(
         Vec3 {x: 50.0, y: 25.0, z: 150.0},
         Vec3 {x: 50.0, y: 50.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
@@ -77,18 +62,18 @@ fn main() {
         background: Vec3::one()
     };
 
-    let renderer = renderer::Renderer {
+    let renderer = raytracer::Renderer {
         reflect_depth: 4,
         refract_depth: 8,
-        use_octree: false,
+        use_octree: false,  // Unimplemented
         shadow_samples: 64,
-        pixel_samples: 2,
-        threads: 1
+        pixel_samples: 2,   // 2 * 2 = 4 samples per pixel
+        threads: 1          // Unimplemented
     };
     let image_data = renderer.render(camera, scene);
     let render_time = ::time::get_time().sec;
 
-    ::export::to_ppm(image_data, image_width, image_height, out_file);
+    util::export::to_ppm(image_data, image_width, image_height, out_file);
     let export_time = ::time::get_time().sec;
 
     println!("Start: {}, Render done: {} ({}s), Write done: {} ({}s), Total: {}s, written to {}",

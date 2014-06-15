@@ -1,6 +1,6 @@
-use vec3::Vec3;
-use material::Material;
 use std::f64::consts::PI;
+use material::Material;
+use vec3::Vec3;
 
 pub struct CookTorranceMaterial {
     pub k_a: f64,            // Ambient coefficient
@@ -44,7 +44,7 @@ impl Material for CookTorranceMaterial {
         let g2 = (2.0 * n_dot_h * n_dot_l) / v_dot_h;
         let g = g1.min(g2);
 
-        let brdf = f * d * g / (n_dot_v * n_dot_l);
+        let brdf = f * d * g / (n_dot_v * n_dot_l * PI);
 
         self.specular.scale(self.k_s * brdf) + diffuse + ambient
     }

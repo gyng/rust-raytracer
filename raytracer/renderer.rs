@@ -1,8 +1,7 @@
-use camera::Camera;
-use scene::Scene;
-use ray::Ray;
-use vec3::Vec3;
 use std::rand::{task_rng, Rng};
+use raytracer::Ray;
+use scene::{Camera, Scene};
+use vec3::Vec3;
 // use std::sync::Arc;
 
 pub struct Renderer {
@@ -21,10 +20,10 @@ impl Renderer {
         // let (tx, rx) = channel();
         // let (arc_tx, arc_rx) = channel();
         // arc_tx.send(scene_arc);
-
+        //
         // // for thread_no in range(0, 1) {
         //     let child_tx = tx.clone();
-
+        //
         //     spawn(proc() {
         //         let local_arc = arc_rx.recv();
         //         let local_scene = &*local_arc;
@@ -38,7 +37,7 @@ impl Renderer {
         //         child_tx.send(result);
         //     });
         // // }
-
+        //
         // rx.recv()
 
         Renderer::render_tile(camera,

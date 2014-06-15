@@ -1,5 +1,5 @@
+use raytracer::Ray;
 use vec3::Vec3;
-use ray::Ray;
 
 pub struct Camera {
     pub position: Vec3,

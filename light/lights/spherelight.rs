@@ -1,6 +1,6 @@
-use light::Light;
-use vec3::Vec3;
 use std::rand::{task_rng, Rng};
+use light::light::Light;
+use vec3::Vec3;
 
 pub struct SphereLight {
     pub position: Vec3,

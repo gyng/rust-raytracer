@@ -1,4 +1,4 @@
-use light::Light;
+use light::light::Light;
 use vec3::Vec3;
 
 pub struct PointLight {

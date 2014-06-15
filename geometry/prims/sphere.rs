@@ -1,8 +1,7 @@
-use vec3::Vec3;
-use ray::Ray;
+use geometry::prim::Prim;
 use material::Material;
-use prim::Prim;
-use intersection::Intersection;
+use raytracer::{Ray, Intersection};
+use vec3::Vec3;
 
 pub struct Sphere {
     pub center: Vec3,

@@ -1,5 +1,5 @@
-use vec3::Vec3;
 use material::Material;
+use vec3::Vec3;
 
 pub struct Intersection<'a> {
     pub n: Vec3,

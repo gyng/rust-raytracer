@@ -1,7 +1,7 @@
-use vec3::Vec3;
-use scene::Scene;
-use intersection::Intersection;
 use std::f64::INFINITY;
+use raytracer::Intersection;
+use scene::Scene;
+use vec3::Vec3;
 
 pub struct Ray {
     pub origin: Vec3,

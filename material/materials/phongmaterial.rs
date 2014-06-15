@@ -1,5 +1,5 @@
-use vec3::Vec3;
 use material::Material;
+use vec3::Vec3;
 
 pub struct PhongMaterial {
     pub k_a: f64,           // Ambient coefficient
