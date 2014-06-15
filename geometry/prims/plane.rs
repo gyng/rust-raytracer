@@ -3,6 +3,7 @@ use material::Material;
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct Plane {
     pub a: f64,
     pub b: f64,

@@ -3,6 +3,7 @@ use material::Material;
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,

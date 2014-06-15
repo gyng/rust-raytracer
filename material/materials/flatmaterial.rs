@@ -1,6 +1,7 @@
 use material::Material;
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct FlatMaterial {
     pub color: Vec3
 }

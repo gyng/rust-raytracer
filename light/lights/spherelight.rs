@@ -2,6 +2,7 @@ use std::rand::{task_rng, Rng};
 use light::light::Light;
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct SphereLight {
     pub position: Vec3,
     pub color: Vec3,

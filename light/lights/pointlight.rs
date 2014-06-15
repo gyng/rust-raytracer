@@ -1,6 +1,7 @@
 use light::light::Light;
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct PointLight {
     pub position: Vec3,
     pub color: Vec3

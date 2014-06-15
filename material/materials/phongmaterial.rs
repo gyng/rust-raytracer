@@ -1,6 +1,7 @@
 use material::Material;
 use vec3::Vec3;
 
+#[allow(dead_code)]
 pub struct PhongMaterial {
     pub k_a: f64,           // Ambient coefficient
     pub k_d: f64,           // Diffuse coefficient
