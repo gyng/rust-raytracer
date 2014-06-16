@@ -84,15 +84,15 @@ impl Renderer {
                 let mut rng = task_rng();
                 let pixel_width = 1.0 / pixel_samples as f64;
 
-                for _ in range(0, pixel_samples) {
-                    for _ in range(0, pixel_samples) {
-                        let mut j_x = x as f64 + rng.gen::<f64>() * pixel_width as f64;
-                        let mut j_y = y as f64 + rng.gen::<f64>() * pixel_width as f64;
+                for y_subpixel in range(0, pixel_samples) {
+                    for x_subpixel in range(0, pixel_samples) {
+                        let mut j_x = x as f64;
+                        let mut j_y = y as f64;
 
-                        // Unwanted jitter if not anti-aliasing
-                        if pixel_samples == 1 {
-                            j_x = x as f64;
-                            j_y = y as f64;
+                        // Don't jitter if not antialiasing
+                        if pixel_samples > 1 {
+                            j_x = j_x + x_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width as f64;
+                            j_y = j_y + y_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width as f64;
                         }
 
                         let ray = camera.get_ray(j_x, j_y);
