@@ -15,7 +15,7 @@ fn main() {
     let image_height = 600;
     let out_file = "test.ppm";
 
-    println!("Render started at {}", start_time);
+    println!("Render started at {}...", start_time);
     // Camera, scene created in ./my_scene.rs
     let camera = my_scene::get_camera(image_width, image_height);
     let scene = my_scene::get_scene();
@@ -26,21 +26,19 @@ fn main() {
         use_octree: false,  // Unimplemented
         shadow_samples: 64,
         pixel_samples: 2,   // 2 * 2 = 4 samples per pixel
-        threads: 1          // Unimplemented
+        tasks: 8            // Minimum number of tasks to spawn. Will use up max available threads.
     };
     let image_data = renderer.render(camera, scene);
     let render_time = ::time::get_time().sec;
+    println!("Render done at {} ({}s)...\nWriting file...", render_time, render_time - start_time);
 
     util::export::to_ppm(image_data, image_width, image_height, out_file);
     let export_time = ::time::get_time().sec;
 
-    println!("Start: {}, Render done: {} ({}s), Write done: {} ({}s), Total: {}s, written to {}",
-        start_time,
-        render_time,
-        render_time - start_time,
+    println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
         export_time,
         export_time - render_time,
-        export_time - start_time,
-        out_file
+        out_file,
+        export_time - start_time
     );
 }

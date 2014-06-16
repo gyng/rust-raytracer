@@ -9,7 +9,7 @@ pub struct Plane {
     pub b: f64,
     pub c: f64,
     pub d: f64,
-    pub material: Box<Material>
+    pub material: Box<Material:Send+Share>
 }
 
 impl Prim for Plane {
