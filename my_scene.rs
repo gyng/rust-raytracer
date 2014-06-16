@@ -1,10 +1,10 @@
-use geometry::Prim;
-use geometry::Prims::{Plane, Sphere, Triangle};
-use light::Light;
+use geometry::prim::{Prim};
+use geometry::prims::{Plane, Sphere, Triangle};
+use light::light::{Light};
 // use light::Lights::{PointLight, SphereLight}; // All lights
-use light::Lights::{SphereLight};
+use light::lights::{SphereLight};
 // use material::Materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial}; // All materials
-use material::Materials::{CookTorranceMaterial, PhongMaterial};
+use material::materials::{CookTorranceMaterial, PhongMaterial};
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
