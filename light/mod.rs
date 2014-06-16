@@ -1,7 +1,7 @@
 pub use self::light::Light;
 pub mod light;
 
-pub mod Lights {
+pub mod lights {
     pub use self::pointlight::PointLight;
     pub use self::spherelight::SphereLight;
 
