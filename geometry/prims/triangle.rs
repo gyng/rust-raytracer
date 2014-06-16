@@ -11,13 +11,13 @@ pub struct Triangle {
     pub n0: Vec3,
     pub n1: Vec3,
     pub n2: Vec3,
-    pub material: Box<Material>
+    pub material: Box<Material:Share+Send>
 }
 
 impl Triangle {
     /// All three normals at vertices are perpendicular to the triangle plane
     #[allow(dead_code)]
-    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, material: Box<Material>) -> Triangle {
+    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, material: Box<Material:Share+Send>) -> Triangle {
         // let n = (v1 - v0).cross(&(v2 - v0));
         let n = (v1 - v0).cross(&(v2 - v0));
         Triangle {
