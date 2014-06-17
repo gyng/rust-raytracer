@@ -20,6 +20,9 @@ fn main() {
     let camera = my_scene::get_camera(image_width, image_height);
     let scene = my_scene::get_scene();
 
+    // let camera = my_scene::get_bunny_camera(image_width, image_height);
+    // let scene = my_scene::get_bunny_scene();
+
     let renderer = raytracer::Renderer {
         reflect_depth: 4,
         refract_depth: 6,

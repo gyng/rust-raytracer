@@ -2,6 +2,7 @@ use material::Material;
 use vec3::Vec3;
 
 #[allow(dead_code)]
+#[deriving(Clone)]
 pub struct FlatMaterial {
     pub color: Vec3
 }
