@@ -1,9 +1,10 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
-use raytracer::compositor::composite;
+use raytracer::compositor::{composite, Surface, ColorRGBA};
 use raytracer::{Ray, Tile};
 use scene::{Camera, Scene};
 use vec3::Vec3;
+
 
 pub struct Renderer {
     pub reflect_depth: int,  // Maximum reflection recursions.
@@ -14,9 +15,17 @@ pub struct Renderer {
     pub tasks: int           // Minimum number of tasks to spawn.
 }
 
+
 impl Renderer {
-    pub fn render(&self, camera: Camera, scene: Scene) -> Vec<Vec3> {
+    pub fn render(&self, camera: Camera, scene: Scene) -> Surface {
         let mut tiles = Vec::with_capacity(self.tasks as uint);
+
+        // let surface = Surface::new(camera.image_width, camera.image_height,
+        //                            ColorRGBA::new_rgb(0, 0, 0));
+        //
+        // for tile_factory in surface.divide(128, 8) {
+        //     ;;
+        // }
         let tiles_per_side = (self.tasks as f64).sqrt().ceil() as int;
         let tile_width  = (camera.image_width  as f64 / tiles_per_side as f64) as int;
         let tile_height = (camera.image_height as f64 / tiles_per_side as f64) as int;
@@ -71,10 +80,17 @@ impl Renderer {
                    to_x: int,
                    to_y: int)
                    -> Tile {
+
+        // add to sig::  tile_factory: SurfaceTileFactory,
+        // let from_x = tile_factory.x_off;
+        // let to_x = tile_factory.x_off + tile_factory.width;
+        // let from_y = tile_factory.y_off;
+        // let to_y = tile_factory.y_off + tile_factory.height;
+
         let width  = to_x - from_x;
         let height = to_y - from_y;
         let tile_size = width * height;
-        let mut image_data: Vec<Vec3> = Vec::with_capacity(tile_size as uint);
+        let mut image_data: Vec<ColorRGBA> = Vec::with_capacity(tile_size as uint);
 
         let mut random_data = [0u64, ..64];
         for i in range(0u, 64u) {
@@ -105,12 +121,7 @@ impl Renderer {
                         color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
-
-                image_data.push(Vec3 {
-                    x: color.x,
-                    y: color.y,
-                    z: color.z
-                });
+                image_data.push(ColorRGBA::new_rgb_clamped(color.x, color.y, color.z));
             }
         }
 
