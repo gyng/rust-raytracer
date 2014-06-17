@@ -76,11 +76,11 @@ impl Renderer {
         let tile_size = width * height;
         let mut image_data: Vec<Vec3> = Vec::with_capacity(tile_size as uint);
 
-		let mut random_data = [0u64, ..64];
-		for i in range(0u, 64u) {
-			random_data[i] = task_rng().next_u64();
-		}
-		let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.clone());
+        let mut random_data = [0u64, ..64];
+        for i in range(0u, 64u) {
+            random_data[i] = task_rng().next_u64();
+        }
+        let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.clone());
 
         for y in range(from_y, to_y) {
             for x in range(from_x, to_x) {
