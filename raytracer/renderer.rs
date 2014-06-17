@@ -1,4 +1,4 @@
-use std::rand::{task_rng, Rng};
+use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use raytracer::compositor::composite;
 use raytracer::{Ray, Tile};
@@ -76,12 +76,17 @@ impl Renderer {
         let tile_size = width * height;
         let mut image_data: Vec<Vec3> = Vec::with_capacity(tile_size as uint);
 
+		let mut random_data = [0u64, ..64];
+		for i in range(0u, 64u) {
+			random_data[i] = task_rng().next_u64();
+		}
+		let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.clone());
+
         for y in range(from_y, to_y) {
             for x in range(from_x, to_x) {
                 let mut color = Vec3::zero();
 
                 // Supersampling, jitter algorithm
-                let mut rng = task_rng();
                 let pixel_width = 1.0 / pixel_samples as f64;
 
                 for y_subpixel in range(0, pixel_samples) {
