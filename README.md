@@ -1,7 +1,7 @@
 rust-raytracer
 ==============
 
-![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/sample_render.png)
+![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
 Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 
