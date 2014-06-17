@@ -7,9 +7,10 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 
 ## Usage
 
-1. Compile: `rustc main.rs`
-2. Scene is created in `my_scene.rs`
-3. Run compiled program
+1. Scene is created in `my_scene.rs`
+2. Load the scene/camera in main.rs, and send it to the renderer (already done for default scene)
+3. Compile: `rustc main.rs`
+4. Run compiled program
 
 ## Features
 
@@ -21,12 +22,11 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Cook-Torrance, Phong materials
 * Sphere, plane, triangle primitives
 * Point, sphere lights
+* Very limited OBJ model and mesh support
 
 ## Missing/potential features
 
 * Spatial partitioning (octree/k-d tree)
 * Textures
 * Proper Fresnel reflectance
-* OBJ meshes
 * Scene description
-* Lenses
