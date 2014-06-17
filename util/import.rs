@@ -13,7 +13,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
 
     let mut vertices: Vec<Vec3> = Vec::new();
     let mut normals: Vec<Vec3> = Vec::new();
-    let mut triangles: Vec<Box<Prim:Send+Share>> = Vec::new();
+    let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
 
     for line_iter in file.lines() {
         let line: String = match line_iter {
