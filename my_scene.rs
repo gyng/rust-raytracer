@@ -20,10 +20,7 @@ pub fn get_camera(image_width: int, image_height: int) -> Camera {
 }
 
 pub fn get_scene() -> Scene {
-    let max_lights = 10;
-    let max_prims = 1000;
-
-    let mut lights: Vec<Box<Light:Send+Share>> = Vec::with_capacity(max_lights);
+    let mut lights: Vec<Box<Light:Send+Share>> = Vec::new();
     // lights.push(box PointLight {position: Vec3 {x: 50.0, y: 20.0, z: 50.0}, color: Vec3::one()});
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
 
@@ -34,7 +31,7 @@ pub fn get_scene() -> Scene {
     let shiny   = PhongMaterial {k_a: 0.0, k_d: 0.5, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, shininess: 50.0, ior: 1.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
     let refract = PhongMaterial {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 0.0, k_tg: 1.0, shininess: 40.0, ior: 3.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3 {x: 0.8, y: 0.8, z: 0.8}};
 
-    let mut prims: Vec<Box<Prim:Send+Share>> = Vec::with_capacity(max_prims);
+    let mut prims: Vec<Box<Prim:Send+Share>> = Vec::new();
     prims.push(box Plane {a: 0.0,  b:  0.0, c: 1.0, d: 0.0,   material: box grey  }); // Ahead
     prims.push(box Plane {a: 0.0,  b: -1.0, c: 0.0, d: 100.0, material: box grey  }); // Bottom
     prims.push(box Plane {a: 0.0,  b:  1.0, c: 0.0, d: 0.0,   material: box grey  }); // Top
@@ -50,6 +47,34 @@ pub fn get_scene() -> Scene {
         Vec3 {x: 15.0, y: 50.0, z: 40.0},
         Vec3 {x: 35.0, y: 50.0, z: 35.0},
         box blue));
+
+    Scene {
+        lights: lights,
+        prims: prims,
+        background: Vec3::one()
+    }
+}
+
+pub fn get_bunny_camera(image_width: int, image_height: int) -> Camera {
+    Camera::new(
+        Vec3 {x: 0.0, y: -200.0, z: 30.0},
+        Vec3 {x: 0.0, y: 60.0, z: 50.0},
+        Vec3 {x: 0.0, y: 0.0, z: 1.0},
+        45.0,
+        image_width,
+        image_height
+    )
+}
+
+pub fn get_bunny_scene() -> Scene {
+    let mut lights: Vec<Box<Light:Send+Share>> = Vec::new();
+    lights.push(box SphereLight {position: Vec3 {x: 200.0, y: -200.0, z: 100.0}, color: Vec3::one(), radius: 10.0});
+
+    let bunny_material = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 0.8, k_sg: 0.0, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 0.1, y: 0.1, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero()};
+
+    let mut prims: Vec<Box<Prim:Send+Share>> = Vec::new();
+    let bunny = ::util::import::from_obj(Vec3::zero(), 1.0, box bunny_material, "./docs/bunny.obj");
+    for triangle in bunny.triangles.iter() { prims.push(triangle); }
 
     Scene {
         lights: lights,

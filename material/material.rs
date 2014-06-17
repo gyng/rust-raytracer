@@ -10,3 +10,9 @@ pub trait Material {
     fn transmission(&self) -> Vec3;
     fn ior(&self) -> f64;
 }
+
+impl Clone for Box<Material:Send+Share> {
+    fn clone(&self) -> Box<Material:Send+Share> {
+        self.clone()
+    }
+}
