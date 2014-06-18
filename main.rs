@@ -35,7 +35,7 @@ fn main() {
     let render_time = ::time::get_time().sec;
     println!("Render done at {} ({}s)...\nWriting file...", render_time, render_time - start_time);
 
-    util::export::to_ppm(image_data, image_width, image_height, out_file);
+    util::export::to_ppm(image_data, out_file);
     let export_time = ::time::get_time().sec;
 
     println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
