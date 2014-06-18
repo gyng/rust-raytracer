@@ -1,3 +1,4 @@
+use geometry::bbox::{union_point, union_points, BBox};
 use geometry::prim::Prim;
 use material::Material;
 use raytracer::{Ray, Intersection};
@@ -68,5 +69,9 @@ impl Prim for Triangle {
                 material: &'a self.material
             })
         }
+    }
+
+    fn bounding(&self) -> BBox {
+        return union_point(&union_points(&self.v0, &self.v1), &self.v2);
     }
 }

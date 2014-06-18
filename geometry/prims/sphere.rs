@@ -1,3 +1,4 @@
+use geometry::bbox::BBox;
 use geometry::prim::Prim;
 use material::Material;
 use raytracer::{Ray, Intersection};
@@ -9,6 +10,7 @@ pub struct Sphere {
     pub radius: f64,
     pub material: Box<Material+Send+Share>
 }
+
 
 impl Prim for Sphere {
     fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Intersection<'a>> {
@@ -41,6 +43,21 @@ impl Prim for Sphere {
                 })
             } else {
                 None
+            }
+        }
+    }
+
+    fn bounding(&self) -> BBox {
+        BBox {
+            min: Vec3 {
+                x: -self.radius,
+                y: -self.radius,
+                z: -self.radius
+            },
+            max: Vec3 {
+                x: self.radius,
+                y: self.radius,
+                z: self.radius
             }
         }
     }
