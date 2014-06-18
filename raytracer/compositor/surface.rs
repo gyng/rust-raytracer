@@ -1,11 +1,13 @@
 extern crate num;
 use std::cmp::min;
 
-use raytracer::compositor::{ColorRGBA, SurfaceTile, SurfaceTileFactory};
+use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
 pub struct Surface {
     pub width: uint,
     pub height: uint,
+    pub x_off: uint,
+    pub y_off: uint,
     pub background: ColorRGBA,
     pub buffer: Vec<ColorRGBA>
 }
@@ -17,19 +19,33 @@ impl Surface {
         Surface {
             width: width,
             height: height,
+            x_off: 0,
+            y_off: 0,
             background: background,
             buffer: Vec::from_elem(width * height, background)
         }
     }
 
-    pub fn divide(&self, tile_width: uint, tile_height: uint) -> TileIterator {
-        TileIterator {
+    pub fn with_offset(width: uint, height: uint, x_off: uint, y_off: uint,
+                       background: ColorRGBA) -> Surface {
+        Surface {
+            width: width,
+            height: height,
+            x_off: x_off,
+            y_off: y_off,
+            background: background,
+            buffer: Vec::from_elem(width * height, background)
+        }
+    }
+
+    pub fn divide(&self, tile_width: uint, tile_height: uint) -> SubsurfaceIterator {
+        SubsurfaceIterator {
             parent_width: self.width,
             parent_height: self.height,
             background: self.background,
             x_delta: tile_width,
-            x_off: 0,
             y_delta: tile_height,
+            x_off: 0,
             y_off: 0,
         }
     }
@@ -52,7 +68,7 @@ impl Surface {
         (width, height)
     }
 
-    pub fn merge(&mut self, tile: SurfaceTile) -> () {
+    pub fn merge(&mut self, tile: Box<Surface>) -> () {
         let x_len: uint = min(tile.width, self.width - tile.x_off);
         let y_len: uint = min(tile.height, self.height - tile.y_off);
 
@@ -95,7 +111,7 @@ impl Surface {
 }
 
 
-struct TileIterator {
+struct SubsurfaceIterator {
     x_delta: uint,
     x_off: uint,
     y_delta: uint,
@@ -106,7 +122,7 @@ struct TileIterator {
 }
 
 
-impl TileIterator {
+impl SubsurfaceIterator {
     fn incr_tile(&mut self) {
         if self.x_off + self.x_delta < self.parent_width {
             self.x_off += self.x_delta;
@@ -116,9 +132,9 @@ impl TileIterator {
         }
     }
 
-    fn current_tile(&self) -> Option<SurfaceTileFactory> {
+    fn current_tile(&self) -> Option<SurfaceFactory> {
         if self.x_off < self.parent_width && self.y_off < self.parent_height {
-            Some(SurfaceTileFactory::new(
+            Some(SurfaceFactory::new(
                 self.x_delta,
                 self.y_delta,
                 self.x_off,
@@ -131,8 +147,8 @@ impl TileIterator {
     }
 }
 
-impl Iterator<SurfaceTileFactory> for TileIterator {
-    fn next(&mut self) -> Option<SurfaceTileFactory> {
+impl Iterator<SurfaceFactory> for SubsurfaceIterator {
+    fn next(&mut self) -> Option<SurfaceFactory> {
         let tile = self.current_tile();
         self.incr_tile();
         tile

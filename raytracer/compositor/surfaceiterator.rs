@@ -1,7 +1,7 @@
-use raytracer::compositor::{ColorRGBA, SurfaceTileFactory};
+use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
 
-pub struct SurfaceTileIterator {
+pub struct SurfaceIterator {
     x_delta: uint,
     x_off: uint,
     y_delta: uint,
@@ -12,7 +12,7 @@ pub struct SurfaceTileIterator {
 }
 
 
-impl SurfaceTileIterator {
+impl SurfaceIterator {
     fn incr_tile(&mut self) {
         if self.x_off + self.x_delta < self.parent_width {
             self.x_off += self.x_delta;
@@ -22,9 +22,9 @@ impl SurfaceTileIterator {
         }
     }
 
-    fn current_tile(&self) -> Option<SurfaceTileFactory> {
+    fn current_tile(&self) -> Option<SurfaceFactory> {
         if self.x_off < self.parent_width && self.y_off < self.parent_height {
-            Some(SurfaceTileFactory::new(
+            Some(SurfaceFactory::new(
                 self.x_delta,
                 self.y_delta,
                 self.x_off,
@@ -37,8 +37,8 @@ impl SurfaceTileIterator {
     }
 }
 
-impl Iterator<SurfaceTileFactory> for SurfaceTileIterator {
-    fn next(&mut self) -> Option<SurfaceTileFactory> {
+impl Iterator<SurfaceFactory> for SurfaceIterator {
+    fn next(&mut self) -> Option<SurfaceFactory> {
         let tile = self.current_tile();
         self.incr_tile();
         tile

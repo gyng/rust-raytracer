@@ -1,7 +1,13 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
-use raytracer::compositor::{composite, Surface, ColorRGBA};
-use raytracer::{Ray, Tile};
+use std::sync::deque::{BufferPool, Data, Empty, Abort};
+
+use raytracer::compositor::{
+    Surface,
+    SurfaceFactory,
+    ColorRGBA
+};
+use raytracer::Ray;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
@@ -18,79 +24,59 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Surface {
-        let mut tiles = Vec::with_capacity(self.tasks as uint);
+        
 
-        // let surface = Surface::new(camera.image_width, camera.image_height,
-        //                            ColorRGBA::new_rgb(0, 0, 0));
-        //
-        // for tile_factory in surface.divide(128, 8) {
-        //     ;;
-        // }
-        let tiles_per_side = (self.tasks as f64).sqrt().ceil() as int;
-        let tile_width  = (camera.image_width  as f64 / tiles_per_side as f64) as int;
-        let tile_height = (camera.image_height as f64 / tiles_per_side as f64) as int;
+        let mut surface = Surface::new(camera.image_width as uint,
+                                   camera.image_height as uint,
+                                   ColorRGBA::new_rgb(0, 0, 0));
 
         let shared_scene = Arc::new(scene);
-        let (tx, rx) = channel();
+        let (worker, stealer) = BufferPool::new().deque();
+        let (tx, rx) = channel();  // Responses
 
-        for tile_x in range(0, tiles_per_side) {
-            for tile_y in range(0, tiles_per_side) {
-                let scene_local = shared_scene.clone();
-                let child_tx = tx.clone();
-
-                let shadow_samples_local = self.shadow_samples;
-                let pixel_samples_local = self.pixel_samples;
-                let reflect_depth_local = self.reflect_depth;
-                let refract_depth_local = self.refract_depth;
-
-                let start_x = tile_x * tile_width;
-                let start_y = tile_y * tile_height;
-                let end_x = start_x + tile_width;
-                let end_y = start_y + tile_height;
-
-                spawn(proc() {
-                    child_tx.send(Renderer::render_tile(camera,
-                                                        scene_local.deref(),
-                                                        shadow_samples_local,
-                                                        pixel_samples_local,
-                                                        reflect_depth_local,
-                                                        refract_depth_local,
-                                                        start_x, start_y,
-                                                        end_x, end_y));
-                });
-
-            }
+        let mut jobs = 0;
+        for subsurface_factory in surface.divide(128, 8) {
+            jobs += 1;
+            worker.push(subsurface_factory);
         }
 
-        for _ in range(0, tiles_per_side * tiles_per_side) {
-            tiles.push(rx.recv())
+        for _ in range(0, self.tasks) {
+            let renderer = *self.clone();
+            let child_tx = tx.clone();
+            let child_stealer = stealer.clone();
+            let scene_local = shared_scene.clone();
+
+            spawn(proc() {
+                loop {
+                    match child_stealer.steal() {
+                        Data(factory) => {
+                            child_tx.send(renderer.render_tile(camera,
+                                                               scene_local.deref(),
+                                                               factory))
+                        },
+                        Empty => break,
+                        Abort => (),
+                    }
+                }
+            });
         }
 
-        composite(tiles, camera.image_width, camera.image_height)
+        for _ in range(0, jobs) {
+            surface.merge(rx.recv());
+        }
+
+        surface
     }
 
-    fn render_tile(camera: Camera,
-                   scene: &Scene,
-                   shadow_samples: int,
-                   pixel_samples: int,
-                   reflect_depth: int,
-                   refract_depth: int,
-                   from_x: int,
-                   from_y: int,
-                   to_x: int,
-                   to_y: int)
-                   -> Tile {
+    fn render_tile(&self, camera: Camera, scene: &Scene,
+                   tile_factory: SurfaceFactory) -> Box<Surface> {
 
-        // add to sig::  tile_factory: SurfaceTileFactory,
-        // let from_x = tile_factory.x_off;
-        // let to_x = tile_factory.x_off + tile_factory.width;
-        // let from_y = tile_factory.y_off;
-        // let to_y = tile_factory.y_off + tile_factory.height;
+        let shadow_samples = self.shadow_samples;
+        let pixel_samples = self.pixel_samples;
+        let reflect_depth = self.reflect_depth;
+        let refract_depth = self.refract_depth;
 
-        let width  = to_x - from_x;
-        let height = to_y - from_y;
-        let tile_size = width * height;
-        let mut image_data: Vec<ColorRGBA> = Vec::with_capacity(tile_size as uint);
+        let mut tile = tile_factory.create();
 
         let mut random_data = [0u64, ..64];
         for i in range(0u, 64u) {
@@ -98,8 +84,11 @@ impl Renderer {
         }
         let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.clone());
 
-        for y in range(from_y, to_y) {
-            for x in range(from_x, to_x) {
+        for rel_y in range(0u, tile.height) {
+            let abs_y = (camera.image_height as uint) - (tile.y_off + rel_y) - 1;
+            for rel_x in range(0u, tile.width) {
+                let abs_x = tile.x_off + rel_x;
+
                 let mut color = Vec3::zero();
 
                 // Supersampling, jitter algorithm
@@ -107,8 +96,8 @@ impl Renderer {
 
                 for y_subpixel in range(0, pixel_samples) {
                     for x_subpixel in range(0, pixel_samples) {
-                        let mut j_x = x as f64;
-                        let mut j_y = y as f64;
+                        let mut j_x = abs_x as f64;
+                        let mut j_y = abs_y as f64;
 
                         // Don't jitter if not antialiasing
                         if pixel_samples > 1 {
@@ -121,17 +110,12 @@ impl Renderer {
                         color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
-                image_data.push(ColorRGBA::new_rgb_clamped(color.x, color.y, color.z));
+                *tile.get_mut(rel_x, rel_y) =
+                    ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
             }
         }
 
-        Tile {
-            from_x: from_x,
-            from_y: from_y,
-            to_x: to_x,
-            to_y: to_y,
-            data: image_data
-        }
+        box tile
     }
 
     fn trace(scene: &Scene,
