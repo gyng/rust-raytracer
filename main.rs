@@ -21,8 +21,8 @@ fn main() {
     // Lower the render quality (especially shadow_samples) for complex scenes.
 
     // Simplest scene with 9 primitives, no octree
-    let camera = my_scene::get_camera(image_width, image_height);
-    let scene = my_scene::get_scene();
+    // let camera = my_scene::get_camera(image_width, image_height);
+    // let scene = my_scene::get_scene();
 
     // Around 300 primitives, 2 lights. No octree.
     // let camera = my_scene::get_bunny_camera(image_width, image_height);
@@ -38,19 +38,20 @@ fn main() {
 
     // Around 525814+1 primitives. Octree pretty much required. The model is included
     // separately, in another repository.
-    // let camera = my_scene::get_lucy_camera(image_width, image_height);
-    // let scene = my_scene::get_lucy_scene();
+    let camera = my_scene::get_lucy_camera(image_width, image_height);
+    let scene = my_scene::get_lucy_scene();
 
     let scene_time = ::time::get_time().sec;
-    println!("Scene loaded at {} ({}s)...\nRendering...", scene_time, scene_time - start_time);
+    println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
 
     let renderer = raytracer::Renderer {
         reflect_depth: 4,
         refract_depth: 6,
         shadow_samples: 64,
-        pixel_samples: 2,   // 2 * 2 = 4 samples per pixel
-        tasks: 2            // Number of tasks to spawn. Will use up max available threads.
+        pixel_samples: 2,          // 2 * 2 = 4 samples per pixel
+        tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };
+    println!("Rendering with {} tasks...", renderer.tasks);
     let image_data = renderer.render(camera, scene);
     let render_time = ::time::get_time().sec;
     println!("Render done at {} ({}s)...\nWriting file...",
@@ -60,9 +61,8 @@ fn main() {
     let export_time = ::time::get_time().sec;
 
     println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
-        export_time,
-        export_time - render_time,
-        out_file,
-        export_time - start_time
-    );
+             export_time,
+             export_time - render_time,
+             out_file,
+             export_time - start_time);
 }

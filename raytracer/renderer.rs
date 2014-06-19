@@ -13,11 +13,11 @@ use vec3::Vec3;
 
 
 pub struct Renderer {
-    pub reflect_depth: int,  // Maximum reflection recursions.
-    pub refract_depth: int,  // Maximum refraction recursions. A sphere takes up 2 recursions.
-    pub shadow_samples: int, // Number of samples for soft shadows and area lights.
-    pub pixel_samples: int,  // The square of this is the number of samples per pixel.
-    pub tasks: int           // Minimum number of tasks to spawn.
+    pub reflect_depth: uint,  // Maximum reflection recursions.
+    pub refract_depth: uint,  // Maximum refraction recursions. A sphere takes up 2 recursions.
+    pub shadow_samples: uint, // Number of samples for soft shadows and area lights.
+    pub pixel_samples: uint,  // The square of this is the number of samples per pixel.
+    pub tasks: uint           // Minimum number of tasks to spawn.
 }
 
 
@@ -59,18 +59,12 @@ impl Renderer {
             });
         }
 
-        let start_time = ::time::get_time().sec;
+        let start_time = ::time::get_time();
 
         for i in range(0, jobs) {
             surface.merge(rx.recv());
-            let progress: f64 = 100f64 * (i + 1) as f64 / jobs as f64;
-            let current_time = ::time::get_time().sec;
-            let remaining_time = (current_time - start_time) as f64 / (i+1) as f64 * (jobs - (i+1)) as f64 / 60.0;
-            print!("\rTile {}/{} obtained\tETA {} minutes \t{}%           ",
-                   (i + 1), jobs, ::std::f64::to_str_exact(remaining_time, 2), ::std::f64::to_str_exact(progress, 2));
-            ::std::io::stdio::flush();
+            ::util::print_progress("Tile", start_time, (i + 1) as uint, jobs);
         }
-        println!("");
 
         surface
     }
@@ -127,9 +121,9 @@ impl Renderer {
 
     fn trace(scene: &Scene,
              ray: &Ray,
-             shadow_samples: int,
-             reflect_depth: int,
-             refract_depth: int,
+             shadow_samples: uint,
+             reflect_depth: uint,
+             refract_depth: uint,
              inside: bool)
              -> Vec3 {
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }

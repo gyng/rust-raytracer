@@ -15,6 +15,15 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     let mut normals: Vec<Vec3> = Vec::new();
     let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
 
+    let start_time = ::time::get_time();
+    let print_progress_every = 1024;
+    let mut current_line = 0;
+    let mut processed_bytes = 0;
+    let total_bytes = match path.stat() {
+        Ok(stat) => stat.size,
+        Err(e) => fail!(e),
+    };
+
     for line_iter in file.lines() {
         let line: String = match line_iter {
             Ok(x) => {x},
@@ -61,7 +70,16 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
             },
             _ => {}
         }
+
+        current_line += 1;
+        processed_bytes += line.as_bytes().len();
+        if current_line % print_progress_every == 0 {
+            ::util::print_progress("Bytes", start_time, processed_bytes, total_bytes as uint);
+        }
     }
+
+    // Cheat the progress meter
+    ::util::print_progress("Bytes", start_time, total_bytes as uint, total_bytes as uint);
 
     Mesh {
         position: position,
