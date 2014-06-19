@@ -21,8 +21,8 @@ fn main() {
     // Lower the render quality (especially shadow_samples) for complex scenes.
 
     // Simplest scene with 9 primitives, no octree
-    // let camera = my_scene::get_camera(image_width, image_height);
-    // let scene = my_scene::get_scene();
+    let camera = my_scene::get_camera(image_width, image_height);
+    let scene = my_scene::get_scene();
 
     // Around 300 primitives, 2 lights. No octree.
     // let camera = my_scene::get_bunny_camera(image_width, image_height);
@@ -38,8 +38,8 @@ fn main() {
 
     // Around 525814+1 primitives. Octree pretty much required. The model is included
     // separately, in another repository.
-    let camera = my_scene::get_lucy_camera(image_width, image_height);
-    let scene = my_scene::get_lucy_scene();
+    // let camera = my_scene::get_lucy_camera(image_width, image_height);
+    // let scene = my_scene::get_lucy_scene();
 
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
