@@ -1,4 +1,5 @@
-use geometry::BBox;
+use geometry::bbox::get_bounds_from_objects;
+use geometry::{BBox, Prim};
 use raytracer::Ray;
 use vec3::Vec3;
 
@@ -6,12 +7,13 @@ pub struct Octree {
     pub bbox: BBox,
     pub depth: int,
     pub children: Vec<Octree>,
-    pub data: Vec<OctreeData> // indices
+    pub data: Vec<OctreeData>,
+    pub infinite_data: Vec<OctreeData> // for infinite prims (planes)
 }
 
 #[deriving(Clone)]
 struct OctreeData {
-    pub bbox: BBox,
+    pub bbox: Option<BBox>,
     pub index: uint
 }
 
@@ -20,22 +22,38 @@ impl Octree {
     pub fn new(bbox: BBox, depth: int) -> Octree {
         let vec_children: Vec<Octree> = Vec::new();
         let vec_data: Vec<OctreeData> = Vec::new();
+        let vec_infinite_data: Vec<OctreeData> = Vec::new();
 
         Octree {
             bbox: bbox,
             depth: depth,
             children: vec_children,
-            data: vec_data
+            data: vec_data,
+            infinite_data: vec_infinite_data
         }
     }
 
     #[allow(dead_code)]
-    pub fn is_leaf(&self) -> bool {
+    pub fn new_from_prims(prims: &Vec<Box<Prim+Send+Share>>) -> Octree {
+        let bounds = get_bounds_from_objects(prims);
+        // pbrt recommended max depth for a k-d tree (though, we're using an octree)
+        // For a k-d tree: 8 + 1.3 * log2(N)
+        let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
+        println!("Octree maximum depth {}", depth);
+        let mut octree = Octree::new(bounds, depth);
+
+        for i in range(0, prims.len()) {
+            octree.insert(i, prims.get(i).bounding());
+        }
+
+        octree
+    }
+
+    fn is_leaf(&self) -> bool {
         self.children.len() == 0
     }
 
-    #[allow(dead_code)]
-    pub fn subdivide(&mut self) -> () {
+    fn subdivide(&mut self) -> () {
         for x in range(0, 2) {
             for y in range(0, 2) {
                 for z in range(0, 2) {
@@ -61,38 +79,48 @@ impl Octree {
     }
 
     #[allow(dead_code)]
-    pub fn insert(&mut self, index: uint, object_bbox: BBox) -> () {
-        // Max depth
-        if self.depth <= 0 {
-            self.data.push(OctreeData {index: index, bbox: object_bbox});
-            return
-        }
+    pub fn insert(&mut self, index: uint, object_bbox: Option<BBox>) -> () {
+        match object_bbox {
+            // Finite object
+            Some(object_bbox) => {
+                // Max depth
+                if self.depth <= 0 {
+                    self.data.push(OctreeData {index: index, bbox: Some(object_bbox)});
+                    return;
+                }
 
-        // Empty leaf node
-        if self.is_leaf() && self.data.len() == 0 {
-            self.data.push(OctreeData {index: index, bbox: object_bbox});
-            return
-        }
+                // Empty leaf node
+                if self.is_leaf() && self.data.len() == 0 {
+                    self.data.push(OctreeData {index: index, bbox: Some(object_bbox)});
+                    return;
+                }
 
-        // Occupied leaf node and not max depth: subdivide node
-        if self.is_leaf() && self.data.len() == 1 {
-            self.subdivide();
-            let old = match self.data.shift() {
-                Some(x) => {x},
-                None => {fail!("Trying to subdivide empty node in octree insertion")}
-            };
-            self.insert(old.index, old.bbox);
-            return
-        }
+                // Occupied leaf node and not max depth: subdivide node
+                if self.is_leaf() && self.data.len() == 1 {
+                    self.subdivide();
+                    let old = match self.data.shift() {
+                        Some(x) => {x},
+                        None => {fail!("Trying to subdivide empty node in octree insertion")}
+                    };
+                    // Reinsert old node and then fall through to insert current object
+                    self.insert(old.index, old.bbox);
+                }
 
-        // Interior node (has children)
-        if !self.is_leaf() {
-            for child in self.children.mut_iter() {
-                if self.bbox.overlaps(&child.bbox) {
-                    child.insert(index, object_bbox);
+                // Interior node (has children)
+                for child in self.children.mut_iter() {
+                    if child.bbox.contains(&object_bbox) {
+                        child.insert(index, Some(object_bbox));
+                    }
                 }
             }
+
+            // Infinite object without bounds, this is added to
+            // all get_intersection_objects calls
+            None => {
+                self.infinite_data.push(OctreeData {index: index, bbox: None});
+            }
         }
+
     }
 
     #[allow(dead_code)]
@@ -108,7 +136,7 @@ impl Octree {
                 }
             }
 
-            objects
+            objects.append(self.infinite_data.as_slice())
         }
     }
 }

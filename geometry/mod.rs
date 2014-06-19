@@ -7,7 +7,7 @@ pub mod prim;
 pub mod mesh;
 
 pub mod prims {
-    // pub use self::plane::Plane;
+    pub use self::plane::Plane;
     pub use self::sphere::Sphere;
     pub use self::triangle::Triangle;
 

@@ -14,22 +14,45 @@ impl Ray {
         let mut nearest_hit = None;
         let mut nearest_t = INFINITY;
 
-        for prim in scene.prims.iter() {
-            let intersection = prim.intersects(self, t_min, nearest_t);
+        match scene.octree {
+            Some(ref octree) => {
+                let candidate_nodes = octree.get_intersection_objects(self);
 
-            nearest_hit = match intersection {
-                Some(intersection) => {
-                    if intersection.t > t_min && intersection.t < nearest_t {
-                        nearest_t = intersection.t;
-                        Some(intersection)
-                    } else {
-                        nearest_hit
-                    }
+                for node in candidate_nodes.iter() {
+                    let prim = scene.prims.get(node.index);
+                    let intersection = prim.intersects(self, t_min, nearest_t);
+
+                    nearest_hit = match intersection {
+                        Some(intersection) => {
+                            if intersection.t > t_min && intersection.t < nearest_t {
+                                nearest_t = intersection.t;
+                                Some(intersection)
+                            } else {
+                                nearest_hit
+                            }
+                        }
+                        None => {nearest_hit}
+                    };
                 }
+            }
+            None => {
+                for prim in scene.prims.iter() {
+                    let intersection = prim.intersects(self, t_min, nearest_t);
 
-                None => {nearest_hit}
-            };
-        }
+                    nearest_hit = match intersection {
+                        Some(intersection) => {
+                            if intersection.t > t_min && intersection.t < nearest_t {
+                                nearest_t = intersection.t;
+                                Some(intersection)
+                            } else {
+                                nearest_hit
+                            }
+                        }
+                        None => {nearest_hit}
+                    };
+                }
+            }
+        };
 
         nearest_hit
     }

@@ -7,7 +7,7 @@ use vec3::Vec3;
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
 /// a new material for each triangle primitive in the object model.
 #[allow(dead_code)]
-pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box<Material>*/, filename: &str) -> Mesh {
+pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box<Material>*/, flip_normals: bool, filename: &str) -> Mesh {
     let path = Path::new(filename);
     let mut file = BufferedReader::new(File::open(&path));
 
@@ -27,16 +27,17 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
         match tokens.get(0).as_slice() {
             "v" => {
                 vertices.push(Vec3 {
-                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
                 });
             },
             "vn" => {
+                let normals_flip_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
-                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
                 });
             },
             "f" => {

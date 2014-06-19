@@ -23,10 +23,11 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Sphere, plane, triangle primitives
 * Point, sphere lights
 * Very limited OBJ model and mesh support
+* Basic spatial partitioning (octree)
 
 ## Missing/potential features
 
-* Spatial partitioning (octree/k-d tree)
 * Textures
 * Proper Fresnel reflectance
+* Simple animation
 * Scene description

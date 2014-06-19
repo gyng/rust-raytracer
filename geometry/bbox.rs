@@ -1,3 +1,5 @@
+use std::f64::{MAX_VALUE, MIN_VALUE};
+use geometry::Prim;
 use raytracer::Ray;
 use vec3::Vec3;
 
@@ -62,6 +64,33 @@ pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
     }
 }
 
+/// Given a vector of prims, compute and return a new BBox that encompasses
+/// all finite prims (ie. not including planes) in that vector.
+pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Share>>) -> BBox {
+    let mut max = Vec3 {x: MIN_VALUE, y: MIN_VALUE, z: MIN_VALUE};
+    let mut min = Vec3 {x: MAX_VALUE, y: MAX_VALUE, z: MAX_VALUE};
+
+    for prim in prims.iter() {
+        match prim.bounding() {
+            Some(bounding) => {
+                min.x = min.x.min(bounding.min.x);
+                min.y = min.y.min(bounding.min.y);
+                min.z = min.z.min(bounding.min.z);
+
+                max.x = max.x.max(bounding.max.x);
+                max.y = max.y.max(bounding.max.y);
+                max.z = max.z.max(bounding.max.z);
+            }
+            None => {}
+        }
+    }
+
+    BBox {
+        min: min,
+        max: max
+    }
+}
+
 
 impl BBox {
     #[allow(dead_code)]
@@ -87,14 +116,14 @@ impl BBox {
         let t_min = tx_min.max(ty_min).max(tz_min);
         let t_max = tx_max.min(ty_max).min(tz_max);
 
-        t_min > t_max
+        t_min < t_max
     }
 
     #[allow(dead_code)]
     pub fn overlaps(&self, other: &BBox) -> bool {
         let x = self.max.x >= other.min.x && self.min.x <= other.max.x;
-        let y = self.max.y >= other.min.y && self.min.y <= other.min.y;
-        let z = self.max.z >= other.min.z && self.min.z <= other.min.z;
+        let y = self.max.y >= other.min.y && self.min.y <= other.max.y;
+        let z = self.max.z >= other.min.z && self.min.z <= other.max.z;
 
         x && y && z
     }
@@ -104,6 +133,13 @@ impl BBox {
         p.x >= self.min.x && p.x <= self.max.x &&
         p.y >= self.min.y && p.y <= self.max.y &&
         p.z >= self.min.z && p.z <= self.max.z
+    }
+
+    #[allow(dead_code)]
+    pub fn contains(&self, other: &BBox) -> bool {
+        !(other.min.x > self.max.x || other.max.x < self.min.x ||
+          other.min.y > self.max.y || other.max.y < self.min.y ||
+          other.min.z > self.max.z || other.max.z < self.min.z)
     }
 
     /// Pad bounding box by a constant factor.

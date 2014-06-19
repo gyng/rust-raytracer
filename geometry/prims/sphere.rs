@@ -47,18 +47,18 @@ impl Prim for Sphere {
         }
     }
 
-    fn bounding(&self) -> BBox {
-        BBox {
+    fn bounding(&self) -> Option<BBox> {
+        Some(BBox {
             min: Vec3 {
-                x: -self.radius,
-                y: -self.radius,
-                z: -self.radius
+                x: self.center.x - self.radius,
+                y: self.center.y - self.radius,
+                z: self.center.z - self.radius
             },
             max: Vec3 {
-                x: self.radius,
-                y: self.radius,
-                z: self.radius
+                x: self.center.x + self.radius,
+                y: self.center.y + self.radius,
+                z: self.center.z + self.radius
             }
-        }
+        })
     }
 }

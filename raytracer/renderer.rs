@@ -15,7 +15,6 @@ use vec3::Vec3;
 pub struct Renderer {
     pub reflect_depth: int,  // Maximum reflection recursions.
     pub refract_depth: int,  // Maximum refraction recursions. A sphere takes up 2 recursions.
-    pub use_octree: bool,    // Unimplemented. Use octree/k-d tree?
     pub shadow_samples: int, // Number of samples for soft shadows and area lights.
     pub pixel_samples: int,  // The square of this is the number of samples per pixel.
     pub tasks: int           // Minimum number of tasks to spawn.
@@ -24,7 +23,6 @@ pub struct Renderer {
 
 impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Surface {
-        
 
         let mut surface = Surface::new(camera.image_width as uint,
                                    camera.image_height as uint,
@@ -61,9 +59,18 @@ impl Renderer {
             });
         }
 
-        for _ in range(0, jobs) {
+        let start_time = ::time::get_time().sec;
+
+        for i in range(0, jobs) {
             surface.merge(rx.recv());
+            let progress: f64 = 100f64 * (i + 1) as f64 / jobs as f64;
+            let current_time = ::time::get_time().sec;
+            let remaining_time = (current_time - start_time) as f64 / (i+1) as f64 * (jobs - (i+1)) as f64 / 60.0;
+            print!("\rTile {}/{} obtained\tETA {} minutes \t{}%           ",
+                   (i + 1), jobs, ::std::f64::to_str_exact(remaining_time, 2), ::std::f64::to_str_exact(progress, 2));
+            ::std::io::stdio::flush();
         }
+        println!("");
 
         surface
     }
@@ -153,13 +160,36 @@ impl Renderer {
 
                             // Check against candidate primitives in scene for occlusion
                             // and multiply shadow color by occluders' shadow colors
-                            shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
-                                let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
-                                match occlusion {
-                                    Some(occulusion) => {shadow_acc * occulusion.material.transmission()}
-                                    None => shadow_acc
+                            // TODO: Clean up
+                            match scene.octree {
+                                Some(ref octree) => {
+                                    let candidate_nodes = octree.get_intersection_objects(&shadow_ray);
+                                    let mut sample_shadow = Vec3::one();
+
+                                    for node in candidate_nodes.iter() {
+                                        let prim = scene.prims.get(node.index);
+                                        let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
+
+                                        match occlusion {
+                                            Some(occlusion) => {
+                                                sample_shadow = sample_shadow * occlusion.material.transmission()
+                                            }
+                                            None => {}
+                                        }
+                                    }
+
+                                    shadow = shadow + sample_shadow;
                                 }
-                            });
+                                None => {
+                                    shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
+                                        let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
+                                        match occlusion {
+                                            Some(occlusion) => {shadow_acc * occlusion.material.transmission()}
+                                            None => shadow_acc
+                                        }
+                                    });
+                                }
+                            }
                         }
 
                         shadow = shadow.scale(1.0 / shadow_sample_tries as f64);

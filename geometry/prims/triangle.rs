@@ -71,7 +71,7 @@ impl Prim for Triangle {
         }
     }
 
-    fn bounding(&self) -> BBox {
-        return union_point(&union_points(&self.v0, &self.v1), &self.v2);
+    fn bounding(&self) -> Option<BBox> {
+        return Some(union_point(&union_points(&self.v0, &self.v1), &self.v2));
     }
 }
