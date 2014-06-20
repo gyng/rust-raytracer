@@ -12,13 +12,16 @@ pub struct Triangle {
     pub n0: Vec3,
     pub n1: Vec3,
     pub n2: Vec3,
+    // Texture (u, v) coordinates
+    pub u: Vec3, // Vec3 {x: u0, y: u1, z: u2}
+    pub v: Vec3, // Vec3 {x: v0, y: v1, z: v2}
     pub material: Box<Material+Send+Share>
 }
 
 impl Triangle {
     /// All three normals at vertices are perpendicular to the triangle plane
     #[allow(dead_code)]
-    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, material: Box<Material+Send+Share>) -> Triangle {
+    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, u: Vec3, v: Vec3, material: Box<Material+Send+Share>) -> Triangle {
         // let n = (v1 - v0).cross(&(v2 - v0));
         let n = (v1 - v0).cross(&(v2 - v0));
         Triangle {
@@ -28,6 +31,8 @@ impl Triangle {
             n0: n,
             n1: n,
             n2: n,
+            u: u,
+            v: v,
             material: material
         }
     }
@@ -62,9 +67,15 @@ impl Prim for Triangle {
             // Interpolate normals at vertices to get normal
             let n = self.n0.scale(alpha) + self.n1.scale(beta) + self.n2.scale(gamma);
 
+            // Interpolate UVs at vertices to get UV
+            let u = self.u.x * alpha + self.u.y * beta + self.u.z * gamma;
+            let v = self.v.x * alpha + self.v.y * beta + self.v.z * gamma;
+
             Some(Intersection {
                 n: n,
                 t: t,
+                u: u,
+                v: v,
                 position: intersection_point,
                 material: &'a self.material
             })

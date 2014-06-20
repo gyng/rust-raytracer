@@ -193,7 +193,10 @@ impl Renderer {
 
                     let l = (light.center() - nearest_hit.position).unit();
 
-                    color_acc + light.color() * nearest_hit.material.sample(n, i, l) * shadow
+                    let u = nearest_hit.u;
+                    let v = nearest_hit.v;
+
+                    color_acc + light.color() * nearest_hit.material.sample(n, i, l, u, v) * shadow
                 });
 
                 // Global reflection

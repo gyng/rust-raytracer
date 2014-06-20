@@ -24,10 +24,10 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 * Point, sphere lights
 * Very limited OBJ model and mesh support
 * Basic spatial partitioning (octree)
+* Basic textures (checker, uv)
 
 ## Missing/potential features
 
-* Textures
 * Proper Fresnel reflectance
 * Simple animation
 * Scene description

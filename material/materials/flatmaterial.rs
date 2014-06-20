@@ -9,7 +9,7 @@ pub struct FlatMaterial {
 
 impl Material for FlatMaterial {
     #[allow(unused_variable)]
-    fn sample(&self, n: Vec3, i: Vec3, l: Vec3) -> Vec3 {
+    fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
         self.color
     }
 

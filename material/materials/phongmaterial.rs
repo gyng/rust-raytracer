@@ -1,4 +1,4 @@
-use material::Material;
+use material::{Material, Texture};
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -14,16 +14,20 @@ pub struct PhongMaterial {
     pub transmission: Vec3, // Transmissive color
     pub specular: Vec3,     // Specular color
     pub shininess: f64,     // Size of Phong specular highlight
-    pub ior: f64            // Index of refraction
+    pub ior: f64,           // Index of refraction
+    pub diffuse_texture: Option<Box<Texture+Send+Share>>
 }
 
 impl Material for PhongMaterial {
-    fn sample(&self, n: Vec3, i: Vec3, l: Vec3) -> Vec3 {
+    fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
         let h = (l + i).unit();
 
         // Blinn-Phong approximation
         let ambient  = self.ambient.scale(self.k_a);
-        let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l));
+        let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l)) * match self.diffuse_texture {
+            Some(ref x) => {x.color(u, v)}
+            None => {Vec3::one()}
+        };
         let specular = self.specular.scale(self.k_s).scale(n.dot(&h).powf(self.shininess));
 
         ambient + diffuse + specular

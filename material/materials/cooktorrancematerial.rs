@@ -1,5 +1,5 @@
 use std::f64::consts::PI;
-use material::Material;
+use material::{Material, Texture};
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -16,13 +16,17 @@ pub struct CookTorranceMaterial {
     pub specular: Vec3,      // Specular color
     pub roughness: f64,      // Smaller = shininer => smaller highlight spot on surface
     pub gauss_constant: f64, // Controls curve of distribution of microfacets
-    pub ior: f64             // Index of refraction, also used for specular highlights
+    pub ior: f64,             // Index of refraction, also used for specular highlights
+    pub diffuse_texture: Option<Box<Texture+Send+Share>>
 }
 
 impl Material for CookTorranceMaterial {
-    fn sample(&self, n: Vec3, i: Vec3, l: Vec3) -> Vec3 {
+    fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
         let ambient  = self.ambient.scale(self.k_a);
-        let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l));
+        let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l)) * match self.diffuse_texture {
+            Some(ref x) => {x.color(u, v)}
+            None => {Vec3::one()}
+        };
 
         // Specular calculations
         let h = (l + i).unit();

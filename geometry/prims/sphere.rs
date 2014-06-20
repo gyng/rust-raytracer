@@ -33,11 +33,16 @@ impl Prim for Sphere {
                 // Valid intersection(s): get nearer intersection
                 let t = if t1.abs() < t2.abs() { t1 } else { t2 };
                 let intersection_point = ray.origin + ray.direction.scale(t);
-                let n = intersection_point - self.center;
+                let n = (intersection_point - self.center).unit();
+
+                let u = 0.5 + n.z.atan2(n.x) / ::std::f64::consts::PI_2;
+                let v = 0.5 - n.y.asin() / ::std::f64::consts::PI;
 
                 Some(Intersection {
                     n: n,
                     t: t,
+                    u: u,
+                    v: v,
                     position: intersection_point,
                     material: &'a self.material
                 })
