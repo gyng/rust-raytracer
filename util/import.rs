@@ -17,7 +17,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
 
     let start_time = ::time::get_time();
-    let print_progress_every = 1024;
+    let print_progress_every = 1024u;
     let mut current_line = 0;
     let mut processed_bytes = 0;
     let total_bytes = match path.stat() {
