@@ -54,9 +54,9 @@ impl Octree {
     }
 
     fn subdivide(&mut self) -> () {
-        for x in range(0, 2) {
-            for y in range(0, 2) {
-                for z in range(0, 2) {
+        for x in range(0i, 2i) {
+            for y in range(0i, 2i) {
+                for z in range(0i, 2i) {
                     let len = self.bbox.len();
 
                     let child_bbox = BBox {

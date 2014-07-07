@@ -44,7 +44,7 @@ impl Prim for Sphere {
                     u: u,
                     v: v,
                     position: intersection_point,
-                    material: &'a self.material
+                    material: &self.material
                 })
             } else {
                 None
