@@ -7,7 +7,8 @@ Early-stage raytracer in Rust. Developed on Rust `0.11.0-pre-nightly`.
 
 ## Usage
 
-1. Scene is created in `my_scene.rs`
+0. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models into the project directory as well.
+1. Scenes are created in `my_scene.rs`
 2. Load the scene/camera in main.rs, and send it to the renderer (already done for default scene)
 3. Compile: `rustc main.rs`
 4. Run compiled program
