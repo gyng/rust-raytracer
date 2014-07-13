@@ -201,7 +201,7 @@ fn test_paint_it_red() {
                 assert_eq!(tile.get(x, y).b, 0);
             }
         }
-        surf.merge(*tile);
+        surf.merge(box tile);
     }
 
     for y in range(0, surf.height) {
