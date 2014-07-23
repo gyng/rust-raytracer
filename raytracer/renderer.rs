@@ -161,7 +161,7 @@ impl Renderer {
                                     let mut sample_shadow = Vec3::one();
 
                                     for node in candidate_nodes.iter() {
-                                        let prim = scene.prims.get(node.index);
+                                        let ref prim = scene.prims[node.index];
                                         let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
 
                                         match occlusion {

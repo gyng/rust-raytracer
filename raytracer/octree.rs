@@ -43,7 +43,7 @@ impl Octree {
         let mut octree = Octree::new(bounds, depth);
 
         for i in range(0, prims.len()) {
-            octree.insert(i, prims.get(i).bounding());
+            octree.insert(i, prims[i].bounding());
         }
 
         octree

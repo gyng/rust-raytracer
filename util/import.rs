@@ -34,27 +34,27 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
         let tokens: Vec<&str> = line.as_slice().words().collect();
         if tokens.len() < 4 { continue }
 
-        match tokens.get(0).as_slice() {
+        match tokens[0].as_slice() {
             "v" => {
                 vertices.push(Vec3 {
-                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) }
+                    x: match from_str::<f64>(tokens[1].as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    y: match from_str::<f64>(tokens[2].as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    z: match from_str::<f64>(tokens[3].as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) }
                 });
             },
             "vt" => {
                 tex_coords.push(Vec3 {
-                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad texture coordinate in file. w-coord not supported. `{}`", line)) },
-                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad texture coordinate in file. w-coord not supported. `{}`", line)) },
+                    x: match from_str::<f64>(tokens[1].as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad texture coordinate in file. w-coord not supported. `{}`", line)) },
+                    y: match from_str::<f64>(tokens[2].as_slice()) { Some(f) => f * scale, None => fail!(format!("Bad texture coordinate in file. w-coord not supported. `{}`", line)) },
                     z: 0.0
                 });
             },
             "vn" => {
                 let normals_flip_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
-                    x: match from_str::<f64>(tokens.get(1).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    y: match from_str::<f64>(tokens.get(2).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
-                    z: match from_str::<f64>(tokens.get(3).as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) }
+                    x: match from_str::<f64>(tokens[1].as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    y: match from_str::<f64>(tokens[2].as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) },
+                    z: match from_str::<f64>(tokens[3].as_slice()) { Some(f) => f * scale * normals_flip_scale, None => fail!(format!("Bad vertex coordinate in file. `{}`", line)) }
                 });
             },
             "f" => {
@@ -62,36 +62,36 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 //     token.to_string().as_slice().split('/').collect()
                 // }).collect();
 
-                let v0: Vec<&str> = tokens.get(1).split('/').collect();
-                let v1: Vec<&str> = tokens.get(2).split('/').collect();
-                let v2: Vec<&str> = tokens.get(3).split('/').collect();
+                let v0: Vec<&str> = tokens[1].split('/').collect();
+                let v1: Vec<&str> = tokens[2].split('/').collect();
+                let v2: Vec<&str> = tokens[3].split('/').collect();
 
                 // If no texture coordinates were supplied, default to zero.
                 let mut u = Vec3::zero();
                 let mut v = Vec3::zero();
 
-                if v0.get(1).len() > 0 {
+                if v0[1].len() > 0 {
                     u = Vec3 {
-                        x: match from_str::<int>(*v0.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).x}, None => {fail!("Bad texture")} },
-                        y: match from_str::<int>(*v1.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).x}, None => {fail!("Bad texture")} },
-                        z: match from_str::<int>(*v2.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).x}, None => {fail!("Bad texture")} }
+                        x: match from_str::<uint>(v0[1]) { Some(x) => {(tex_coords[x-1u as uint]).x}, None => {fail!("Bad texture")} },
+                        y: match from_str::<uint>(v1[1]) { Some(x) => {(tex_coords[x-1u as uint]).x}, None => {fail!("Bad texture")} },
+                        z: match from_str::<uint>(v2[1]) { Some(x) => {(tex_coords[x-1u as uint]).x}, None => {fail!("Bad texture")} }
                     };
 
                     v = Vec3 {
-                        x: match from_str::<int>(*v0.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).y}, None => {fail!("Bad texture")} },
-                        y: match from_str::<int>(*v1.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).y}, None => {fail!("Bad texture")} },
-                        z: match from_str::<int>(*v2.get(1)) { Some(x) => {tex_coords.get((x - 1) as uint).y}, None => {fail!("Bad texture")} }
+                        x: match from_str::<uint>(v0[1]) { Some(x) => {(tex_coords[x-1u as uint]).y}, None => {fail!("Bad texture")} },
+                        y: match from_str::<uint>(v1[1]) { Some(x) => {(tex_coords[x-1u as uint]).y}, None => {fail!("Bad texture")} },
+                        z: match from_str::<uint>(v2[1]) { Some(x) => {(tex_coords[x-1u as uint]).y}, None => {fail!("Bad texture")} }
                     };
                 }
 
                 triangles.push(box Triangle {
-                    v0: match from_str::<int>(*v0.get(0)) { Some(x) => {*vertices.get((x - 1) as uint)}, None => {fail!("Bad vertex")} },
-                    v1: match from_str::<int>(*v1.get(0)) { Some(x) => {*vertices.get((x - 1) as uint)}, None => {fail!("Bad vertex")} },
-                    v2: match from_str::<int>(*v2.get(0)) { Some(x) => {*vertices.get((x - 1) as uint)}, None => {fail!("Bad vertex")} },
+                    v0: match from_str::<uint>(v0[0]) { Some(x) => {(vertices[x-1u as uint])}, None => {fail!("Bad vertex")} },
+                    v1: match from_str::<uint>(v1[0]) { Some(x) => {(vertices[x-1u as uint])}, None => {fail!("Bad vertex")} },
+                    v2: match from_str::<uint>(v2[0]) { Some(x) => {(vertices[x-1u as uint])}, None => {fail!("Bad vertex")} },
 
-                    n0: match from_str::<int>(*v0.get(2)) { Some(x) => {*normals.get((x - 1) as uint)}, None => {fail!("Bad normal")} },
-                    n1: match from_str::<int>(*v1.get(2)) { Some(x) => {*normals.get((x - 1) as uint)}, None => {fail!("Bad normal")} },
-                    n2: match from_str::<int>(*v2.get(2)) { Some(x) => {*normals.get((x - 1) as uint)}, None => {fail!("Bad normal")} },
+                    n0: match from_str::<uint>(v0[2]) { Some(x) => {(normals[x-1u as uint])}, None => {fail!("Bad normal")} },
+                    n1: match from_str::<uint>(v1[2]) { Some(x) => {(normals[x-1u as uint])}, None => {fail!("Bad normal")} },
+                    n2: match from_str::<uint>(v2[2]) { Some(x) => {(normals[x-1u as uint])}, None => {fail!("Bad normal")} },
 
                     u: u,
                     v: v,

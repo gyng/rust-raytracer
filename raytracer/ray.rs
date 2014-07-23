@@ -19,7 +19,7 @@ impl Ray {
                 let candidate_nodes = octree.get_intersection_objects(self);
 
                 for node in candidate_nodes.iter() {
-                    let prim = scene.prims.get(node.index);
+                    let prim = &scene.prims[node.index];
                     let intersection = prim.intersects(self, t_min, nearest_t);
 
                     nearest_hit = match intersection {

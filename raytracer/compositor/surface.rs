@@ -100,7 +100,7 @@ impl Surface {
     #[inline]
     pub fn get(&self, x: uint, y: uint) -> ColorRGBA {
         let idx = self.get_idx(x, y);
-        *self.buffer.get(idx)
+        self.buffer[idx]
     }
 
     #[inline]
