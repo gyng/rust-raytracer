@@ -2,6 +2,7 @@ use std::io::{BufferedReader, File};
 use material::materials::CookTorranceMaterial;
 use geometry::{Mesh, Prim};
 use geometry::prims::Triangle;
+use raytracer::compositor::{Surface, ColorRGBA};
 use vec3::Vec3;
 
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
@@ -136,5 +137,50 @@ fn get_string_index(i: &str, vec: &Vec<Vec3>) -> Vec3 {
     match from_str::<uint>(i) {
         Some(x) => vec[x-1u as uint],
         None => fail!("Bad index")
+    }
+}
+
+
+#[allow(dead_code)]
+pub fn from_ppm(filename: &str) -> Surface {
+    let path = Path::new(filename);
+    let mut file = BufferedReader::new(File::open(&path));
+
+    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => fail!(e) };
+    let mut tokens: Vec<&str> = tex.as_slice().words().collect();
+
+    tokens.shift(); // PPM type
+    let width  = match tokens.shift() { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
+    let height = match tokens.shift() { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
+    tokens.shift(); // Max color value
+
+    print!("Importing image texture {}", filename);
+    println!(" {}x{}", width, height);
+
+    let mut surface = Surface::new(width, height, ColorRGBA::new_rgb(0, 0, 0));
+
+    let mut i = 0u;
+
+    for chunk in tokens.as_slice().chunks(3) {
+        let x = i % width;
+        let y = i / width;
+        i += 1;
+
+        if x >= width || y >= height { break };
+
+        *surface.get_mut(x, y) = ColorRGBA::new_rgb(
+            uint_from_string(chunk[0]) as u8,
+            uint_from_string(chunk[1]) as u8,
+            uint_from_string(chunk[2]) as u8
+        );
+    }
+
+    surface
+}
+
+fn uint_from_string(s: &str) -> uint {
+     match from_str::<uint>(s) {
+        Some(x) => x,
+        None => fail!("Bad uint string {}", s)
     }
 }

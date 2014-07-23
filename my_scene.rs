@@ -31,7 +31,8 @@ pub fn get_scene() -> Scene {
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
 
     let checker: Box<Texture+Send+Share> = box CheckerTexture{color1: Vec3::one(), color2: Vec3 {x: 0.8, y: 0.1, z: 0.1}, scale: 16.0};
-
+    // let wood: Box<Texture+Send+Share> = box ImageTexture {image: ::util::import::from_ppm("./docs/models/wood.ppm")};
+    // let wood_mat     = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(wood.clone())};
     let checker_grey = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone())};
     let grey         = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
     let blue         = CookTorranceMaterial {k_a: 0.0, k_d: 0.3, k_s: 0.7, k_sg: 0.0, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 0.1, y: 0.1, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};

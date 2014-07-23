@@ -16,7 +16,9 @@ pub mod materials {
 pub mod textures {
     pub use self::checkertexture::CheckerTexture;
     pub use self::uvtexture::UVTexture;
+    pub use self::imagetexture::ImageTexture;
 
     mod checkertexture;
     mod uvtexture;
+    mod imagetexture;
 }

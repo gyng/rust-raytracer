@@ -3,6 +3,7 @@ use std::cmp::min;
 
 use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
+#[deriving(Clone)]
 pub struct Surface {
     pub width: uint,
     pub height: uint,
