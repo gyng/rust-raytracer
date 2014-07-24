@@ -30,11 +30,10 @@ impl ImageTexture {
 
 impl Texture for ImageTexture {
     fn color(&self, u: f64, v: f64) -> Vec3 {
-        // Don't want any out-of-bounds during bilinear filtering
+        // Avoid out-of-bounds during bilinear filtering
         let s = u % 1.0 * (self.image.width as f64 - 1.0);
         let t = v % 1.0 * (self.image.height as f64 - 1.0);
 
-        // Get nearest neighbours for bilinear filtering (avoiding edges)
         let x = s.floor() as uint;
         let y = t.floor() as uint;
         let u_ratio = s - x as f64;

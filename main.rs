@@ -52,7 +52,7 @@ fn main() {
     let renderer = raytracer::Renderer {
         reflect_depth: 4,          // 1 = no reflection, only surface shading. (4)
         refract_depth: 6,          // Going in and out of one object takes two refracts. (6)
-        shadow_samples: 64,         // For soft shadows. 0 for no shadows. (64)
+        shadow_samples: 64,        // For soft shadows. 0 for no shadows. (64)
         pixel_samples: 2,          // 2 * 2 = 4 samples per pixel (2)
         tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };

@@ -23,7 +23,6 @@ impl CubeMap {
 
     #[allow(dead_code)]
     pub fn color(&self, dir: Vec3) -> Vec3 {
-        // Select cube face
         let x_mag = dir.x.abs();
         let y_mag = dir.y.abs();
         let z_mag = dir.z.abs();
