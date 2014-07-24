@@ -50,8 +50,9 @@ impl CubeMap {
         }
 
         // [-1..1] -> [0..1]
-        s = s * 0.5 + 0.5;
-        t = t * 0.5 + 0.5;
+        let seam_delta = 0.0001;
+        s = (s * 0.5 + 0.5).max(seam_delta).min(1.0 - seam_delta);
+        t = (t * 0.5 + 0.5).max(seam_delta).min(1.0 - seam_delta);
 
         self.faces[face].sample(s, t)
     }
