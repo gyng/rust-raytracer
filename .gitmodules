@@ -1,3 +1,0 @@
-[submodule "docs/models"]
-	path = docs/models
-	url = https://github.com/gyng/raytracer-models-obj.git
