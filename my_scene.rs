@@ -109,12 +109,12 @@ pub fn get_bunny_scene() -> Scene {
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
         octree: None,
         skybox: Some(CubeMap::load(
-            "./docs/assets/textures/skyboxes/storm/left.ppm",
-            "./docs/assets/textures/skyboxes/storm/right.ppm",
-            "./docs/assets/textures/skyboxes/storm/back.ppm",
-            "./docs/assets/textures/skyboxes/storm/front.ppm",
-            "./docs/assets/textures/skyboxes/storm/down.ppm",
-            "./docs/assets/textures/skyboxes/storm/up.ppm"
+            "./docs/assets/textures/skyboxes/storm_z_up/left.ppm",
+            "./docs/assets/textures/skyboxes/storm_z_up/right.ppm",
+            "./docs/assets/textures/skyboxes/storm_z_up/back.ppm",
+            "./docs/assets/textures/skyboxes/storm_z_up/front.ppm",
+            "./docs/assets/textures/skyboxes/storm_z_up/down.ppm",
+            "./docs/assets/textures/skyboxes/storm_z_up/up.ppm"
         ))
     }
 }
@@ -153,7 +153,14 @@ pub fn get_teapot_scene() -> Scene {
         prims: prims,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
         octree: Some(octree),
-        skybox: None
+        skybox: Some(CubeMap::load(
+            "./docs/assets/textures/skyboxes/miramar_y_up/left.ppm",
+            "./docs/assets/textures/skyboxes/miramar_y_up/right.ppm",
+            "./docs/assets/textures/skyboxes/miramar_y_up/down.ppm",
+            "./docs/assets/textures/skyboxes/miramar_y_up/up.ppm",
+            "./docs/assets/textures/skyboxes/miramar_y_up/front.ppm",
+            "./docs/assets/textures/skyboxes/miramar_y_up/back.ppm"
+        ))
     }
 }
 
@@ -215,10 +222,10 @@ pub fn get_lucy_scene() -> Scene {
     lights.push(box SphereLight {position: Vec3 {x: -1400.0, y: 200.0, z: 100.0}, color: Vec3 {x: 1.0, y: 0.8, z: 0.4}, radius: 50.0});
 
     let grey  = CookTorranceMaterial {k_a: 0.0, k_d: 0.5, k_s: 0.5, k_sg: 0.5, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.65}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let ground = CookTorranceMaterial {k_a: 0.0, k_d: 0.5, k_s: 0.5, k_sg: 0.2, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.3, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.43, y: 0.38, z: 0.33}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    // let ground = CookTorranceMaterial {k_a: 0.0, k_d: 0.5, k_s: 0.5, k_sg: 0.2, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.3, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.43, y: 0.38, z: 0.33}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
-    prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 600.0, material: box ground});
+    // prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 600.0, material: box ground});
     let lucy = ::util::import::from_obj(Vec3::zero(), 1.0, grey, true, "./docs/assets/models/lucy.obj");
     for triangle in lucy.triangles.move_iter() { prims.push(triangle); }
 
@@ -232,13 +239,62 @@ pub fn get_lucy_scene() -> Scene {
         background: Vec3 {x: 0.84, y: 0.34, z: 0.0},
         octree: Some(octree),
         skybox: Some(CubeMap::load(
-            "./docs/assets/textures/skyboxes/storm/left.ppm",
-            "./docs/assets/textures/skyboxes/storm/right.ppm",
-            "./docs/assets/textures/skyboxes/storm/back.ppm",
-            "./docs/assets/textures/skyboxes/storm/front.ppm",
-            "./docs/assets/textures/skyboxes/storm/down.ppm",
-            "./docs/assets/textures/skyboxes/storm/up.ppm"
+            "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/down.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/up.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/front.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/back.ppm"
         ))
     }
 }
 
+// Skybox test scene
+#[allow(dead_code)]
+pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
+    Camera::new(
+        Vec3 {x: 0.0, y: 0.0, z: 10.0},
+        Vec3 {x: 0.0, y: 0.0, z: 0.0},
+        Vec3 {x: 0.0, y: 1.0, z: 0.0},
+        30.0,
+        image_width,
+        image_height
+    )
+
+    // Different up vectors
+
+    // Camera::new(
+    //     Vec3 {x: 0.0, y: 0.0, z: 10.0},
+    //     Vec3 {x: 0.0, y: 0.0, z: 0.0},
+    //     Vec3 {x: 0.0, y: 0.0, z: 1.0},
+    //     30.0,
+    //     image_width,
+    //     image_height
+    // )
+}
+
+#[allow(dead_code)]
+pub fn get_sphere_scene() -> Scene {
+    let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
+    lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
+
+    let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let shiny = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 0.0, k_sg: 0.8, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
+    prims.push(box Sphere {center: Vec3::zero(), radius: 2.0, material: box shiny});
+
+    // For y as up
+    Scene {
+        lights: lights,
+        prims: prims,
+        background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
+        octree: None,
+        skybox: Some(CubeMap::load(
+            "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/down.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/up.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/front.ppm",
+            "./docs/assets/textures/skyboxes/storm_y_up/back.ppm"
+        ))
+    }
+}

@@ -29,7 +29,7 @@ fn main() {
     // let camera = my_scene::get_bunny_camera(image_width, image_height);
     // let scene = my_scene::get_bunny_scene();
 
-    // Around 2500 polygons. Octree helps a bit.
+    // Around 2500 polygons. Octree helps a bit. Has skybox.
     // let camera = my_scene::get_teapot_camera(image_width, image_height);
     // let scene = my_scene::get_teapot_scene();
 
@@ -38,18 +38,22 @@ fn main() {
     // let scene = my_scene::get_cow_scene();
 
     // Around 525814+1 primitives. Octree pretty much required. The model is included
-    // separately, in another repository.
+    // separately, in another repository. Has skybox.
     // let camera = my_scene::get_lucy_camera(image_width, image_height);
     // let scene = my_scene::get_lucy_scene();
+
+    // Sphere skybox test scene
+    // let camera = my_scene::get_sphere_camera(image_width, image_height);
+    // let scene = my_scene::get_sphere_scene();
 
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
 
     let renderer = raytracer::Renderer {
-        reflect_depth: 4,
-        refract_depth: 6,
-        shadow_samples: 64,
-        pixel_samples: 2, // 2 * 2 = 4 samples per pixel
+        reflect_depth: 4,          // 1 = no reflection, only surface shading. (4)
+        refract_depth: 6,          // Going in and out of one object takes two refracts. (6)
+        shadow_samples: 64,         // For soft shadows. 0 for no shadows. (64)
+        pixel_samples: 2,          // 2 * 2 = 4 samples per pixel (2)
         tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };
     println!("Rendering with {} tasks...", renderer.tasks);
