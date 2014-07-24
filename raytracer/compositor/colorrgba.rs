@@ -1,4 +1,5 @@
 use std::cmp::{min, max, Ord};
+use vec3::Vec3;
 
 pub struct ColorRGBA {
     pub r: u8,
@@ -50,5 +51,14 @@ impl ColorRGBA {
 
     pub fn new_rgba(r: u8, g: u8, b: u8, a: u8) -> ColorRGBA {
         ColorRGBA { r: r, g: g, b: b, a: a }
+    }
+
+    // Here until we have vec operations (add, mul) for color
+    pub fn as_vec3(&self) -> Vec3 {
+        Vec3 {
+            x: self.r as f64 / 255.0,
+            y: self.g as f64 / 255.0,
+            z: self.b as f64 / 255.0
+        }
     }
 }

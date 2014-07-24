@@ -3,7 +3,7 @@ use material::Texture;
 use raytracer::compositor::Surface;
 
 
-/// Maps the supplied (u, v) coordinate to the image.
+/// Maps the supplied (u, v) coordinate to the image (s, t).
 #[deriving(Clone)]
 pub struct ImageTexture {
     pub image: Surface
@@ -16,7 +16,9 @@ impl ImageTexture {
         ImageTexture {image: ::util::import::from_ppm(filename)}
     }
 
-    // Alias
+    // Alias, used by skybox sampling. This is needed because we aren't storing the skybox ImageTextures
+    // as a more generic Texture (vec of objects with the Texture trait). We need an ImageTexture-specific
+    // function to call.
     pub fn sample(&self, u: f64, v: f64) -> Vec3 {
         self.color(u, v)
     }
@@ -24,14 +26,21 @@ impl ImageTexture {
 
 
 impl Texture for ImageTexture {
-    // Simple point sampling
-    // TODO: Bilinear sampling
     fn color(&self, u: f64, v: f64) -> Vec3 {
-        let s = (u % 1.0 * self.image.width as f64) as uint;
-        let t = (v % 1.0 * self.image.height as f64) as uint;
+        // Don't want any out-of-bounds during bilinear filtering
+        let s = u % 1.0 * (self.image.width as f64 - 1.0);
+        let t = v % 1.0 * (self.image.height as f64 - 1.0);
 
-        let color = self.image.get(s, t);
-        Vec3 {x: color.r as f64 / 255.0, y: color.g as f64 / 255.0, z: color.b as f64 / 255.0}
+        // Get nearest neighbours for bilinear filtering (avoiding edges)
+        let x = s.floor() as uint;
+        let y = t.floor() as uint;
+        let u_ratio = s - x as f64;
+        let v_ratio = t - y as f64;
+        let u_opposite = 1.0 - u_ratio;
+        let v_opposite = 1.0 - v_ratio;
+
+        (self.image.get(x, y    ).as_vec3().scale(u_opposite) + self.image.get(x + 1, y    ).as_vec3().scale(u_ratio)).scale(v_opposite) +
+        (self.image.get(x, y + 1).as_vec3().scale(u_opposite) + self.image.get(x + 1, y + 1).as_vec3().scale(u_ratio)).scale(v_ratio)
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Share> {
