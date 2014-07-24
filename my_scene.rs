@@ -5,6 +5,7 @@ use light::lights::{SphereLight};
 use material::materials::{CookTorranceMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::CheckerTexture;
+use material::textures::CubeMap;
 use raytracer::Octree;
 use scene::{Camera, Scene};
 use vec3::Vec3;
@@ -62,7 +63,8 @@ pub fn get_scene() -> Scene {
         lights: lights,
         prims: prims,
         background: Vec3::one(),
-        octree: None
+        octree: None,
+        skybox: None
     }
 }
 
@@ -93,7 +95,7 @@ pub fn get_bunny_scene() -> Scene {
     prims.push(box Plane {a: 0.0, b: 0.0, c: 1.0, d: -10.0, material: box green});
     prims.push(box Sphere {center: Vec3 {x: -75.0, y: 60.0, z: 50.0}, radius: 40.0, material: box shiny.clone()});
     prims.push(box Sphere {center: Vec3 {x: -75.0, y: 60.0, z: 140.0}, radius: 40.0, material: box shiny.clone()});
-    let bunny = ::util::import::from_obj(Vec3::zero(), 1.0, red, false, "./docs/models/bunny.obj");
+    let bunny = ::util::import::from_obj(Vec3::zero(), 1.0, red, false, "./docs/assets/models/bunny.obj");
     for triangle in bunny.triangles.move_iter() { prims.push(triangle); }
 
     // Not complex enough to benefit from an octree
@@ -105,7 +107,15 @@ pub fn get_bunny_scene() -> Scene {
         lights: lights,
         prims: prims,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: None
+        octree: None,
+        skybox: Some(CubeMap::load(
+            "./docs/assets/textures/skyboxes/storm/left.ppm",
+            "./docs/assets/textures/skyboxes/storm/right.ppm",
+            "./docs/assets/textures/skyboxes/storm/back.ppm",
+            "./docs/assets/textures/skyboxes/storm/front.ppm",
+            "./docs/assets/textures/skyboxes/storm/down.ppm",
+            "./docs/assets/textures/skyboxes/storm/up.ppm"
+        ))
     }
 }
 
@@ -127,12 +137,11 @@ pub fn get_teapot_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
 
-    let red   = CookTorranceMaterial {k_a: 0.0, k_d: 0.4, k_s: 0.5, k_sg: 0.4, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 0.25, z: 0.1}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let green = CookTorranceMaterial {k_a: 0.0, k_d: 0.5, k_s: 0.5, k_sg: 0.2, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.3, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.2, y: 0.7, z: 0.2}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let red   = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 0.7, k_sg: 0.7, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 0.25, z: 0.1}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
-    prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box green});
-    let teapot = ::util::import::from_obj(Vec3::zero(), 5.0, red, false, "./docs/models/teapot.obj");
+    // prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box green});
+    let teapot = ::util::import::from_obj(Vec3::zero(), 5.0, red, false, "./docs/assets/models/teapot.obj");
     for triangle in teapot.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
@@ -143,7 +152,8 @@ pub fn get_teapot_scene() -> Scene {
         lights: lights,
         prims: prims,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: Some(octree)
+        octree: Some(octree),
+        skybox: None
     }
 }
 
@@ -170,7 +180,7 @@ pub fn get_cow_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 3.6, material: box green});
-    let cow = ::util::import::from_obj(Vec3::zero(), 1.0, red, true, "./docs/models/cow.obj");
+    let cow = ::util::import::from_obj(Vec3::zero(), 1.0, red, true, "./docs/assets/models/cow.obj");
     for triangle in cow.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
@@ -181,7 +191,8 @@ pub fn get_cow_scene() -> Scene {
         lights: lights,
         prims: prims,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: Some(octree)
+        octree: Some(octree),
+        skybox: None
     }
 }
 
@@ -208,7 +219,7 @@ pub fn get_lucy_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     prims.push(box Plane {a: 0.0, b: 1.0, c: 0.0, d: 600.0, material: box ground});
-    let lucy = ::util::import::from_obj(Vec3::zero(), 1.0, grey, true, "./docs/models/lucy.obj");
+    let lucy = ::util::import::from_obj(Vec3::zero(), 1.0, grey, true, "./docs/assets/models/lucy.obj");
     for triangle in lucy.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
@@ -219,7 +230,15 @@ pub fn get_lucy_scene() -> Scene {
         lights: lights,
         prims: prims,
         background: Vec3 {x: 0.84, y: 0.34, z: 0.0},
-        octree: Some(octree)
+        octree: Some(octree),
+        skybox: Some(CubeMap::load(
+            "./docs/assets/textures/skyboxes/storm/left.ppm",
+            "./docs/assets/textures/skyboxes/storm/right.ppm",
+            "./docs/assets/textures/skyboxes/storm/back.ppm",
+            "./docs/assets/textures/skyboxes/storm/front.ppm",
+            "./docs/assets/textures/skyboxes/storm/down.ppm",
+            "./docs/assets/textures/skyboxes/storm/up.ppm"
+        ))
     }
 }
 

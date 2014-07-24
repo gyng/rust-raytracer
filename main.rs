@@ -24,7 +24,8 @@ fn main() {
     let camera = my_scene::get_camera(image_width, image_height);
     let scene = my_scene::get_scene();
 
-    // Around 300 primitives, 2 lights. No octree.
+    // Around 300 primitives, 2 lights. No octree. Has skybox, textures are
+    // in another repository.
     // let camera = my_scene::get_bunny_camera(image_width, image_height);
     // let scene = my_scene::get_bunny_scene();
 
@@ -48,7 +49,7 @@ fn main() {
         reflect_depth: 4,
         refract_depth: 6,
         shadow_samples: 64,
-        pixel_samples: 2,          // 2 * 2 = 4 samples per pixel
+        pixel_samples: 2, // 2 * 2 = 4 samples per pixel
         tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };
     println!("Rendering with {} tasks...", renderer.tasks);

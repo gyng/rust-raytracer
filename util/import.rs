@@ -146,7 +146,7 @@ pub fn from_ppm(filename: &str) -> Surface {
     let path = Path::new(filename);
     let mut file = BufferedReader::new(File::open(&path));
 
-    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => fail!(e) };
+    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => { println!("Could not open {}", filename); fail!(e) }};
     let mut tokens: Vec<&str> = tex.as_slice().words().collect();
 
     tokens.shift(); // PPM type

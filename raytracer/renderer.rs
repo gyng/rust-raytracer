@@ -220,7 +220,12 @@ impl Renderer {
                 result
             }
 
-            None => {scene.background}
+            None => {
+                match scene.skybox {
+                    Some(ref skybox) => skybox.color(ray.direction),
+                    None => scene.background
+                }
+            }
         }
     }
 }

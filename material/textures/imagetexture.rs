@@ -10,6 +10,19 @@ pub struct ImageTexture {
 }
 
 
+impl ImageTexture {
+    #[allow(dead_code)]
+    pub fn load(filename: &str) -> ImageTexture {
+        ImageTexture {image: ::util::import::from_ppm(filename)}
+    }
+
+    // Alias
+    pub fn sample(&self, u: f64, v: f64) -> Vec3 {
+        self.color(u, v)
+    }
+}
+
+
 impl Texture for ImageTexture {
     // Simple point sampling
     // TODO: Bilinear sampling
