@@ -2,6 +2,9 @@ use vec3::Vec3;
 use material::Texture;
 use raytracer::compositor::Surface;
 
+#[cfg(test)]
+use raytracer::compositor::ColorRGBA;
+
 
 /// Maps the supplied (u, v) coordinate to the image (s, t).
 #[deriving(Clone)]
@@ -49,4 +52,27 @@ impl Texture for ImageTexture {
         };
         tex
     }
+}
+
+#[test]
+fn it_bilinearly_filters() {
+    let background: ColorRGBA = ColorRGBA::new_rgb(0, 0, 0);
+    let mut surface = Surface::new(2, 2, background);
+
+    *surface.get_mut(0, 0) = ColorRGBA::new_rgb(255, 0, 0);
+    *surface.get_mut(0, 1) = ColorRGBA::new_rgb(0, 255, 0);
+    *surface.get_mut(1, 0) = ColorRGBA::new_rgb(0, 0, 255);
+    *surface.get_mut(1, 1) = ColorRGBA::new_rgb(0, 0, 0);
+
+    let texture = ImageTexture { image: surface };
+
+    let left = texture.color(0.0, 0.5);
+    assert_eq!(left.x, 0.5);
+    assert_eq!(left.y, 0.5);
+    assert_eq!(left.z, 0.0);
+
+    let center = texture.color(0.5, 0.5);
+    assert_eq!(center.x, 0.25);
+    assert_eq!(center.y, 0.25);
+    assert_eq!(center.z, 0.25);
 }
