@@ -13,7 +13,6 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 4. Load the scene/camera in main.rs, and send it to the renderer (already done for default scene)
 5. Compile: `rustc main.rs`
 6. Run compiled program
-
 7. To update (assets) submodules only: `git submodule foreach git pull`
 
 ## Features
