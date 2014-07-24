@@ -8,15 +8,15 @@ pub struct CubeMap {
 
 impl CubeMap {
     #[allow(dead_code)]
-    pub fn load(front: &str, back: &str, up: &str, down: &str, left: &str, right: &str) -> CubeMap {
+    pub fn load(x: &str, x_neg: &str, y: &str, y_neg: &str, z: &str, z_neg: &str) -> CubeMap {
         CubeMap {
             faces: vec![
-                ImageTexture {image: ::util::import::from_ppm(front)}, // +x
-                ImageTexture {image: ::util::import::from_ppm(back)},  // -x
-                ImageTexture {image: ::util::import::from_ppm(up)},    // +y
-                ImageTexture {image: ::util::import::from_ppm(down)},  // -y
-                ImageTexture {image: ::util::import::from_ppm(left)},  // +z
-                ImageTexture {image: ::util::import::from_ppm(right)}  // -z
+                ImageTexture::load(x),
+                ImageTexture::load(x_neg),
+                ImageTexture::load(y),
+                ImageTexture::load(y_neg),
+                ImageTexture::load(z),
+                ImageTexture::load(z_neg)
             ]
         }
     }
@@ -48,8 +48,6 @@ impl CubeMap {
             s = dir.x / dir.z;
             t = dir.y / dir.z;
         }
-
-        // println!("skybox coords {} {}", s, t);
 
         // [-1..1] -> [0..1]
         s = s * 0.5 + 0.5;
