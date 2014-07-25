@@ -170,6 +170,10 @@ impl Renderer {
                                             }
                                             None => {}
                                         }
+
+                                        // Exit early if we are already black; we can't any go darker than black
+                                        // How much more black could this be? None more black.
+                                        if sample_shadow.x + sample_shadow.y + sample_shadow.z <= epsilon { break; }
                                     }
 
                                     shadow = shadow + sample_shadow;
@@ -178,7 +182,7 @@ impl Renderer {
                                     shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
                                         let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
                                         match occlusion {
-                                            Some(occlusion) => {shadow_acc * occlusion.material.transmission()}
+                                            Some(occlusion) => shadow_acc * occlusion.material.transmission(),
                                             None => shadow_acc
                                         }
                                     });
