@@ -8,7 +8,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 ## Usage
 
 1. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models and textures into the project directory as well.
-2. Convert PNG textures into PPM by running appropriate scripts (`ruby ./all_to_ppm.rb` in `./docs/textures/skyboxes/`)
+2. Convert PNG textures into PPM by running appropriate scripts (`ruby ./all_to_ppm.rb` in `./docs/assets/textures/skyboxes/`)
 3. Scenes are created in `my_scene.rs`
 4. Load the scene/camera in main.rs, and send it to the renderer (already done for default scene)
 5. Compile: `rustc main.rs`
