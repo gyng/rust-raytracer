@@ -149,10 +149,10 @@ pub fn from_ppm(filename: &str) -> Surface {
     let tex = match file.read_to_string() { Ok(f) => f, Err(e) => { println!("Could not open {}", filename); fail!(e) }};
     let mut tokens: Vec<&str> = tex.as_slice().words().collect();
 
-    tokens.shift(); // PPM type
-    let width  = match tokens.shift() { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
-    let height = match tokens.shift() { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
-    tokens.shift(); // Max color value
+    tokens.remove(0); // PPM type
+    let width  = match tokens.remove(0) { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
+    let height = match tokens.remove(0) { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
+    tokens.remove(0); // Max color value
 
     print!("Importing image texture {}", filename);
     println!(" {}x{}", width, height);
