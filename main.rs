@@ -42,6 +42,10 @@ fn main() {
     // let camera = my_scene::get_lucy_camera(image_width, image_height);
     // let scene = my_scene::get_lucy_scene();
 
+    // Around 28K triangles, but more complex than Lucy. Sponza.
+    // let camera = my_scene::get_sponza_camera(image_width, image_height);
+    // let scene = my_scene::get_sponza_scene();
+
     // Sphere skybox test scene
     // let camera = my_scene::get_sphere_camera(image_width, image_height);
     // let scene = my_scene::get_sphere_scene();
