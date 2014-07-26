@@ -98,7 +98,7 @@ impl Octree {
                 // Occupied leaf node and not max depth: subdivide node
                 if self.is_leaf() && self.data.len() == 1 {
                     self.subdivide();
-                    let old = match self.data.shift() {
+                    let old = match self.data.remove(0) {
                         Some(x) => {x},
                         None => {fail!("Trying to subdivide empty node in octree insertion")}
                     };
