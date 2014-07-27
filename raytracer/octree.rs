@@ -1,9 +1,10 @@
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
-use raytracer::Ray;
+use raytracer::{Ray, PrimContainer};
 use vec3::Vec3;
 
 pub struct Octree {
+    pub prims: Option<Vec<Box<Prim+Send+Share>>>,
     pub bbox: BBox,
     pub depth: int,
     pub children: Vec<Octree>,
@@ -25,6 +26,7 @@ impl Octree {
         let vec_infinite_data: Vec<OctreeData> = Vec::new();
 
         Octree {
+            prims: None,
             bbox: bbox,
             depth: depth,
             children: vec_children,
@@ -34,17 +36,18 @@ impl Octree {
     }
 
     #[allow(dead_code)]
-    pub fn new_from_prims(prims: &Vec<Box<Prim+Send+Share>>) -> Octree {
-        let bounds = get_bounds_from_objects(prims);
+    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Share>>) -> Octree {
+        let bounds = get_bounds_from_objects(&prims);
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
         let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
         println!("Octree maximum depth {}", depth);
         let mut octree = Octree::new(bounds, depth);
-
+        
         for i in range(0, prims.len()) {
             octree.insert(i, prims[i].bounding());
         }
+        octree.prims = Some(prims);
 
         octree
     }
@@ -115,7 +118,7 @@ impl Octree {
             }
 
             // Infinite object without bounds, this is added to
-            // all get_intersection_objects calls
+            // all get_intersection_indices calls
             None => {
                 self.infinite_data.push(OctreeData {index: index, bbox: None});
             }
@@ -124,7 +127,7 @@ impl Octree {
     }
 
     #[allow(dead_code)]
-    pub fn get_intersection_objects(&self, ray: &Ray) -> Vec<OctreeData> {
+    pub fn get_intersection_indices(&self, ray: &Ray) -> Vec<OctreeData> {
         if self.is_leaf() {
             self.data.clone()
         } else {
@@ -132,11 +135,28 @@ impl Octree {
 
             for child in self.children.iter() {
                 if child.bbox.intersects(ray) {
-                    objects = objects.append(child.get_intersection_objects(ray).as_slice());
+                    objects = objects.append(child.get_intersection_indices(ray).as_slice());
                 }
             }
 
             objects.append(self.infinite_data.as_slice())
         }
+    }
+}
+
+
+impl PrimContainer for Octree {
+    #[allow(dead_code)]
+    fn get_intersection_objects<'a>(&'a self, ray: &Ray) -> Vec<&'a Box<Prim+Send+Share>> {
+        let octree_data = self.get_intersection_indices(ray);
+        let mut borrowed_prims: Vec<&Box<Prim+Send+Share>> = Vec::new();
+        let prims: &Vec<Box<Prim+Send+Share>> = match self.prims {
+            Some(ref prims) => prims,
+            None => fail!("get_intersection_objects may only be called on the root")
+        };
+        for datum in octree_data.iter() {
+            borrowed_prims.push(&prims[datum.index]);
+        }
+        borrowed_prims
     }
 }

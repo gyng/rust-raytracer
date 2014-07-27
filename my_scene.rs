@@ -7,8 +7,10 @@ use material::Texture;
 use material::textures::CheckerTexture;
 use material::textures::CubeMap;
 use raytracer::Octree;
+use raytracer::VecPrimContainer;
 use scene::{Camera, Scene};
 use vec3::Vec3;
+
 // use light::Lights::{PointLight, SphereLight}; // All lights
 // use material::Materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial}; // All materials
 // use material::material::{CheckerTexture, UVTexture}; // All textures
@@ -56,14 +58,13 @@ pub fn get_scene() -> Scene {
 
     // Not complex enough to benefit from an octree
     // println!("Generating octree...");
-    // let octree = Octree::new_from_prims(&prims);
+    // let octree = Octree::new_from_prims(prims);
     // println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box VecPrimContainer::new(prims),
         background: Vec3::one(),
-        octree: None,
         skybox: None
     }
 }
@@ -105,9 +106,8 @@ pub fn get_bunny_scene() -> Scene {
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box VecPrimContainer::new(prims),
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: None,
         skybox: Some(CubeMap::load(
             "./docs/assets/textures/skyboxes/storm_z_up/left.ppm",
             "./docs/assets/textures/skyboxes/storm_z_up/right.ppm",
@@ -145,14 +145,13 @@ pub fn get_teapot_scene() -> Scene {
     for triangle in teapot.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(&prims);
+    let octree = Octree::new_from_prims(prims);
     println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box octree,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: Some(octree),
         skybox: Some(CubeMap::load(
             "./docs/assets/textures/skyboxes/miramar_y_up/left.ppm",
             "./docs/assets/textures/skyboxes/miramar_y_up/right.ppm",
@@ -191,14 +190,13 @@ pub fn get_cow_scene() -> Scene {
     for triangle in cow.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(&prims);
+    let octree = Octree::new_from_prims(prims);
     println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box octree,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: Some(octree),
         skybox: None
     }
 }
@@ -230,14 +228,13 @@ pub fn get_lucy_scene() -> Scene {
     for triangle in lucy.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(&prims);
+    let octree = Octree::new_from_prims(prims);
     println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box octree,
         background: Vec3 {x: 0.84, y: 0.34, z: 0.0},
-        octree: Some(octree),
         skybox: Some(CubeMap::load(
             "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
             "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
@@ -289,14 +286,13 @@ pub fn get_sponza_scene() -> Scene {
     for triangle in sponza_cloth.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(&prims);
+    let octree = Octree::new_from_prims(prims);
     println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prims: prims,
+        prim_strat: box octree,
         background: Vec3 {x: 0.84, y: 0.34, z: 0.0},
-        octree: Some(octree),
         skybox: Some(CubeMap::load(
             "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
             "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
@@ -344,9 +340,8 @@ pub fn get_sphere_scene() -> Scene {
     // For y as up
     Scene {
         lights: lights,
-        prims: prims,
         background: Vec3 {x: 0.3, y: 0.5, z: 0.8},
-        octree: None,
+        prim_strat: box VecPrimContainer::new(prims),
         skybox: Some(CubeMap::load(
             "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
             "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
