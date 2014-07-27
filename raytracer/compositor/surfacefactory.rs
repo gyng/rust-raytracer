@@ -6,12 +6,13 @@ pub struct SurfaceFactory {
     pub height: uint,
     pub x_off: uint,
     pub y_off: uint,
-    pub background: ColorRGBA
+    pub background: ColorRGBA<u8>
 }
 
 
 impl SurfaceFactory {
-    pub fn new(width: uint, height: uint, x_off: uint, y_off: uint, background: ColorRGBA) -> SurfaceFactory {
+    pub fn new(width: uint, height: uint, x_off: uint, y_off: uint,
+               background: ColorRGBA<u8>) -> SurfaceFactory {
         SurfaceFactory {
             width: width,
             height: height,

@@ -9,14 +9,14 @@ pub struct Surface {
     pub height: uint,
     pub x_off: uint,
     pub y_off: uint,
-    pub background: ColorRGBA,
-    pub buffer: Vec<ColorRGBA>
+    pub background: ColorRGBA<u8>,
+    pub buffer: Vec<ColorRGBA<u8>>,
 }
 
 
 #[allow(dead_code)]
 impl Surface {
-    pub fn new(width: uint, height: uint, background: ColorRGBA) -> Surface {
+    pub fn new(width: uint, height: uint, background: ColorRGBA<u8>) -> Surface {
         Surface {
             width: width,
             height: height,
@@ -28,7 +28,7 @@ impl Surface {
     }
 
     pub fn with_offset(width: uint, height: uint, x_off: uint, y_off: uint,
-                       background: ColorRGBA) -> Surface {
+                       background: ColorRGBA<u8>) -> Surface {
         Surface {
             width: width,
             height: height,
@@ -99,13 +99,13 @@ impl Surface {
     }
 
     #[inline]
-    pub fn get(&self, x: uint, y: uint) -> ColorRGBA {
+    pub fn get(&self, x: uint, y: uint) -> ColorRGBA<u8> {
         let idx = self.get_idx(x, y);
         self.buffer[idx]
     }
 
     #[inline]
-    pub fn get_mut<'a>(&'a mut self, x: uint, y: uint) -> &'a mut ColorRGBA {
+    pub fn get_mut<'a>(&'a mut self, x: uint, y: uint) -> &'a mut ColorRGBA<u8> {
         let idx = self.get_idx(x, y);
         self.buffer.get_mut(idx)
     }
@@ -119,7 +119,7 @@ struct SubsurfaceIterator {
     y_off: uint,
     parent_width: uint,
     parent_height: uint,
-    background: ColorRGBA,
+    background: ColorRGBA<u8>,
 }
 
 
@@ -164,7 +164,7 @@ fn test_measurement() {
     let width_tile = 128;
     let height_tile = 8;
 
-    let background: ColorRGBA = ColorRGBA::new_rgb(0, 0, 0);
+    let background: ColorRGBA<u8> = ColorRGBA::new_rgb(0, 0, 0);
     let surf: Surface = Surface::new(width, height, background);
 
     let mut total_pixels = 0;
@@ -185,7 +185,7 @@ fn test_paint_it_red() {
     let width_tile = 128;
     let height_tile = 8;
 
-    let background: ColorRGBA = ColorRGBA::new_rgb(0, 0, 0);
+    let background: ColorRGBA<u8> = ColorRGBA::new_rgb(0, 0, 0);
     let mut surf: Surface = Surface::new(width, height, background);
 
     for tile_factory in surf.divide(width_tile, height_tile) {

@@ -55,7 +55,7 @@ impl Texture for ImageTexture {
 
 #[test]
 fn it_bilinearly_filters() {
-    let background: ColorRGBA = ColorRGBA::new_rgb(0, 0, 0);
+    let background: ColorRGBA<u8> = ColorRGBA::new_rgb(0, 0, 0);
     let mut surface = Surface::new(2, 2, background);
 
     *surface.get_mut(0, 0) = ColorRGBA::new_rgb(255, 0, 0);
