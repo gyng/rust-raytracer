@@ -7,9 +7,13 @@ use raytracer::compositor::{
     SurfaceFactory,
     ColorRGBA
 };
-use raytracer::Ray;
+use raytracer::{Intersection, Ray};
+use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
+
+
+pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
 
 pub struct Renderer {
@@ -25,8 +29,8 @@ impl Renderer {
     pub fn render(&self, camera: Camera, scene: Scene) -> Surface {
 
         let mut surface = Surface::new(camera.image_width as uint,
-                                   camera.image_height as uint,
-                                   ColorRGBA::new_rgb(0, 0, 0));
+                                       camera.image_height as uint,
+                                       ColorRGBA::new_rgb(0, 0, 0));
 
         let shared_scene = Arc::new(scene);
         let (worker, stealer) = BufferPool::new().deque();
@@ -53,7 +57,7 @@ impl Renderer {
                                                                factory))
                         },
                         Empty => break,
-                        Abort => (),
+                        Abort => ()
                     }
                 }
             });
@@ -111,23 +115,17 @@ impl Renderer {
                         color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
-                *tile.get_mut(rel_x, rel_y) =
-                    ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
+                *tile.get_mut(rel_x, rel_y) = ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
             }
         }
 
         box tile
     }
 
-    fn trace(scene: &Scene,
-             ray: &Ray,
-             shadow_samples: uint,
-             reflect_depth: uint,
-             refract_depth: uint,
-             inside: bool)
-             -> Vec3 {
+    fn trace(scene: &Scene, ray: &Ray, shadow_samples: uint,
+             reflect_depth: uint, refract_depth: uint, inside: bool) -> Vec3 {
+
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
-        let epsilon = ::std::f64::EPSILON * 10000.0;
 
         match ray.get_nearest_hit(scene) {
             Some(nearest_hit) => {
@@ -136,67 +134,8 @@ impl Renderer {
 
                 // Local lighting computation: surface shading, shadows
                 let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
-                    let mut shadow = Vec3::zero();
-
-                    if shadow_samples > 0 {
-                        // Point light speedup
-                        let shadow_sample_tries = if light.is_point() { 1 } else { shadow_samples };
-
-                        // Take average shadow color after jittering/sampling light position
-                        for _ in range(0, shadow_sample_tries) {
-                            // L has to be a unit vector for t_max 1:1 correspondence to
-                            // distance to light to work. Shadow feelers only search up
-                            // until light source.
-                            let sampled_light_position = light.position();
-                            let shadow_l = (sampled_light_position - nearest_hit.position).unit();
-                            let shadow_ray = Ray {origin: nearest_hit.position, direction: shadow_l};
-                            let distance_to_light = (sampled_light_position - nearest_hit.position).len();
-
-                            // Check against candidate primitives in scene for occlusion
-                            // and multiply shadow color by occluders' shadow colors
-                            // TODO: Clean up
-                            match scene.octree {
-                                Some(ref octree) => {
-                                    let candidate_nodes = octree.get_intersection_objects(&shadow_ray);
-                                    let mut sample_shadow = Vec3::one();
-
-                                    for node in candidate_nodes.iter() {
-                                        let ref prim = scene.prims[node.index];
-                                        let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
-
-                                        match occlusion {
-                                            Some(occlusion) => {
-                                                sample_shadow = sample_shadow * occlusion.material.transmission()
-                                            }
-                                            None => {}
-                                        }
-
-                                        // Exit early if we are already black; we can't any go darker than black
-                                        // How much more black could this be? None more black.
-                                        if sample_shadow.x + sample_shadow.y + sample_shadow.z <= epsilon { break; }
-                                    }
-
-                                    shadow = shadow + sample_shadow;
-                                }
-                                None => {
-                                    shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
-                                        let occlusion = prim.intersects(&shadow_ray, epsilon, distance_to_light);
-                                        match occlusion {
-                                            Some(occlusion) => shadow_acc * occlusion.material.transmission(),
-                                            None => shadow_acc
-                                        }
-                                    });
-                                }
-                            }
-                        }
-
-                        shadow = shadow.scale(1.0 / shadow_sample_tries as f64);
-                    } else {
-                        shadow = Vec3::one();
-                    }
-
+                    let shadow = Renderer::shadow_intensity(scene, &nearest_hit, light, shadow_samples);
                     let l = (light.center() - nearest_hit.position).unit();
-
                     let u = nearest_hit.u;
                     let v = nearest_hit.v;
 
@@ -207,7 +146,8 @@ impl Renderer {
                 if nearest_hit.material.is_reflective() {
                     let r = Vec3::reflect(&i, &n);
                     let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
-                    let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples, reflect_depth - 1, refract_depth, inside);
+                    let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
+                                                     reflect_depth - 1, refract_depth, inside);
 
                     result = result + nearest_hit.material.global_specular(&reflection);
                 }
@@ -215,8 +155,9 @@ impl Renderer {
                 // Global refraction
                 if nearest_hit.material.is_refractive() {
                     let t = Vec3::refract(&i, &n, nearest_hit.material.ior(), inside);
-                    let refract_ray = Ray {origin: nearest_hit.position + t.scale(epsilon), direction: t};
-                    let refraction = Renderer::trace(scene, &refract_ray, shadow_samples, reflect_depth, refract_depth, !inside);
+                    let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
+                    let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
+                                                     reflect_depth, refract_depth, !inside);
 
                     result = result + nearest_hit.material.global_transmissive(&refraction);
                 }
@@ -231,5 +172,62 @@ impl Renderer {
                 }
             }
         }
+    }
+
+    fn shadow_intensity(scene: &Scene, nearest_hit: &Intersection,
+                        light: &Box<Light+Send+Share>, shadow_samples: uint) -> Vec3 {
+
+        if shadow_samples <= 0 { return Vec3::one(); }
+
+        // Point light speedup (no point in sampling a point light multiple times)
+        let shadow_sample_tries = if light.is_point() { 1 } else { shadow_samples };
+        let mut shadow = Vec3::zero();
+
+        // Take average shadow color after jittering/sampling light position
+        for _ in range(0, shadow_sample_tries) {
+            // L has to be a unit vector for t_max 1:1 correspondence to
+            // distance to light to work. Shadow feelers only search up
+            // until light source.
+            let sampled_light_position = light.position();
+            let shadow_l = (sampled_light_position - nearest_hit.position).unit();
+            let shadow_ray = Ray {origin: nearest_hit.position, direction: shadow_l};
+            let distance_to_light = (sampled_light_position - nearest_hit.position).len();
+
+            // Check against candidate primitives in scene for occlusion
+            // and multiply shadow color by occluders' shadow colors
+            // TODO: Clean up
+            match scene.octree {
+                Some(ref octree) => {
+                    let candidate_nodes = octree.get_intersection_objects(&shadow_ray);
+                    let mut sample_shadow = Vec3::one();
+
+                    for node in candidate_nodes.iter() {
+                        let ref prim = scene.prims[node.index];
+                        let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
+                        match occlusion {
+                            Some(occlusion) => sample_shadow = sample_shadow * occlusion.material.transmission(),
+                            None => {}
+                        }
+
+                        // Exit early if we are already black; we can't any go darker than black
+                        // How much more black could this be? None more black.
+                        if sample_shadow.x + sample_shadow.y + sample_shadow.z <= EPSILON { break; }
+                    }
+
+                    shadow = shadow + sample_shadow;
+                }
+                None => {
+                    shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
+                        let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
+                        match occlusion {
+                            Some(occlusion) => shadow_acc * occlusion.material.transmission(),
+                            None => shadow_acc
+                        }
+                    });
+                }
+            }
+        }
+
+        shadow.scale(1.0 / shadow_sample_tries as f64)
     }
 }
