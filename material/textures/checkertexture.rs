@@ -24,8 +24,11 @@ impl Texture for CheckerTexture {
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Share> {
-        let tex: Box<Texture+Send+Share> = box CheckerTexture {color1: self.color1, color2: self.color2, scale: self.scale};
-        tex
+        box CheckerTexture {
+            color1: self.color1,
+            color2: self.color2,
+            scale: self.scale
+        } as Box<Texture+Send+Share>
     }
 }
 
