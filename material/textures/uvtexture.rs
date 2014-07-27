@@ -17,9 +17,3 @@ impl Texture for UVTexture {
         tex
     }
 }
-
-impl Clone for Box<Texture+Send+Share> {
-    fn clone(&self) -> Box<Texture+Send+Share> {
-        self.clone_self()
-    }
-}
