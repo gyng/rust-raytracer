@@ -196,36 +196,17 @@ impl Renderer {
             // Check against candidate primitives in scene for occlusion
             // and multiply shadow color by occluders' shadow colors
             // TODO: Clean up
-            match scene.octree {
-                Some(ref octree) => {
-                    let candidate_nodes = octree.get_intersection_objects(&shadow_ray);
-                    let mut sample_shadow = Vec3::one();
 
-                    for node in candidate_nodes.iter() {
-                        let ref prim = scene.prims[node.index];
-                        let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
-                        match occlusion {
-                            Some(occlusion) => sample_shadow = sample_shadow * occlusion.material.transmission(),
-                            None => {}
-                        }
+            let candidate_nodes = scene.prim_strat.
+                get_intersection_objects(&shadow_ray);
 
-                        // Exit early if we are already black; we can't any go darker than black
-                        // How much more black could this be? None more black.
-                        if sample_shadow.x + sample_shadow.y + sample_shadow.z <= EPSILON { break; }
-                    }
-
-                    shadow = shadow + sample_shadow;
+            shadow = shadow + candidate_nodes.iter().fold(Vec3::one(), |shadow_acc, prim| {
+                let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
+                match occlusion {
+                    Some(occlusion) => shadow_acc * occlusion.material.transmission(),
+                    None => shadow_acc
                 }
-                None => {
-                    shadow = shadow + scene.prims.iter().fold(Vec3::one(), |shadow_acc, prim| {
-                        let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
-                        match occlusion {
-                            Some(occlusion) => shadow_acc * occlusion.material.transmission(),
-                            None => shadow_acc
-                        }
-                    });
-                }
-            }
+            });
         }
 
         shadow.scale(1.0 / shadow_sample_tries as f64)

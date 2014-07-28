@@ -13,7 +13,6 @@ impl Texture for UVTexture {
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Share> {
-        let tex: Box<Texture+Send+Share> = box UVTexture;
-        tex
+        box UVTexture as Box<Texture+Send+Share>
     }
 }

@@ -8,7 +8,7 @@ pub struct SurfaceIterator {
     y_off: uint,
     parent_width: uint,
     parent_height: uint,
-    background: ColorRGBA,
+    background: ColorRGBA<u8>,
 }
 
 

@@ -1,10 +1,11 @@
 use std::io::{File, Truncate, Write};
-use raytracer::compositor::Surface;
-use raytracer::compositor::colorrgba;
+use raytracer::compositor::{Surface, ColorRGBA};
 
 #[allow(unused_must_use)]
 pub fn to_ppm(surface: Surface, filename: &str) -> () {
-    let header = format!("P3 {} {} {}\n", surface.width, surface.height, colorrgba::consts::MAX_COLOR);
+    let header = format!(
+        "P3 {} {} {}\n", surface.width, surface.height,
+        ColorRGBA::max_value());
 
     let path = Path::new(filename);
     let mut f = match File::open_mode(&path, Truncate, Write) {
