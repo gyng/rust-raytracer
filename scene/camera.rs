@@ -1,4 +1,5 @@
 use raytracer::Ray;
+use raytracer::animator::CameraKeyframe;
 use vec3::Vec3;
 
 pub struct Camera {
@@ -14,7 +15,9 @@ pub struct Camera {
     pub half_width: f64,
     pub half_height: f64,
     pub pixel_width: f64,
-    pub pixel_height: f64
+    pub pixel_height: f64,
+
+    pub keyframes: Option<Vec<CameraKeyframe>>
 }
 
 impl Camera {
@@ -31,7 +34,8 @@ impl Camera {
             half_width: 0.0,
             half_height: 0.0,
             pixel_width: 0.0,
-            pixel_height: 0.0
+            pixel_height: 0.0,
+            keyframes: None
         };
 
         camera.update_eye_vector();
@@ -47,6 +51,19 @@ impl Camera {
                 self.right.scale(x * self.pixel_width - self.half_width) +
                 self.up.scale(y * self.pixel_height - self.half_height)).unit()
         }
+    }
+
+    pub fn update(&mut self, position: Vec3, look_at: Vec3, up: Vec3) {
+        self.position = position;
+        self.look_at = look_at;
+        self.up = up;
+
+        self.update_eye_vector();
+        // self.update_internal_sizes(); // fov, image dimensions unchanged
+    }
+
+    pub fn insert_keyframes(&mut self, keyframes: Vec<CameraKeyframe>) {
+        self.keyframes = Some(keyframes);
     }
 
     fn update_eye_vector(&mut self) -> () {
