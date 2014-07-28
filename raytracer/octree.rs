@@ -43,7 +43,7 @@ impl Octree {
         let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
         println!("Octree maximum depth {}", depth);
         let mut octree = Octree::new(bounds, depth);
-        
+
         for i in range(0, prims.len()) {
             octree.insert(i, prims[i].bounding());
         }
@@ -128,19 +128,19 @@ impl Octree {
 
     #[allow(dead_code)]
     pub fn get_intersection_indices(&self, ray: &Ray) -> Vec<OctreeData> {
-        if self.is_leaf() {
-            self.data.clone()
-        } else {
-            let mut objects: Vec<OctreeData> = Vec::new();
+        let mut objects: Vec<OctreeData> = Vec::new();
 
+        if self.is_leaf() {
+            objects = self.data.clone()
+        } else {
             for child in self.children.iter() {
                 if child.bbox.intersects(ray) {
                     objects = objects.append(child.get_intersection_indices(ray).as_slice());
                 }
             }
-
-            objects.append(self.infinite_data.as_slice())
         }
+
+        objects.append(self.infinite_data.as_slice())
     }
 }
 
