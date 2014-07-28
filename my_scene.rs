@@ -41,13 +41,13 @@ pub fn get_scene() -> Scene {
     let checker: Box<Texture+Send+Share> = box CheckerTexture{color1: Vec3::one(), color2: Vec3 {x: 0.8, y: 0.1, z: 0.1}, scale: 16.0};
     // let wood: Box<Texture+Send+Share> = box ImageTexture {image: ::util::import::from_ppm("./docs/models/wood.ppm")};
     // let wood_mat     = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(wood.clone())};
-    let checker_grey = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone())};
-    let grey         = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let blue         = CookTorranceMaterial {k_a: 0.0, k_d: 0.3, k_s: 0.7, k_sg: 0.0, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 {x: 0.1, y: 0.1, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let checker_grey = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5,  ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone())};
+    let grey         = CookTorranceMaterial {k_a: 0.0, k_d: 1.0, k_s: 1.0, k_sg: 0.0, k_tg: 0.0, gauss_constant: 1.0, roughness: 0.15, ior: 1.5,  ambient: Vec3::one(), diffuse: Vec3 {x: 0.6, y: 0.6, z: 0.6}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let blue         = CookTorranceMaterial {k_a: 0.0, k_d: 0.3, k_s: 0.7, k_sg: 0.0, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.3,  ambient: Vec3::one(), diffuse: Vec3 {x: 0.1, y: 0.1, z: 1.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
     let red          = PhongMaterial        {k_a: 0.0, k_d: 0.6, k_s: 0.4, k_sg: 1.0, k_tg: 0.0, shininess: 10.0,                      ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 0.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let green        = PhongMaterial        {k_a: 0.0, k_d: 0.9, k_s: 0.1, k_sg: 0.5, k_tg: 0.0, shininess: 10.0,                      ior: 0.4, ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 1.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let green        = PhongMaterial        {k_a: 0.0, k_d: 0.9, k_s: 0.1, k_sg: 0.5, k_tg: 0.0, shininess: 10.0,                      ior: 0.4,  ambient: Vec3::one(), diffuse: Vec3 {x: 0.0, y: 1.0, z: 0.0}, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
     let shiny        = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 0.15, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
-    let refract      = CookTorranceMaterial {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, ior: 3.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
+    let refract      = CookTorranceMaterial {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, ior: 3.0,  ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3 {x: 0.8, y: 0.8, z: 0.8}, diffuse_texture: None};
     // let refract      = CookTorranceMaterial {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 3.0, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
     // let refract      = PhongMaterial        {k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, shininess: 40.0,                      ior: 2.4, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3::one(), transmission: Vec3 {x: 0.8, y: 0.8, z: 0.8}, diffuse_texture: None};
 
@@ -315,25 +315,17 @@ pub fn get_sponza_scene() -> Scene {
 // Skybox test scene
 #[allow(dead_code)]
 pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
+    let up = Vec3 {x: 0.0, y: 1.0, z: 0.0}; // y-up
+    // let up = Vec3 {x: 0.0, y: 0.0, z: 1.0}; // z-up
+
     Camera::new(
         Vec3 {x: 0.0, y: 0.0, z: 10.0},
         Vec3 {x: 0.0, y: 0.0, z: 0.0},
-        Vec3 {x: 0.0, y: 1.0, z: 0.0},
+        up,
         30.0,
         image_width,
         image_height
     )
-
-    // Different up vectors
-
-    // Camera::new(
-    //     Vec3 {x: 0.0, y: 0.0, z: 10.0},
-    //     Vec3 {x: 0.0, y: 0.0, z: 0.0},
-    //     Vec3 {x: 0.0, y: 0.0, z: 1.0},
-    //     30.0,
-    //     image_width,
-    //     image_height
-    // )
 }
 
 #[allow(dead_code)]
@@ -342,7 +334,7 @@ pub fn get_sphere_scene() -> Scene {
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
-    let shiny = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 0.0, k_sg: 0.8, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.1, ior: 1.5, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
+    let shiny = CookTorranceMaterial {k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 0.05, ambient: Vec3::one(), diffuse: Vec3 {x: 1.0, y: 1.0, z: 1.0}, specular: Vec3 {x: 0.9, y: 0.9, z: 0.9}, transmission: Vec3::zero(), diffuse_texture: None};
     prims.push(box Sphere {center: Vec3::zero(), radius: 2.0, material: box shiny});
 
     // For y as up
