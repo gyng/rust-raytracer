@@ -39,10 +39,12 @@ impl ColorRGBA<u8> {
         ColorRGBA { r: r, g: g, b: b, a: a }
     }
 
+    #[allow(dead_code)]
     pub fn new_rgb(r: u8, g: u8, b: u8) -> ColorRGBA<u8> {
         ColorRGBA { r: r, g: g, b: b, a: ColorRGBA::max_value() }
     }
 
+    #[allow(dead_code)]
     pub fn black() -> ColorRGBA<u8> {
         ColorRGBA::new_rgba(
             ColorRGBA::min_value(),

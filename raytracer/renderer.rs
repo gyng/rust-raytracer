@@ -142,24 +142,40 @@ impl Renderer {
                     color_acc + light.color() * nearest_hit.material.sample(n, i, l, u, v) * shadow
                 });
 
-                // Global reflection
-                if nearest_hit.material.is_reflective() {
-                    let r = Vec3::reflect(&i, &n);
-                    let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
-                    let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
-                                                     reflect_depth - 1, refract_depth, inside);
 
-                    result = result + nearest_hit.material.global_specular(&reflection);
-                }
+                if nearest_hit.material.is_reflective() ||
+                   nearest_hit.material.is_refractive() {
 
-                // Global refraction
-                if nearest_hit.material.is_refractive() {
-                    let t = Vec3::refract(&i, &n, nearest_hit.material.ior(), inside);
-                    let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
-                    let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
-                                                     reflect_depth, refract_depth, !inside);
+                    let cos_angle = -ray.direction.dot(&n);
+                    let reflect_fresnel = Renderer::fresnel_reflect(nearest_hit.material.ior(), cos_angle);
+                    let mut refract_fresnel = 1.0 - reflect_fresnel;
 
-                    result = result + nearest_hit.material.global_transmissive(&refraction);
+                    // Global reflection
+                    if nearest_hit.material.is_reflective() {
+                        let r = Vec3::reflect(&i, &n);
+                        let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                        let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
+                                                         reflect_depth - 1, refract_depth, inside);
+
+                        result = result + nearest_hit.material.global_specular(&reflection).scale(reflect_fresnel);
+                    }
+
+                    // Global refraction
+                    if nearest_hit.material.is_refractive() {
+                        let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), inside) {
+                            Some(ref t) => *t,
+                            None => {
+                                refract_fresnel = 1.0; // Total internal reflection (TODO: check that this is working)
+                                Vec3::reflect(&i, &n)
+                            }
+                        };
+
+                        let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
+                        let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
+                                                         reflect_depth, refract_depth, !inside);
+
+                        result = result + nearest_hit.material.global_transmissive(&refraction).scale(refract_fresnel);
+                    }
                 }
 
                 result
@@ -210,5 +226,14 @@ impl Renderer {
         }
 
         shadow.scale(1.0 / shadow_sample_tries as f64)
+    }
+
+    /// Calculates the fresnel (reflectivity) given the index of refraction and the cos_angle
+    /// This uses Schlick's approximation. cos_angle is normal_dot_incoming
+    fn fresnel_reflect(ior: f64, cos_angle: f64) -> f64 {
+        let n1 = 1.0;
+        let n2 = ior;
+        let r0 = ((n1 - n2) / (n1 + n2)).powf(2.0);
+        r0 + (1.0 - r0) * (1.0 - cos_angle).powf(5.0)
     }
 }
