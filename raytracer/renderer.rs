@@ -172,7 +172,7 @@ impl Renderer {
 
                         let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
                         let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
-                                                         reflect_depth, refract_depth, !inside);
+                                                         reflect_depth, refract_depth - 1, !inside);
 
                         result = result + nearest_hit.material.global_transmissive(&refraction).scale(refract_fresnel);
                     }
