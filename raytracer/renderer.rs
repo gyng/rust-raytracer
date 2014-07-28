@@ -213,8 +213,7 @@ impl Renderer {
             // and multiply shadow color by occluders' shadow colors
             // TODO: Clean up
 
-            let candidate_nodes = scene.prim_strat.
-                get_intersection_objects(&shadow_ray);
+            let candidate_nodes = scene.prim_strat.get_intersection_objects(&shadow_ray);
 
             shadow = shadow + candidate_nodes.iter().fold(Vec3::one(), |shadow_acc, prim| {
                 let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);

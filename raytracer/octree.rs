@@ -1,13 +1,16 @@
+use std::slice::Items;
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
 use raytracer::{Ray, PrimContainer};
 use vec3::Vec3;
 
-pub struct Octree {
-    pub prims: Option<Vec<Box<Prim+Send+Share>>>,
+
+
+pub struct Octree<T> {
+    pub prims: Option<Vec<T>>,
     pub bbox: BBox,
     pub depth: int,
-    pub children: Vec<Octree>,
+    pub children: Vec<Octree<T>>,
     pub data: Vec<OctreeData>,
     pub infinite_data: Vec<OctreeData> // for infinite prims (planes)
 }
@@ -18,10 +21,10 @@ struct OctreeData {
     pub index: uint
 }
 
-impl Octree {
+impl<T> Octree<T> {
     #[allow(dead_code)]
-    pub fn new(bbox: BBox, depth: int) -> Octree {
-        let vec_children: Vec<Octree> = Vec::new();
+    pub fn new(bbox: BBox, depth: int) -> Octree<T> {
+        let vec_children: Vec<Octree<T>> = Vec::new();
         let vec_data: Vec<OctreeData> = Vec::new();
         let vec_infinite_data: Vec<OctreeData> = Vec::new();
 
@@ -33,27 +36,6 @@ impl Octree {
             data: vec_data,
             infinite_data: vec_infinite_data
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Share>>) -> Octree {
-        let bounds = get_bounds_from_objects(&prims);
-        // pbrt recommended max depth for a k-d tree (though, we're using an octree)
-        // For a k-d tree: 8 + 1.3 * log2(N)
-        let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
-        println!("Octree maximum depth {}", depth);
-        let mut octree = Octree::new(bounds, depth);
-
-        for i in range(0, prims.len()) {
-            octree.insert(i, prims[i].bounding());
-        }
-        octree.prims = Some(prims);
-
-        octree
-    }
-
-    fn is_leaf(&self) -> bool {
-        self.children.len() == 0
     }
 
     fn subdivide(&mut self) -> () {
@@ -102,8 +84,8 @@ impl Octree {
                 if self.is_leaf() && self.data.len() == 1 {
                     self.subdivide();
                     let old = match self.data.remove(0) {
-                        Some(x) => {x},
-                        None => {fail!("Trying to subdivide empty node in octree insertion")}
+                        Some(x) => x,
+                        None => fail!("Trying to subdivide empty node in octree insertion")
                     };
                     // Reinsert old node and then fall through to insert current object
                     self.insert(old.index, old.bbox);
@@ -123,40 +105,110 @@ impl Octree {
                 self.infinite_data.push(OctreeData {index: index, bbox: None});
             }
         }
-
     }
 
-    #[allow(dead_code)]
-    pub fn get_intersection_indices(&self, ray: &Ray) -> Vec<OctreeData> {
-        let mut objects: Vec<OctreeData> = Vec::new();
-
-        if self.is_leaf() {
-            objects = self.data.clone()
-        } else {
-            for child in self.children.iter() {
-                if child.bbox.intersects(ray) {
-                    objects = objects.append(child.get_intersection_indices(ray).as_slice());
-                }
-            }
-        }
-
-        objects.append(self.infinite_data.as_slice())
+    fn is_leaf(&self) -> bool {
+        self.children.len() == 0
     }
 }
 
+// TODO: sell: Prims can later implement a Bounded3D trait containing a method
+//             that returns Option<BBox>.  Some if finite, None if infinite.
+//             Then we can use impl<T: Bounded3D> Octree<Box<T>>, probably!
 
-impl PrimContainer for Octree {
+impl Octree<Box<Prim+Send+Share>> {
     #[allow(dead_code)]
-    fn get_intersection_objects<'a>(&'a self, ray: &Ray) -> Vec<&'a Box<Prim+Send+Share>> {
-        let octree_data = self.get_intersection_indices(ray);
-        let mut borrowed_prims: Vec<&Box<Prim+Send+Share>> = Vec::new();
+    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Share>>) -> Octree<Box<Prim+Send+Share>> {
+        let bounds = get_bounds_from_objects(&prims);
+        // pbrt recommended max depth for a k-d tree (though, we're using an octree)
+        // For a k-d tree: 8 + 1.3 * log2(N)
+        let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
+        println!("Octree maximum depth {}", depth);
+        let mut octree = Octree::new(bounds, depth);
+
+        for i in range(0, prims.len()) {
+            octree.insert(i, prims[i].bounding());
+        }
+        octree.prims = Some(prims);
+
+        octree
+    }
+
+    fn get_intersected_objects_iter<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Share>> {
+        OctreeIterator::new(self, ray)
+    }
+}
+
+// TODO: sell: Eliminate vectors
+impl PrimContainer for Octree<Box<Prim+Send+Share>> {
+    #[allow(dead_code)]
+    fn get_intersection_objects<'a>(&'a self, ray: &'a Ray) -> Vec<&'a Box<Prim+Send+Share>> {
+        let mut out = Vec::new();
+        out.extend(self.get_intersected_objects_iter(ray));
+
         let prims: &Vec<Box<Prim+Send+Share>> = match self.prims {
             Some(ref prims) => prims,
             None => fail!("get_intersection_objects may only be called on the root")
         };
-        for datum in octree_data.iter() {
-            borrowed_prims.push(&prims[datum.index]);
+        for infinite in self.infinite_data.iter() {
+            out.push(&prims[infinite.index]);
         }
-        borrowed_prims
+        out
+    }
+}
+
+
+struct OctreeIterator<'a, T> {
+    prims: &'a Vec<T>,
+    stack: Vec<&'a Octree<T>>,
+    cur_iter: Option<Items<'a, OctreeData>>,
+    ray: &'a Ray
+}
+
+
+impl<'a> OctreeIterator<'a, Box<Prim+Send+Share>> {
+    pub fn new<'a>(root: &'a Octree<Box<Prim+Send+Share>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Share>> {
+        let prims = match root.prims {
+            Some(ref prims) => prims,
+            None => fail!("OctreeIterator must be constructed from an Octree root")
+        };
+        OctreeIterator {
+            prims: prims,
+            stack: vec![root],
+            cur_iter: None,
+            ray: ray
+        }
+    }
+}
+
+impl<'a> Iterator<&'a Box<Prim+Send+Share>> for OctreeIterator<'a, Box<Prim+Send+Share>> {
+    fn next(&mut self) -> Option<&'a Box<Prim+Send+Share>> {
+        loop {
+            if self.stack.is_empty() && self.cur_iter.is_none() {
+                return None;
+            }
+            let (new_cur_iter, val) = match self.cur_iter {
+                Some(mut cur_iter) => match cur_iter.next() {
+                    Some(val) => (Some(cur_iter), Some(val)),
+                    None => (None, None)
+                },
+                None => {
+                    let node: &Octree<Box<Prim+Send+Share>> = self.stack.pop().unwrap();
+                    for child in node.children.iter() {
+                        if child.bbox.intersects(self.ray) {
+                            self.stack.push(child);
+                        }
+                    }
+                    (Some(node.data.iter()), None)
+                }
+            };
+            self.cur_iter = new_cur_iter;
+            match val {
+                Some(val) => {
+                    return Some(&self.prims[val.index])
+                },
+                None => (),
+            }
+        }
     }
 }
