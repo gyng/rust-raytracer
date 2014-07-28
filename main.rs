@@ -20,35 +20,43 @@ fn main() {
     // Scenes with an octree supplied (see my_scene.rs) will use it.
     // Lower the render quality (especially shadow_samples) for complex scenes.
 
-    // Simplest scene with 9 primitives, no octree
+    // Box. Simplest scene with 9 primitives, no octree
     let camera = my_scene::get_camera(image_width, image_height);
     let scene = my_scene::get_scene();
 
-    // Around 300 primitives, 2 lights. No octree. Has skybox, textures are
+    // Bunny. Around 300 primitives, 2 lights. No octree. Has skybox, textures are
     // in another repository.
     // let camera = my_scene::get_bunny_camera(image_width, image_height);
     // let scene = my_scene::get_bunny_scene();
 
-    // Around 2500 polygons. Octree helps a bit. Has skybox.
+    // Teapot. Around 2500 polygons. Octree helps a bit. Has skybox.
     // let camera = my_scene::get_teapot_camera(image_width, image_height);
     // let scene = my_scene::get_teapot_scene();
 
-    // Around 5000 polygons. Octree helps considerably.
+    // Cow. Around 5000 polygons. Octree helps considerably.
     // let camera = my_scene::get_cow_camera(image_width, image_height);
     // let scene = my_scene::get_cow_scene();
 
-    // Around 525814+1 primitives. Octree pretty much required. The model is included
+    // Lucy. Around 525814+1 primitives. Octree pretty much required. The model is included
     // separately, in another repository. Has skybox.
     // let camera = my_scene::get_lucy_camera(image_width, image_height);
     // let scene = my_scene::get_lucy_scene();
 
-    // Around 28K triangles, but more complex than Lucy. Sponza.
+    // Sponza. Around 28K triangles, but more complex than Lucy. 2 lights.
     // let camera = my_scene::get_sponza_camera(image_width, image_height);
     // let scene = my_scene::get_sponza_scene();
+
+    // Sibenik, around 70K triangles, no texture work, 3 lights.
+    // let camera = my_scene::get_sibenik_camera(image_width, image_height);
+    // let scene = my_scene::get_sibenik_scene();
 
     // Sphere skybox test scene
     // let camera = my_scene::get_sphere_camera(image_width, image_height);
     // let scene = my_scene::get_sphere_scene();
+
+    // Fresnel test scene
+    // let camera = my_scene::get_fresnel_camera(image_width, image_height);
+    // let scene = my_scene::get_fresnel_scene();
 
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
@@ -60,6 +68,7 @@ fn main() {
         pixel_samples: 2,          // 2 * 2 = 4 samples per pixel (2)
         tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };
+
     println!("Rendering with {} tasks...", renderer.tasks);
     let image_data = renderer.render(camera, scene);
     let render_time = ::time::get_time().sec;
