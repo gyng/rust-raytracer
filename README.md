@@ -5,6 +5,10 @@ rust-raytracer
 
 Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
+[Gallery](http://gyng.github.io/rust-raytracer-gallery/) <br>
+[Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
+[Assets repository](https://github.com/gyng/raytracer-assets)
+
 ## Usage
 
 1. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models and textures into the project directory as well.
