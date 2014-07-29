@@ -29,9 +29,8 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 * Basic spatial partitioning (octree)
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)
+* Basic camera animation
 
 ## Missing/potential features
 
-* Proper Fresnel reflectance
-* Simple animation
 * Scene description

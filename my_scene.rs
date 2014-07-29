@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use geometry::prim::{Prim};
 use geometry::prims::{Plane, Sphere, Triangle};
 use light::light::{Light};
@@ -8,6 +10,7 @@ use material::textures::CheckerTexture;
 use material::textures::CubeMap;
 use raytracer::Octree;
 use raytracer::VecPrimContainer;
+use raytracer::animator::CameraKeyframe;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
@@ -21,7 +24,6 @@ use vec3::Vec3;
 
 
 // 10 primitives, octree is super inefficient for this scene
-#[allow(dead_code)]
 pub fn get_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: 50.0, y: 25.0, z: 150.0},
@@ -33,7 +35,6 @@ pub fn get_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
@@ -77,7 +78,6 @@ pub fn get_scene() -> Scene {
 }
 
 // 300 polys, octree is slightly slower than no octree
-#[allow(dead_code)]
 pub fn get_bunny_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: 0.0, y: -150.0, z: 30.0},
@@ -89,7 +89,6 @@ pub fn get_bunny_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_bunny_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 200.0, y: -200.0, z: 100.0}, color: Vec3::one(), radius: 40.0});
@@ -128,7 +127,6 @@ pub fn get_bunny_scene() -> Scene {
 }
 
 // 2500 polys, marginal improvement from an octree
-#[allow(dead_code)]
 pub fn get_teapot_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: -2.0, y: 5.0, z: 10.0},
@@ -140,7 +138,6 @@ pub fn get_teapot_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_teapot_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
@@ -172,7 +169,6 @@ pub fn get_teapot_scene() -> Scene {
 }
 
 // 5000 polys, cow. Octree helps.
-#[allow(dead_code)]
 pub fn get_cow_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: -2.0, y: 4.0, z: 10.0},
@@ -184,7 +180,6 @@ pub fn get_cow_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_cow_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
@@ -210,7 +205,6 @@ pub fn get_cow_scene() -> Scene {
 }
 
 // 50000 polys, model not included!
-#[allow(dead_code)]
 pub fn get_lucy_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: -1500.0, y: 300.0, z: 600.0},
@@ -222,7 +216,6 @@ pub fn get_lucy_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_lucy_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: -1400.0, y: 200.0, z: 100.0}, color: Vec3 {x: 1.0, y: 0.80, z: 0.40}, radius: 50.0});
@@ -256,7 +249,6 @@ pub fn get_lucy_scene() -> Scene {
 
 
 // ~28000 triangles, complex scene with 2 lights
-#[allow(dead_code)]
 pub fn get_sponza_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: 800.0, y: 30.0, z: 90.0},
@@ -268,7 +260,6 @@ pub fn get_sponza_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_sponza_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 0.0, y: 3000.0, z: 1000.0}, color: Vec3 {x: 1.0, y: 0.8, z: 0.4}, radius: 50.0});
@@ -313,7 +304,6 @@ pub fn get_sponza_scene() -> Scene {
 }
 
 // ~70K triangles, no textures yet
-#[allow(dead_code)]
 pub fn get_sibenik_camera(image_width: int, image_height: int) -> Camera {
     Camera::new(
         Vec3 {x: -16.0, y: -14.5, z: -2.0},
@@ -325,7 +315,6 @@ pub fn get_sibenik_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_sibenik_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 8.0, y: 8.0, z: 0.0}, color: Vec3 {x: 1.0, y: 0.8, z: 0.4}, radius: 0.5});
@@ -356,7 +345,6 @@ pub fn get_sibenik_scene() -> Scene {
 }
 
 // Skybox test scene
-#[allow(dead_code)]
 pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
     let up = Vec3 {x: 0.0, y: 1.0, z: 0.0}; // y-up
     // let up = Vec3 {x: 0.0, y: 0.0, z: 1.0}; // z-up
@@ -371,7 +359,6 @@ pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
 pub fn get_sphere_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
@@ -399,12 +386,8 @@ pub fn get_sphere_scene() -> Scene {
 
 
 // Fresnel test scene
-#[allow(dead_code)]
 pub fn get_fresnel_camera(image_width: int, image_height: int) -> Camera {
-    // let height = 1.0;
     let height = 50.0;
-    // let height = 100.0;
-    // let height = 200.0;
 
     Camera::new(
         Vec3 {x: 50.0, y: height, z: 400.0},
@@ -416,7 +399,29 @@ pub fn get_fresnel_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
-#[allow(dead_code)]
+pub fn get_fresnel_animation_camera(image_width: int, image_height: int) -> Camera {
+    // State at time t=0
+    // A keyframe at time t=0 is automatically created when insert_keyframes is called
+    let camera = Camera::new_with_keyframes(
+        Vec3 {x: 50.0, y: 1.0, z: 400.0},
+        Vec3 {x: 50.0, y: 50.0, z: 50.0},
+        Vec3 {x: 0.0, y: 1.0, z: 0.0},
+        45.0,
+        image_width,
+        image_height,
+        vec![
+            CameraKeyframe {
+                time: 5.0,
+                position: Vec3 {x: 50.0, y: 200.0, z: 400.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            }
+        ]
+    );
+
+    camera
+}
+
 pub fn get_fresnel_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 50.0, y: 80.0, z: 50.0}, color: Vec3::one(), radius: 10.0});
