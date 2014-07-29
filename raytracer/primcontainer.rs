@@ -7,11 +7,13 @@ pub trait PrimContainer {
 }
 
 
+#[allow(dead_code)]
 pub struct VecPrimContainer {
     vec: Vec<Box<Prim+Send+Share>>,
 }
 
 impl VecPrimContainer {
+    #[allow(dead_code)]
     pub fn new(prims: Vec<Box<Prim+Send+Share>>) -> VecPrimContainer {
         VecPrimContainer { vec: prims }
     }
