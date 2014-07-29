@@ -27,7 +27,7 @@ impl Animator {
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
 
             ::util::export::to_ppm(frame_data, format!("{}{:06u}.ppm", filename, frame_number).as_slice());
-            ::util::print_progress("*** Frame", start_time, frame_number as uint, total_frames);
+            ::util::print_progress("*** Frame", start_time, frame_number + 1 as uint, total_frames);
             println!("");
         }
     }
@@ -44,13 +44,12 @@ impl Animator {
         let mut second = &keyframes[1];
 
         for keyframe in keyframes.iter() {
-            if keyframe.time <= time &&
-               time - keyframe.time <= time - first.time {
+            if keyframe.time <= time && time - keyframe.time >= first.time - time {
                 first = keyframe;
             }
 
             if keyframe.time > time &&
-               keyframe.time - time > second.time - time {
+               (keyframe.time - time < second.time - time || second.time < time) {
                 second = keyframe;
             }
         }
@@ -83,6 +82,13 @@ impl Animator {
         );
 
         lerped_camera.keyframes = camera.keyframes.clone();
+
+
+// println!("camera pos {} {} {} look_at {} {} {}",
+//                 lerped_camera.position.x, lerped_camera.position.y, lerped_camera.position.z,
+//                 lerped_camera.look_at.x, lerped_camera.look_at.y, lerped_camera.look_at.z);
+
+
         lerped_camera
     }
 }

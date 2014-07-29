@@ -389,7 +389,7 @@ pub fn get_fresnel_camera(image_width: int, image_height: int) -> Camera {
     let height = 50.0;
 
     Camera::new(
-        Vec3 {x: 50.0, y: height, z: 400.0},
+        Vec3 {x: 50.0, y: height, z: 250.0},
         Vec3 {x: 50.0, y: 50.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
         30.0,
@@ -402,19 +402,37 @@ pub fn get_fresnel_animation_camera(image_width: int, image_height: int) -> Came
     // State at time t=0
     // A keyframe at time t=0 is automatically created when insert_keyframes is called
     let camera = Camera::new_with_keyframes(
-        Vec3 {x: 50.0, y: 1.0, z: 400.0},
-        Vec3 {x: 50.0, y: 50.0, z: 50.0},
+        Vec3 {x: 0.0, y: 1.0, z: 250.0},
+        Vec3 {x: 0.0, y: 1.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
         45.0,
         image_width,
         image_height,
         vec![
             CameraKeyframe {
-                time: 5.0,
-                position: Vec3 {x: 50.0, y: 200.0, z: 400.0},
-                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                time: 2.5,
+                position: Vec3 {x: 50.0, y: 100.0, z: 250.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 50.0},
                 up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
-            }
+            },
+            CameraKeyframe {
+                time: 5.0,
+                position: Vec3 {x: 0.0, y: 200.0, z: 250.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 50.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+            CameraKeyframe {
+                time: 7.5,
+                position: Vec3 {x: -50.0, y: 100.0, z: 250.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 50.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+            CameraKeyframe {
+                time: 10.0,
+                position: Vec3 {x: 0.0, y: 1.0, z: 250.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 50.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
         ]
     );
 
