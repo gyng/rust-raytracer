@@ -1,4 +1,9 @@
+#![allow(dead_assignment)]
+#![allow(unused_mut)]
+
 extern crate time;
+
+use std::sync::Arc;
 
 mod geometry;
 mod light;
@@ -13,7 +18,8 @@ fn main() {
     let start_time = ::time::get_time().sec;
     let image_width = 512;
     let image_height = 512;
-    let out_file = "test.ppm";
+    let out_name = "test";
+    let mut animating = false;
 
     println!("Job started at {}...\nLoading scene...", start_time);
     // Cameras, scenes created in ./my_scene.rs
@@ -58,6 +64,13 @@ fn main() {
     // let camera = my_scene::get_fresnel_camera(image_width, image_height);
     // let scene = my_scene::get_fresnel_scene();
 
+    // Animation test scene
+    // let camera = my_scene::get_fresnel_animation_camera(image_width, image_height);
+    // let scene = my_scene::get_fresnel_scene();
+    // animating = true;
+
+    let shared_scene = Arc::new(scene); // Hackish solution for animator
+
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
 
@@ -69,18 +82,33 @@ fn main() {
         tasks: std::os::num_cpus() // Number of tasks to spawn. Will use up max available cores.
     };
 
-    println!("Rendering with {} tasks...", renderer.tasks);
-    let image_data = renderer.render(camera, scene);
-    let render_time = ::time::get_time().sec;
-    println!("Render done at {} ({}s)...\nWriting file...",
-             render_time, render_time - scene_time);
+    if animating {
+        let animator = raytracer::animator::Animator {
+            fps: 25.0,
+            length: 5.0,
+            renderer: renderer
+        };
 
-    util::export::to_ppm(image_data, out_file);
-    let export_time = ::time::get_time().sec;
+        println!("Animating - tasks: {}, FPS: {}, length: {}s",
+                 renderer.tasks, animator.fps, animator.length);
+        animator.animate(camera, shared_scene, out_name);
+        let render_time = ::time::get_time().sec;
+        println!("Render done at {} ({}s)",
+                 render_time, render_time - scene_time);
+    } else {
+        // Still frame
+        println!("Rendering with {} tasks...", renderer.tasks);
+        let image_data = renderer.render(camera, shared_scene);
+        let render_time = ::time::get_time().sec;
+        println!("Render done at {} ({}s)...\nWriting file...",
+                 render_time, render_time - scene_time);
 
-    println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
-             export_time,
-             export_time - render_time,
-             out_file,
-             export_time - start_time);
+        let out_file = format!("{}{}", out_name, ".ppm");
+        util::export::to_ppm(image_data, out_file.as_slice());
+        let export_time = ::time::get_time().sec;
+
+        println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
+                 export_time, export_time - render_time,
+                 out_file, export_time - start_time);
+    }
 }

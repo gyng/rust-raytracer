@@ -89,6 +89,14 @@ impl Vec3 {
             Some(v.scale(-ratio) + nn.scale(ratio * n_dot_v - disc.sqrt()))
         }
     }
+
+    pub fn lerp(v1: &Vec3, v2: &Vec3, alpha: f64) -> Vec3 {
+        Vec3 {
+            x: v1.x + (v2.x - v1.x) * alpha,
+            y: v1.y + (v2.y - v1.y) * alpha,
+            z: v1.z + (v2.z - v1.z) * alpha
+        }
+    }
 }
 
 impl Add<Vec3, Vec3> for Vec3 {

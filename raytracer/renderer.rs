@@ -26,13 +26,12 @@ pub struct Renderer {
 
 
 impl Renderer {
-    pub fn render(&self, camera: Camera, scene: Scene) -> Surface {
+    pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
         let mut surface = Surface::new(camera.image_width as uint,
                                        camera.image_height as uint,
                                        ColorRGBA::new_rgb(0, 0, 0));
 
-        let shared_scene = Arc::new(scene);
         let (worker, stealer) = BufferPool::new().deque();
         let (tx, rx) = channel();  // Responses
 
@@ -47,12 +46,13 @@ impl Renderer {
             let child_tx = tx.clone();
             let child_stealer = stealer.clone();
             let scene_local = shared_scene.clone();
+            let camera_local = camera.clone();
 
             spawn(proc() {
                 loop {
                     match child_stealer.steal() {
                         Data(factory) => {
-                            child_tx.send(renderer.render_tile(camera,
+                            child_tx.send(renderer.render_tile(camera_local.clone(),
                                                                scene_local.deref(),
                                                                factory))
                         },
