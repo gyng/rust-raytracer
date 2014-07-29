@@ -50,7 +50,7 @@ impl Animator {
             }
 
             if keyframe.time > time &&
-               keyframe.time - time < second.time - time {
+               keyframe.time - time > second.time - time {
                 second = keyframe;
             }
         }
