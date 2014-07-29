@@ -314,6 +314,26 @@ pub fn get_sibenik_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
+// 7s target length
+pub fn get_sibenik_animation_camera(image_width: int, image_height: int) -> Camera {
+    Camera::new_with_keyframes(
+        Vec3 {x: -16.0, y: -14.5, z: -2.0},
+        Vec3 {x: 8.0, y: -3.0, z: 2.0},
+        Vec3 {x: 0.0, y: 1.0, z: 0.0},
+        45.0,
+        image_width,
+        image_height,
+        vec![
+            CameraKeyframe {
+                time: 7.0,
+                position: Vec3 {x: 8.0, y: -13.5, z: 0.2},
+                look_at: Vec3 {x: 8.5, y: 8.0, z: 2.0},
+                up: Vec3 {x: -0.9, y: 0.0, z: -0.7}
+            }
+        ]
+    )
+}
+
 pub fn get_sibenik_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 8.0, y: 8.0, z: 0.0}, color: Vec3 {x: 1.0, y: 0.8, z: 0.4}, radius: 0.5});
