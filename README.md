@@ -14,6 +14,8 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 5. Compile: `rustc main.rs`
 6. Run compiled program
 7. To update (assets) submodules only: `git submodule foreach git pull`
+8. To convert frames into a video `ffmpeg -i test%06d.ppm -b 1500k out.webm`
+
 
 ## Features
 
