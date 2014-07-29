@@ -372,25 +372,25 @@ pub fn get_sphere_animation_camera(image_width: int, image_height: int) -> Camer
             CameraKeyframe {
                 time: 2.5,
                 position: Vec3 {x: 10.0, y: 0.0, z: 0.0},
-                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 0.0, z: 0.0},
                 up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
             },
             CameraKeyframe {
                 time: 5.0,
                 position: Vec3 {x: 0.0, y: 0.0, z: -10.0},
-                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 0.0, z: 0.0},
                 up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
             },
             CameraKeyframe {
                 time: 7.5,
                 position: Vec3 {x: -10.0, y: 0.0, z: 0.0},
-                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 0.0, z: 0.0},
                 up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
             },
             CameraKeyframe {
                 time: 10.0,
                 position: Vec3 {x: 0.0, y: 0.0, z: 10.0},
-                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 0.0, z: 0.0},
                 up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
             },
         ]
