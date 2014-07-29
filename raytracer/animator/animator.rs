@@ -82,13 +82,6 @@ impl Animator {
         );
 
         lerped_camera.keyframes = camera.keyframes.clone();
-
-
-// println!("camera pos {} {} {} look_at {} {} {}",
-//                 lerped_camera.position.x, lerped_camera.position.y, lerped_camera.position.z,
-//                 lerped_camera.look_at.x, lerped_camera.look_at.y, lerped_camera.look_at.z);
-
-
         lerped_camera
     }
 }

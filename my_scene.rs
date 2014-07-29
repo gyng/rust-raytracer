@@ -358,6 +358,47 @@ pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
     )
 }
 
+pub fn get_sphere_animation_camera(image_width: int, image_height: int) -> Camera {
+    // State at time t=0
+    // A keyframe at time t=0 is automatically created when insert_keyframes is called
+    let camera = Camera::new_with_keyframes(
+        Vec3 {x: 0.0, y: 0.0, z: 10.0},
+        Vec3 {x: 0.0, y: 0.0, z: 0.0},
+        Vec3 {x: 0.0, y: 1.0, z: 0.0},
+        30.0,
+        image_width,
+        image_height,
+        vec![
+            CameraKeyframe {
+                time: 2.5,
+                position: Vec3 {x: 10.0, y: 0.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+            CameraKeyframe {
+                time: 5.0,
+                position: Vec3 {x: 0.0, y: 0.0, z: -10.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+            CameraKeyframe {
+                time: 7.5,
+                position: Vec3 {x: -10.0, y: 0.0, z: 0.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+            CameraKeyframe {
+                time: 10.0,
+                position: Vec3 {x: 0.0, y: 0.0, z: 10.0},
+                look_at: Vec3 {x: 0.0, y: 1.0, z: 0.0},
+                up: Vec3 {x: 0.0, y: 1.0, z: 0.0}
+            },
+        ]
+    );
+
+    camera
+}
+
 pub fn get_sphere_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
     lights.push(box SphereLight {position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0});
