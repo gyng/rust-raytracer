@@ -64,7 +64,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                     str_tokens.iter().map( |str_tok| {
                         match from_str::<uint>(*str_tok) {
                             Some(uint_tok) => uint_tok - 1,
-                            None => -1 // No data available/not supplied
+                            None => !0 // No data available/not supplied
                         }
                     }).collect()
                 }).collect();
@@ -73,8 +73,8 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 let mut u = Vec3::zero();
                 let mut v = Vec3::zero();
 
-                // We store nothing supplied as -1 (uint=4294967295)
-                if pairs[0][1] != 4294967295 {
+                // We store nothing supplied as !0
+                if pairs[0][1] != !0 {
                     u = Vec3 {
                         x: tex_coords[pairs[0][1]][0],
                         y: tex_coords[pairs[1][1]][0],
