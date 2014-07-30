@@ -1,0 +1,10 @@
+{
+    "name": "box",
+    "size": [512, 512],
+    "reflect_depth": 4,
+    "refract_depth": 6,
+    "shadow_samples": 64,
+    "pixel_samples": 2,
+    "output_file": "test",
+    "animating": false
+}
