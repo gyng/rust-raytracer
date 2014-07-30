@@ -2,12 +2,13 @@ use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::deque::{BufferPool, Data, Empty, Abort};
 
+use geometry::bbox;
 use raytracer::compositor::{
     Surface,
     SurfaceFactory,
     ColorRGBA
 };
-use raytracer::{Intersection, Ray};
+use raytracer::{Intersection, KDNode, KDTree, Photon, Ray};
 use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
@@ -28,6 +29,17 @@ pub struct Renderer {
 impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
+        let photon_scene_local = shared_scene.clone();
+        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 64000, 0.01, 10);
+
+        // let target = BBox {
+        //     min: Vec3 {x: -100.0, y:-100.0, z: -100.0},
+        //     max: Vec3 {x: 100.0, y: 100.0, z: 100.0}
+        // };
+
+        // let test_results = KDNode::query_region(photon_cache, target);
+        // fail!("TEST {}", test_results.len());
+
         let mut surface = Surface::new(camera.image_width as uint,
                                        camera.image_height as uint,
                                        ColorRGBA::new_rgb(0, 0, 0));
@@ -47,6 +59,7 @@ impl Renderer {
             let child_stealer = stealer.clone();
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
+            let photon_cache_local = photon_cache.clone();
 
             spawn(proc() {
                 loop {
@@ -54,7 +67,8 @@ impl Renderer {
                         Data(factory) => {
                             child_tx.send(renderer.render_tile(camera_local.clone(),
                                                                scene_local.deref(),
-                                                               factory))
+                                                               factory,
+                                                               &photon_cache_local.clone()))
                         },
                         Empty => break,
                         Abort => ()
@@ -74,7 +88,7 @@ impl Renderer {
     }
 
     fn render_tile(&self, camera: Camera, scene: &Scene,
-                   tile_factory: SurfaceFactory) -> Box<Surface> {
+                   tile_factory: SurfaceFactory, photon_cache: &Box<KDNode>) -> Box<Surface> {
 
         let shadow_samples = self.shadow_samples;
         let pixel_samples = self.pixel_samples;
@@ -111,7 +125,7 @@ impl Renderer {
                         }
 
                         let ray = camera.get_ray(j_x, j_y);
-                        let result = Renderer::trace(scene, &ray, shadow_samples, reflect_depth, refract_depth, false);
+                        let result = Renderer::trace(scene, &ray, shadow_samples, reflect_depth, refract_depth, false, photon_cache);
                         color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
@@ -122,8 +136,101 @@ impl Renderer {
         box tile
     }
 
+    fn shoot_photons(scene: &Scene, photon_count: uint, power_threshold: f64, max_bounces: uint) -> Box<KDNode> {
+        let mut photons: Vec<Photon> = Vec::new();
+
+        let start_time = ::time::get_time();
+        let mut count = 0u;
+        let total = photon_count * scene.lights.len();
+
+        for light in scene.lights.iter() {
+            for _ in range(0, photon_count) {
+                let ray = Ray {
+                    origin: light.position(),
+                    direction: Vec3::random()
+                };
+
+                // TODO: light color should replace power argument
+                photons = photons + Renderer::shoot_photon(scene, &ray, power_threshold,
+                                                           light.color(), max_bounces, 0);
+
+                count += 1;
+                ::util::print_progress("Photon", start_time, count, total);
+            }
+        }
+
+        match KDTree::new_from_photons(photons, 0) {
+            Some(tree) => tree,
+            None => fail!("Could not generate photon cache. Photon count is 0/KDTree is empty?")
+        }
+    }
+
+    fn shoot_photon(scene: &Scene, ray: &Ray, power_threshold: f64,
+                    power: Vec3, max_bounces: uint, bounces: uint) -> Vec<Photon> {
+
+        let mut photons: Vec<Photon> = Vec::new();
+
+        if bounces > max_bounces || power.len() < power_threshold {
+            return photons;
+        }
+
+        match ray.get_nearest_hit(scene) {
+            Some(nearest_hit) => {
+                let n = nearest_hit.n.unit();
+                let i = ray.direction.scale(-1.0).unit();
+                let l = Vec3::reflect(&n, &ray.direction);
+                let u = 0.0;
+                let v = 0.0;
+
+                // Randomly decide to reflect/transmit/absorb
+                let mut rng = task_rng();
+                let rand = rng.gen::<f64>();
+                let p_reflect = nearest_hit.material.global_specular(&Vec3::one()).len() / 2.0_f64.sqrt();
+                let p_transmit = nearest_hit.material.global_transmissive(&Vec3::one()).len() / 2.0_f64.sqrt();
+                let p_absorb = 1.0 - p_reflect - p_transmit;
+
+                if rand < p_absorb && bounces > 0 {
+                    // ---- LINE ---
+                    //  END OF LINE
+                    photons.push(Photon {
+                        position: nearest_hit.position,
+                        incoming_dir: ray.direction.scale(-1.0),
+                        power: power
+                    });
+                } else if rand < p_transmit + p_absorb {
+                    // Transmit, assume outside object
+                    // This if condition is an optimisation hack. For subsurface lighting
+                    // we need a proper ray-marching implementation; since that doesn't exist
+                    // in here we just kill the ray as well if the material is not refractive
+                    if nearest_hit.material.is_refractive() {
+                        let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), false) {
+                            Some(ref t) => *t,
+                            None => Vec3::reflect(&i, &n)
+                        };
+                        let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
+                        // let refract_power_scale = nearest_hit.material.global_transmissive(&power);
+                        let photon_color = Vec3::clamp(&(nearest_hit.material.sample(n, i, l, u, v)));
+                        photons = photons + Renderer::shoot_photon(scene, &refract_ray, power_threshold,
+                                                         photon_color, max_bounces, bounces + 1);
+                    }
+                } else {
+                    // Reflect (always reflect for D* (diffuse-*) light interactions)
+                    let r = Vec3::reflect(&i, &n);
+                    let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                    // let reflect_power_scale = nearest_hit.material.global_specular(&power);
+                    let photon_color = Vec3::clamp(&(nearest_hit.material.sample(n, i, l, u, v)));
+                    photons = photons + Renderer::shoot_photon(scene, &reflect_ray, power_threshold,
+                                                     photon_color, max_bounces, bounces + 1);
+                }
+            },
+            None => {}
+        }
+
+        photons
+    }
+
     fn trace(scene: &Scene, ray: &Ray, shadow_samples: uint,
-             reflect_depth: uint, refract_depth: uint, inside: bool) -> Vec3 {
+             reflect_depth: uint, refract_depth: uint, inside: bool, photon_cache: &Box<KDNode>) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
@@ -142,7 +249,6 @@ impl Renderer {
                     color_acc + light.color() * nearest_hit.material.sample(n, i, l, u, v) * shadow
                 });
 
-
                 if nearest_hit.material.is_reflective() ||
                    nearest_hit.material.is_refractive() {
 
@@ -155,7 +261,7 @@ impl Renderer {
                         let r = Vec3::reflect(&i, &n);
                         let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
                         let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
-                                                         reflect_depth - 1, refract_depth, inside);
+                                                         reflect_depth - 1, refract_depth, inside, photon_cache);
 
                         result = result + nearest_hit.material.global_specular(&reflection).scale(reflect_fresnel);
                     }
@@ -172,11 +278,35 @@ impl Renderer {
 
                         let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
                         let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
-                                                         reflect_depth, refract_depth - 1, !inside);
+                                                         reflect_depth, refract_depth - 1, !inside, photon_cache);
 
                         result = result + nearest_hit.material.global_transmissive(&refraction).scale(refract_fresnel);
                     }
                 }
+
+                // Get photon cache result for caustics/indirect lighting
+                // TODO: Use n-nearest photons instead of querying a region
+                let search_half_width = 5.0;
+                let target = bbox::union_points(&nearest_hit.position, &nearest_hit.position).expand(search_half_width);
+                let photons = KDNode::query_region(photon_cache.clone(), target);
+                let mut power = Vec3::zero();
+                for photon in photons.iter() {
+                    power = power + Vec3::clamp(&photon.power);
+                }
+
+                // Actual irradiance according to my brain should be (search_size * 2) ** 3
+                // Still need to normalise this according to photon count, we want density of photons in relation
+                // to total photons and search size
+
+                // println!("phot {}", photons.len() as f64 / 32000.0);
+                // let indirect_irradiance = power.scale(1.0 / (photons.len() as f64 * search_size /* * search_size*/));
+                // let indirect_irradiance = power.scale(1.0 / (search_size * search_size));
+                // let search_width = 0.5 * 2.0 * search_half_width;
+                // let indirect_irradiance = power.scale((search_width * search_width * search_width) * (photons.len() as f64 / 32000.0));
+                // let indirect_irradiance = power.scale(photons.len() / 32000.0)
+                let indirect_irradiance = power.scale(1.0 / (photons.len() as f64 + 1.0));
+                result = result + indirect_irradiance;
+                // result = indirect_irradiance;
 
                 result
             }

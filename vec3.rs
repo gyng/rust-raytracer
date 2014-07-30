@@ -1,3 +1,5 @@
+use std::rand::{task_rng, Rng};
+
 #[deriving(Clone)]
 pub struct Vec3 {
     pub x: f64,
@@ -95,6 +97,30 @@ impl Vec3 {
             x: v1.x + (v2.x - v1.x) * alpha,
             y: v1.y + (v2.y - v1.y) * alpha,
             z: v1.z + (v2.z - v1.z) * alpha
+        }
+    }
+
+    /// Random unit vector around the origin.
+    /// Uniform distribution around a sphere.
+    pub fn random() -> Vec3 {
+        let mut rng = task_rng();
+
+        let theta = rng.gen::<f64>() * ::std::f64::consts::PI_2;
+        let z = (rng.gen::<f64>() - 0.5) * 2.0;
+        let z_sqrt = (1.0 - z * z).sqrt();
+
+        Vec3 {
+            x: z_sqrt * theta.cos(),
+            y: z_sqrt * theta.sin(),
+            z: z
+        }
+    }
+
+    pub fn clamp(v: &Vec3) -> Vec3 {
+        Vec3 {
+            x: v.x.max(0.0).min(1.0),
+            y: v.y.max(0.0).min(1.0),
+            z: v.z.max(0.0).min(1.0)
         }
     }
 }
