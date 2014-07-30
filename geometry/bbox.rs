@@ -149,7 +149,7 @@ impl BBox {
 
         BBox {
             min: self.min - delta_vec3,
-            max: self.max - delta_vec3
+            max: self.max + delta_vec3
         }
     }
 
