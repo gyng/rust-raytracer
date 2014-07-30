@@ -31,6 +31,7 @@ struct ProgramArgs {
 struct SceneConfig<'a> {
     name: String,
     size: (int, int),
+    fov: f64,
     reflect_depth: uint,
     refract_depth: uint,
     shadow_samples: uint,
@@ -62,6 +63,7 @@ fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
 fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     let scene_name = config.name.clone();
     let (image_width, image_height) = config.size;
+    let fov = config.fov;
 
     // Cameras, scenes created in ./my_scene.rs
     // Scenes with an octree supplied (see my_scene.rs) will use it.
@@ -69,47 +71,47 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     return match scene_name.as_slice() {
         "box" => {
             // Box. Simplest scene with 9 primitives, no octree
-            let camera = my_scene::get_camera(image_width, image_height);
+            let camera = my_scene::get_camera(image_width, image_height, fov);
             let scene = my_scene::get_scene();
             Some((camera, scene))
         },
         "bunny" => {
             // Bunny. Around 300 primitives, 2 lights. Uses octree. Has skybox, textures are
             // in another repository.
-            let camera = my_scene::get_bunny_camera(image_width, image_height);
+            let camera = my_scene::get_bunny_camera(image_width, image_height, fov);
             let scene = my_scene::get_bunny_scene();
             Some((camera, scene))
         },
         "teapot" => {
             // Teapot. Around 2500 polygons. Octree helps a bit. Has skybox.
-            let camera = my_scene::get_teapot_camera(image_width, image_height);
+            let camera = my_scene::get_teapot_camera(image_width, image_height, fov);
             let scene = my_scene::get_teapot_scene();
             Some((camera, scene))
         },
         "cow" => {
             // Cow. Around 5000 polygons. Octree helps considerably.
-            let camera = my_scene::get_cow_camera(image_width, image_height);
+            let camera = my_scene::get_cow_camera(image_width, image_height, fov);
             let scene = my_scene::get_cow_scene();
             Some((camera, scene))
-        },    
+        },
         "lucy" => {
             // Lucy. Around 525814+1 primitives. Octree pretty much required. The model is included
             // separately, in another repository. Has skybox.
-            let camera = my_scene::get_lucy_camera(image_width, image_height);
+            let camera = my_scene::get_lucy_camera(image_width, image_height, fov);
             let scene = my_scene::get_lucy_scene();
             Some((camera, scene))
         },
         "sponza" => {
             // Sponza. Around 28K triangles, but more complex than Lucy. 2 lights.
-            let camera = my_scene::get_sponza_camera(image_width, image_height);
+            let camera = my_scene::get_sponza_camera(image_width, image_height, fov);
             let scene = my_scene::get_sponza_scene();
             Some((camera, scene))
         },
         "sibenik" => {
             // Sibenik, around 70K triangles, no texture work, 3 lights.
             let camera = match config.animating {
-                true => my_scene::get_sibenik_animation_camera(image_width, image_height),
-                false => my_scene::get_sibenik_camera(image_width, image_height)
+                true => my_scene::get_sibenik_animation_camera(image_width, image_height, fov),
+                false => my_scene::get_sibenik_camera(image_width, image_height, fov)
             };
             let scene = my_scene::get_sibenik_scene();
             Some((camera, scene))
@@ -117,8 +119,8 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
         "sphere" => {
             // Sphere skybox test scene
             let camera = match config.animating {
-                true => my_scene::get_sphere_animation_camera(image_width, image_height),
-                false => my_scene::get_sphere_camera(image_width, image_height)
+                true => my_scene::get_sphere_animation_camera(image_width, image_height, fov),
+                false => my_scene::get_sphere_camera(image_width, image_height, fov)
             };
             let scene = my_scene::get_sphere_scene();
             Some((camera, scene))
@@ -126,8 +128,8 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
         "fresnel" => {
             // Fresnel test scene
             let camera = match config.animating {
-                true => my_scene::get_fresnel_animation_camera(image_width, image_height),
-                false => my_scene::get_fresnel_camera(image_width, image_height)
+                true => my_scene::get_fresnel_animation_camera(image_width, image_height, fov),
+                false => my_scene::get_fresnel_camera(image_width, image_height, fov)
             };
             let scene = my_scene::get_fresnel_scene();
             Some((camera, scene))
@@ -185,7 +187,7 @@ fn main() {
             return
         }
     };
-    
+
     println!("Job started at {}...\nLoading scene...", start_time);
 
     let scenepair = get_camera_and_scene(&config);
@@ -200,19 +202,15 @@ fn main() {
         }
     };
 
-    // Animation test scene
-    // let camera = my_scene::get_fresnel_animation_camera(image_width, image_height);
-    // let scene = my_scene::get_fresnel_scene();
-    // animating = true;
     let shared_scene = Arc::new(scene); // Hackish solution for animator
 
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
 
     let renderer = raytracer::Renderer {
-        reflect_depth: config.reflect_depth,          
-        refract_depth: config.refract_depth,          
-        shadow_samples: config.shadow_samples,        
+        reflect_depth: config.reflect_depth,
+        refract_depth: config.refract_depth,
+        shadow_samples: config.shadow_samples,
         pixel_samples: config.pixel_samples,
         // Number of tasks to spawn. Will use up max available cores.
         tasks: std::os::num_cpus()

@@ -24,12 +24,12 @@ use vec3::Vec3;
 
 
 // 10 primitives, octree is super inefficient for this scene
-pub fn get_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: 50.0, y: 25.0, z: 150.0},
         Vec3 {x: 50.0, y: 50.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
@@ -78,12 +78,12 @@ pub fn get_scene() -> Scene {
 }
 
 // 300 polys, octree is slightly slower than no octree
-pub fn get_bunny_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_bunny_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: 0.0, y: -150.0, z: 30.0},
         Vec3 {x: 0.0, y: 60.0, z: 50.0},
         Vec3 {x: 0.0, y: 0.0, z: 1.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
@@ -126,12 +126,12 @@ pub fn get_bunny_scene() -> Scene {
 }
 
 // 2500 polys, marginal improvement from an octree
-pub fn get_teapot_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_teapot_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: -2.0, y: 5.0, z: 10.0},
         Vec3 {x: 0.0, y: 3.0, z: 0.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
@@ -168,12 +168,12 @@ pub fn get_teapot_scene() -> Scene {
 }
 
 // 5000 polys, cow. Octree helps.
-pub fn get_cow_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_cow_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: -2.0, y: 4.0, z: 10.0},
         Vec3 {x: 0.0, y: 0.0, z: 0.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
@@ -204,12 +204,12 @@ pub fn get_cow_scene() -> Scene {
 }
 
 // 50000 polys, model not included!
-pub fn get_lucy_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_lucy_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: -1500.0, y: 300.0, z: 600.0},
         Vec3 {x: 0.0, y: 400.0, z: -200.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
@@ -248,12 +248,12 @@ pub fn get_lucy_scene() -> Scene {
 
 
 // ~28000 triangles, complex scene with 2 lights
-pub fn get_sponza_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_sponza_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: 800.0, y: 30.0, z: 90.0},
         Vec3 {x: -500.0, y: 1000.0, z: -100.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        45.0,
+        fov,
         image_width,
         image_height
     )
@@ -303,24 +303,24 @@ pub fn get_sponza_scene() -> Scene {
 }
 
 // ~70K triangles, no textures yet
-pub fn get_sibenik_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_sibenik_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
         Vec3 {x: -16.0, y: -14.5, z: -2.0},
         Vec3 {x: 8.0, y: -3.0, z: 2.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
 }
 
 // 7s target length
-pub fn get_sibenik_animation_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_sibenik_animation_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new_with_keyframes(
         Vec3 {x: -16.0, y: -14.5, z: -2.0},
         Vec3 {x: 8.0, y: -3.0, z: 2.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        45.0,
+        fov,
         image_width,
         image_height,
         vec![
@@ -364,7 +364,7 @@ pub fn get_sibenik_scene() -> Scene {
 }
 
 // Skybox test scene
-pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_sphere_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     let up = Vec3 {x: 0.0, y: 1.0, z: 0.0}; // y-up
     // let up = Vec3 {x: 0.0, y: 0.0, z: 1.0}; // z-up
 
@@ -372,20 +372,20 @@ pub fn get_sphere_camera(image_width: int, image_height: int) -> Camera {
         Vec3 {x: 0.0, y: 0.0, z: 10.0},
         Vec3 {x: 0.0, y: 0.0, z: 0.0},
         up,
-        30.0,
+        fov,
         image_width,
         image_height
     )
 }
 
-pub fn get_sphere_animation_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_sphere_animation_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     // State at time t=0
     // A keyframe at time t=0 is automatically created when insert_keyframes is called
     let camera = Camera::new_with_keyframes(
         Vec3 {x: 0.0, y: 0.0, z: 10.0},
         Vec3 {x: 0.0, y: 0.0, z: 0.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height,
         vec![
@@ -446,27 +446,27 @@ pub fn get_sphere_scene() -> Scene {
 
 
 // Fresnel test scene
-pub fn get_fresnel_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_fresnel_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     let height = 50.0;
 
     Camera::new(
         Vec3 {x: 50.0, y: height, z: 250.0},
         Vec3 {x: 50.0, y: 50.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        30.0,
+        fov,
         image_width,
         image_height
     )
 }
 
-pub fn get_fresnel_animation_camera(image_width: int, image_height: int) -> Camera {
+pub fn get_fresnel_animation_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     // State at time t=0
     // A keyframe at time t=0 is automatically created when insert_keyframes is called
     let camera = Camera::new_with_keyframes(
         Vec3 {x: 0.0, y: 1.0, z: 250.0},
         Vec3 {x: 0.0, y: 1.0, z: 50.0},
         Vec3 {x: 0.0, y: 1.0, z: 0.0},
-        45.0,
+        fov,
         image_width,
         image_height,
         vec![
