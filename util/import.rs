@@ -29,7 +29,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     for line_iter in file.lines() {
         let line: String = match line_iter {
             Ok(x) => x,
-            Err(e) => fail!(e)
+            Err(e) => fail!("Could not import OBJ file {} (file missing?): {}", filename, e)
         };
 
         let tokens: Vec<&str> = line.as_slice().words().collect();
@@ -62,7 +62,6 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 // ["f", "1/2/3", "2/2/2", "12//4"] => [[1, 2, 3], [2, 2, 2], [12, -1u, 4]]
                 let pairs: Vec<Vec<uint>> = tokens.tail().iter().map( |token| {
                     let str_tokens: Vec<&str> = token.as_slice().split('/').collect();
-
                     str_tokens.iter().map( |str_tok| {
                         match from_str::<uint>(*str_tok) {
                             Some(uint_tok) => uint_tok - 1,
@@ -70,10 +69,6 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                         }
                     }).collect()
                 }).collect();
-
-                // let v0: Vec<&str> = tokens[1].split('/').collect();
-                // let v1: Vec<&str> = tokens[2].split('/').collect();
-                // let v2: Vec<&str> = tokens[3].split('/').collect();
 
                 // If no texture coordinates were supplied, default to zero.
                 let mut u = Vec3::zero();
