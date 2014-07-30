@@ -21,15 +21,28 @@ impl Animator {
         let start_time = ::time::get_time();
         let total_frames = (self.fps * self.length).floor() as uint;
 
+        let (tx, rx) = sync_channel(1);
+        tx.send(1i);
+
         for frame_number in range(0, total_frames) {
             let time = frame_number as f64 / self.fps;
             let lerped_camera = Animator::lerp_camera(&camera, time);
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
 
-            ::util::export::to_ppm(frame_data, format!("{}{:06u}.ppm", filename, frame_number).as_slice());
+            let shared_name = format!("{}{:06u}.ppm", filename, frame_number);
+            let child_tx = tx.clone();
+
+            rx.recv();
+            spawn(proc() {
+                ::util::export::to_ppm(frame_data, shared_name.as_slice());
+                child_tx.send(2i);
+            });
+
             ::util::print_progress("*** Frame", start_time, frame_number + 1 as uint, total_frames);
             println!("");
         }
+
+        rx.recv();
     }
 
     fn get_neighbour_keyframes(keyframes: Vec<CameraKeyframe>, time: f64)
