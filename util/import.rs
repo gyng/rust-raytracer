@@ -12,10 +12,10 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     let path = Path::new(filename);
     let mut file = BufferedReader::new(File::open(&path));
 
-    let mut vertices:   Vec<Vec3> = Vec::new();
-    let mut tex_coords: Vec<Vec3> = Vec::new();
-    let mut normals:    Vec<Vec3> = Vec::new();
-    let mut triangles:  Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut vertices: Vec<Vec3> = Vec::new();
+    let mut tex_coords: Vec<Vec<f64>> = Vec::new();
+    let mut normals: Vec<Vec3> = Vec::new();
+    let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
 
     let start_time = ::time::get_time();
     let print_progress_every = 1024u;
@@ -29,7 +29,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     for line_iter in file.lines() {
         let line: String = match line_iter {
             Ok(x) => x,
-            Err(e) => fail!("Could not import OBJ file {} (file missing?): {}", filename, e)
+            Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
         };
 
         let tokens: Vec<&str> = line.as_slice().words().collect();
@@ -44,11 +44,10 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 });
             },
             "vt" => {
-                tex_coords.push(Vec3 {
-                    x: parse_coord_str(tokens[1].as_slice(), scale, line.as_slice()),
-                    y: parse_coord_str(tokens[2].as_slice(), scale, line.as_slice()),
-                    z: 0.0
-                });
+                tex_coords.push(vec![
+                    parse_coord_str(tokens[1].as_slice(), scale, line.as_slice()),
+                    parse_coord_str(tokens[2].as_slice(), scale, line.as_slice())
+                ]);
             },
             "vn" => {
                 let normals_flip_scale = if flip_normals { -1.0 } else { 1.0 } * scale;
@@ -77,15 +76,15 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 // We store nothing supplied as -1 (uint=4294967295)
                 if pairs[0][1] != 4294967295 {
                     u = Vec3 {
-                        x: tex_coords[pairs[0][1]].x,
-                        y: tex_coords[pairs[1][1]].x,
-                        z: tex_coords[pairs[2][1]].x
+                        x: tex_coords[pairs[0][1]][0],
+                        y: tex_coords[pairs[1][1]][0],
+                        z: tex_coords[pairs[2][1]][0]
                     };
 
                     v = Vec3 {
-                        x: tex_coords[pairs[0][1]].y,
-                        y: tex_coords[pairs[1][1]].y,
-                        z: tex_coords[pairs[2][1]].y
+                        x: tex_coords[pairs[0][1]][1],
+                        y: tex_coords[pairs[1][1]][1],
+                        z: tex_coords[pairs[2][1]][1]
                     };
                 }
 
@@ -136,7 +135,7 @@ pub fn from_ppm(filename: &str) -> Surface {
     let path = Path::new(filename);
     let mut file = BufferedReader::new(File::open(&path));
 
-    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => { println!("Could not open {}", filename); fail!(e) }};
+    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => { fail!("Could not open file {} (file missing?): {}", filename, e) }};
     let mut tokens: Vec<&str> = tex.as_slice().words().collect();
 
     tokens.remove(0); // PPM type
