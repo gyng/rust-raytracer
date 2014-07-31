@@ -53,3 +53,4 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 ## Missing/potential features
 
 * Scene description
+* Caustics/global illumination (in progress on `photon-trace` branch)
