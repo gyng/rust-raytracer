@@ -32,6 +32,8 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 * sphere
 * sponza
 * teapot
+* heptoroid-white
+* heptoroid-shiny
 
 
 ## Features
