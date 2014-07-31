@@ -19,7 +19,7 @@ pub struct KDNode {
 
 
 impl KDNode {
-    pub fn query_region(current: Box<KDNode>, target: BBox) -> Vec<Photon> {
+    pub fn query_region(current: &KDNode, target: BBox) -> Vec<Photon> {
         let mut results: Vec<Photon> = Vec::new();
 
         if !target.overlaps(&current.bbox) {
@@ -30,19 +30,19 @@ impl KDNode {
             results.push(current.photon);
         }
 
-        match current.left_child {
-            Some(child) => {
+        match current.left_child.clone() {
+            Some(box child) => {
                 if target.overlaps(&child.bbox) {
-                    results = results + KDNode::query_region(child.clone(), target);
+                    results = results + KDNode::query_region(&child, target);
                 }
             },
             None => {}
         }
 
-        match current.right_child {
-            Some(child) => {
+        match current.right_child.clone() {
+            Some(box child) => {
                 if target.overlaps(&child.bbox) {
-                    results = results + KDNode::query_region(child.clone(), target);
+                    results = results + KDNode::query_region(&child, target);
                 }
             },
             None => {}
@@ -53,8 +53,8 @@ impl KDNode {
 
     // http://stackoverflow.com/questions/4418450/how-does-the-kd-tree-nearest-neighbor-search-work
     // https://gist.github.com/tompaton/863301
-    pub fn nearest_neighbour(current: Option<Box<KDNode>>, target: Vec3, best: Option<Photon>) -> Option<Photon> {
-        match current {
+    pub fn nearest_neighbour(current: &Option</*&*/Box<KDNode>>, target: Vec3, best: Option<Photon>) -> Option<Photon> {
+        match *current {
             None => return best,
             Some(ref current) => {
                 let mut new_best = match best {
@@ -72,13 +72,13 @@ impl KDNode {
                 }
 
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(current.nearer_child(target), target, new_best),
+                    Some(b) => new_best = KDNode::nearest_neighbour(&current.nearer_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
                 // Can be optimised (see SO link above)
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(current.away_child(target), target, new_best),
+                    Some(b) => new_best = KDNode::nearest_neighbour(&current.away_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
@@ -127,7 +127,7 @@ pub struct KDTree;
 // TODO: Generalise this for Prims as well
 impl KDTree {
     #[allow(dead_code)]
-    pub fn new_from_photons(point_list: Vec<Photon>, depth: int) -> Option<Box<KDNode>> {
+    pub fn new_from_photons(point_list: Vec<Photon>, depth: int) -> Option<KDNode> {
         if point_list.len() == 0 {
             return None;
         }
@@ -163,11 +163,11 @@ impl KDTree {
                 Vec::from_slice(sorted_point_list.slice_from(median_index + 1)),
                 depth + 1);
 
-        Some(box KDNode {
+        Some(KDNode {
             photon: sorted_point_list[median_index],
             bbox: get_bounds_from_photons(&point_list),
-            left_child: left_child,
-            right_child: right_child,
+            left_child: match left_child { Some(c) => {Some(box c)}, None => None },
+            right_child: match right_child { Some(c) => {Some(box c)}, None => None },
             axis: axis as uint
         })
     }
@@ -215,7 +215,7 @@ fn it_creates_and_range_queries() {
         max: Vec3 {x: 1.0, y: 1.0, z: 1.0}
     };
 
-    let results = KDNode::query_region(tree, target);
+    let results = KDNode::query_region(&tree, target);
 
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].power.x, 1.0);
@@ -235,12 +235,10 @@ fn it_creates_and_gets_nearest_neighbour() {
         incoming_dir: Vec3::zero(),
         power: Vec3 {x: 1.1, y: 0.0, z: 0.0}
     });
-
-    // Not in region
     photons.push(Photon {
         position: Vec3 {x: 2.0, y: 0.0, z: 0.0},
         incoming_dir: Vec3::zero(),
-        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+        power: Vec3 {x: 8.8, y: 0.0, z: 0.0}
     });
     photons.push(Photon {
         position: Vec3 {x: 0.0, y: 2.0, z: 0.0},
@@ -259,11 +257,16 @@ fn it_creates_and_gets_nearest_neighbour() {
     };
 
     let target = Vec3 {x: 0.4, y: 0.1, z: -0.1};
-
-    let result = match KDNode::nearest_neighbour(Some(tree), target, None) {
+    let result = match KDNode::nearest_neighbour(Some(&tree), target, None) {
         Some(r) => r,
         None => fail!("No photonic neighbour found!?")
     };
-
     assert_eq!(result.power.x, 1.0);
+
+    let target2 = Vec3{x: 2.1, y: 0.0, z: 0.2};
+    let result2 = match KDNode::nearest_neighbour(Some(&tree), target2, None) {
+        Some(r) => r,
+        None => fail!("No photonic neighbour found!?")
+    };
+    assert_eq!(result2.power.x, 8.8);
 }

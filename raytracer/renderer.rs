@@ -88,7 +88,7 @@ impl Renderer {
     }
 
     fn render_tile(&self, camera: Camera, scene: &Scene,
-                   tile_factory: SurfaceFactory, photon_cache: &Box<KDNode>) -> Box<Surface> {
+                   tile_factory: SurfaceFactory, photon_cache: &KDNode) -> Box<Surface> {
 
         let shadow_samples = self.shadow_samples;
         let pixel_samples = self.pixel_samples;
@@ -136,7 +136,7 @@ impl Renderer {
         box tile
     }
 
-    fn shoot_photons(scene: &Scene, photon_count: uint, power_threshold: f64, max_bounces: uint) -> Box<KDNode> {
+    fn shoot_photons(scene: &Scene, photon_count: uint, power_threshold: f64, max_bounces: uint) -> KDNode {
         let mut photons: Vec<Photon> = Vec::new();
 
         let start_time = ::time::get_time();
@@ -230,7 +230,7 @@ impl Renderer {
     }
 
     fn trace(scene: &Scene, ray: &Ray, shadow_samples: uint,
-             reflect_depth: uint, refract_depth: uint, inside: bool, photon_cache: &Box<KDNode>) -> Vec3 {
+             reflect_depth: uint, refract_depth: uint, inside: bool, photon_cache: &KDNode) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
@@ -288,7 +288,7 @@ impl Renderer {
                 // TODO: Use n-nearest photons instead of querying a region
                 let search_half_width = 5.0;
                 let target = bbox::union_points(&nearest_hit.position, &nearest_hit.position).expand(search_half_width);
-                let photons = KDNode::query_region(photon_cache.clone(), target);
+                let photons = KDNode::query_region(photon_cache, target);
                 let mut power = Vec3::zero();
                 for photon in photons.iter() {
                     power = power + Vec3::clamp(&photon.power);
