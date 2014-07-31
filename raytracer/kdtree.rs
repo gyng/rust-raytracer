@@ -3,7 +3,9 @@
 use geometry::BBox;
 use geometry::bbox::get_bounds_from_photons;
 use raytracer::{Photon};
-// use vec3::Vec3;
+
+// #[cfg(test)]
+use vec3::Vec3;
 
 
 #[deriving(Clone)]
@@ -11,7 +13,8 @@ pub struct KDNode {
     pub photon: Photon,
     pub bbox: BBox,
     pub left_child: Option<Box<KDNode>>,
-    pub right_child: Option<Box<KDNode>>
+    pub right_child: Option<Box<KDNode>>,
+    pub axis: uint
 }
 
 
@@ -19,56 +22,99 @@ impl KDNode {
     pub fn query_region(current: Box<KDNode>, target: BBox) -> Vec<Photon> {
         let mut results: Vec<Photon> = Vec::new();
 
-        // println!("At current [{}, {}, {}]",
-        //     current.photon.position.x,
-        //     current.photon.position.y,
-        //     current.photon.position.z,
-        // );
-
         if !target.overlaps(&current.bbox) {
             return results;
         }
 
         if target.inside(&current.photon.position) {
-            // println!("\t\t ADD is in target");
             results.push(current.photon);
         }
 
         match current.left_child {
             Some(child) => {
-                // println!("\t left child");
                 if target.overlaps(&child.bbox) {
-                    // println!("\t\t is in target");
                     results = results + KDNode::query_region(child.clone(), target);
                 }
             },
-            None => {/*println!("\t no left child");*/}
+            None => {}
         }
 
         match current.right_child {
             Some(child) => {
-                // println!("\t right child");
                 if target.overlaps(&child.bbox) {
-                    // println!("\t\t is in target");
                     results = results + KDNode::query_region(child.clone(), target);
                 }
             },
-            None => {/*println!("\t no right_child");*/}
+            None => {}
         }
 
         results
+    }
+
+    // http://stackoverflow.com/questions/4418450/how-does-the-kd-tree-nearest-neighbor-search-work
+    // https://gist.github.com/tompaton/863301
+    pub fn nearest_neighbour(current: Option<Box<KDNode>>, target: Vec3, best: Option<Photon>) -> Option<Photon> {
+        match current {
+            None => return best,
+            Some(ref current) => {
+                let mut new_best = match best {
+                    Some(b) => Some(b),
+                    None => Some(current.photon)
+                };
+
+                match new_best {
+                    Some(b) => {
+                        if (target - current.photon.position).len() < (target - b.position).len() {
+                            new_best = Some(current.photon);
+                        }
+                    },
+                    None => fail!("This should not happen")
+                }
+
+                match new_best {
+                    Some(b) => new_best = KDNode::nearest_neighbour(current.nearer_child(target), target, new_best),
+                    None => fail!("This should not happen")
+                }
+
+                // Can be optimised (see SO link above)
+                match new_best {
+                    Some(b) => new_best = KDNode::nearest_neighbour(current.away_child(target), target, new_best),
+                    None => fail!("This should not happen")
+                }
+
+                new_best
+            }
+        }
+    }
+
+    fn nearer_child(&self, point: Vec3) -> Option<Box<KDNode>> {
+        match self.axis {
+            0 => if self.photon.position.x < point.x { self.left_child.clone() } else { self.right_child.clone() },
+            1 => if self.photon.position.y < point.y { self.left_child.clone() } else { self.right_child.clone() },
+            2 => if self.photon.position.z < point.z { self.left_child.clone() } else { self.right_child.clone() },
+            _ => fail!("Only 3D supported")
+        }
+    }
+
+    fn away_child(&self, point: Vec3) -> Option<Box<KDNode>> {
+        match self.axis {
+            0 => if self.photon.position.x > point.x { self.left_child.clone() } else { self.right_child.clone() },
+            1 => if self.photon.position.y > point.y { self.left_child.clone() } else { self.right_child.clone() },
+            2 => if self.photon.position.z > point.z { self.left_child.clone() } else { self.right_child.clone() },
+            _ => fail!("Only 3D supported")
+        }
     }
 
     #[allow(dead_code)]
     pub fn is_leaf(&self) -> bool {
         match self.left_child {
             Some(_) => match self.right_child {
-                Some(_) => {/*println!("a");*/ false},
-                None => {/*println!("b");*/ false}
+                Some(_) => false,
+                None => false
             },
             None => {match self.right_child {
-                Some(_) => {/*println!("c");*/ false},
-                None => {/*println!("d");*/ true}
+                Some(_) => false,
+                None => true
             }}
         }
     }
@@ -121,7 +167,8 @@ impl KDTree {
             photon: sorted_point_list[median_index],
             bbox: get_bounds_from_photons(&point_list),
             left_child: left_child,
-            right_child: right_child
+            right_child: right_child,
+            axis: axis as uint
         })
     }
 }
@@ -173,4 +220,50 @@ fn it_creates_and_range_queries() {
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].power.x, 1.0);
     assert_eq!(results[1].power.x, 1.1);
+}
+
+#[test]
+fn it_creates_and_gets_nearest_neighbour() {
+    let mut photons: Vec<Photon> = Vec::new();
+    photons.push(Photon {
+        position: Vec3 {x: 0.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 1.0, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 0.5, y: -0.5, z: 0.5},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 1.1, y: 0.0, z: 0.0}
+    });
+
+    // Not in region
+    photons.push(Photon {
+        position: Vec3 {x: 2.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 0.0, y: 2.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 0.0, y: 0.0, z: -2.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+
+    let tree = match KDTree::new_from_photons(photons, 0) {
+        Some(x) => x,
+        None => fail!("Could not create KD-Tree")
+    };
+
+    let target = Vec3 {x: 0.4, y: 0.1, z: -0.1};
+
+    let result = match KDNode::nearest_neighbour(Some(tree), target, None) {
+        Some(r) => r,
+        None => fail!("No photonic neighbour found!?")
+    };
+
+    assert_eq!(result.power.x, 1.0);
 }
