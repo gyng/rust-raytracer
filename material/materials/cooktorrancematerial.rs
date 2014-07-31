@@ -28,12 +28,16 @@ impl Material for CookTorranceMaterial {
             None => {Vec3::one()}
         };
 
+        self.specular.scale(self.k_s * self.brdf(&n, &i, &l)) + diffuse + ambient
+    }
+
+    fn brdf(&self, n: &Vec3, i: &Vec3, l: &Vec3) -> f64 {
         // Specular calculations
-        let h = (l + i).unit();
+        let h = (l + *i).unit();
         let n_dot_h = n.dot(&h);
-        let n_dot_l = n.dot(&l);
+        let n_dot_l = n.dot(l);
         let v_dot_h = i.dot(&h);
-        let n_dot_v = n.dot(&i);
+        let n_dot_v = n.dot(i);
 
         // Fresnel term (Schlick's approximation)
         let n1 = 1.0;
@@ -52,7 +56,7 @@ impl Material for CookTorranceMaterial {
 
         let brdf = f * d * g / (n_dot_v * n_dot_l * PI);
 
-        self.specular.scale(self.k_s * brdf) + diffuse + ambient
+        brdf
     }
 
     fn is_reflective(&self) -> bool {

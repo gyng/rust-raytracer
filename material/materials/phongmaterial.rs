@@ -20,7 +20,7 @@ pub struct PhongMaterial {
 
 impl Material for PhongMaterial {
     fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
-        let h = (l + i).unit();
+        // let h = (l + i).unit();
 
         // Blinn-Phong approximation
         let ambient  = self.ambient.scale(self.k_a);
@@ -28,9 +28,14 @@ impl Material for PhongMaterial {
             Some(ref x) => {x.color(u, v)}
             None => {Vec3::one()}
         };
-        let specular = self.specular.scale(self.k_s).scale(n.dot(&h).powf(self.shininess));
+        let specular = self.specular.scale(self.k_s).scale(self.brdf(&n, &i, &l));
 
         ambient + diffuse + specular
+    }
+
+    fn brdf(&self, n: &Vec3, i: &Vec3, l: &Vec3) -> f64 {
+        let h = (l + *i).unit();
+        n.dot(&h).powf(self.shininess)
     }
 
     fn is_reflective(&self) -> bool {

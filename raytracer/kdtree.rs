@@ -30,19 +30,19 @@ impl KDNode {
             results.push(current.photon);
         }
 
-        match current.left_child.clone() {
-            Some(box child) => {
+        match current.left_child {
+            Some(box ref child) => {
                 if target.overlaps(&child.bbox) {
-                    results = results + KDNode::query_region(&child, target);
+                    results = results + KDNode::query_region(child, target);
                 }
             },
             None => {}
         }
 
-        match current.right_child.clone() {
-            Some(box child) => {
+        match current.right_child {
+            Some(box ref child) => {
                 if target.overlaps(&child.bbox) {
-                    results = results + KDNode::query_region(&child, target);
+                    results = results + KDNode::query_region(child, target);
                 }
             },
             None => {}
@@ -51,9 +51,8 @@ impl KDNode {
         results
     }
 
-    // http://stackoverflow.com/questions/4418450/how-does-the-kd-tree-nearest-neighbor-search-work
-    // https://gist.github.com/tompaton/863301
-    pub fn nearest_neighbour(current: &Option</*&*/Box<KDNode>>, target: Vec3, best: Option<Photon>) -> Option<Photon> {
+    // Need to upgrade this to do n-nearest neighbours
+    pub fn nearest_neighbour(current: &Option<Box<KDNode>>, target: Vec3, best: Option<Photon>) -> Option<Photon> {
         match *current {
             None => return best,
             Some(ref current) => {
@@ -72,13 +71,13 @@ impl KDNode {
                 }
 
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(&current.nearer_child(target), target, new_best),
+                    Some(b) => new_best = KDNode::nearest_neighbour(current.nearer_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
                 // Can be optimised (see SO link above)
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(&current.away_child(target), target, new_best),
+                    Some(b) => new_best = KDNode::nearest_neighbour(current.away_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
@@ -87,20 +86,20 @@ impl KDNode {
         }
     }
 
-    fn nearer_child(&self, point: Vec3) -> Option<Box<KDNode>> {
+    fn nearer_child(&self, point: Vec3) -> &Option<Box<KDNode>> {
         match self.axis {
-            0 => if self.photon.position.x < point.x { self.left_child.clone() } else { self.right_child.clone() },
-            1 => if self.photon.position.y < point.y { self.left_child.clone() } else { self.right_child.clone() },
-            2 => if self.photon.position.z < point.z { self.left_child.clone() } else { self.right_child.clone() },
+            0 => if self.photon.position.x < point.x { &self.left_child } else { &self.right_child },
+            1 => if self.photon.position.y < point.y { &self.left_child } else { &self.right_child },
+            2 => if self.photon.position.z < point.z { &self.left_child } else { &self.right_child },
             _ => fail!("Only 3D supported")
         }
     }
 
-    fn away_child(&self, point: Vec3) -> Option<Box<KDNode>> {
+    fn away_child(&self, point: Vec3) -> &Option<Box<KDNode>> {
         match self.axis {
-            0 => if self.photon.position.x > point.x { self.left_child.clone() } else { self.right_child.clone() },
-            1 => if self.photon.position.y > point.y { self.left_child.clone() } else { self.right_child.clone() },
-            2 => if self.photon.position.z > point.z { self.left_child.clone() } else { self.right_child.clone() },
+            0 => if self.photon.position.x > point.x { &self.left_child } else { &self.right_child },
+            1 => if self.photon.position.y > point.y { &self.left_child } else { &self.right_child },
+            2 => if self.photon.position.z > point.z { &self.left_child } else { &self.right_child },
             _ => fail!("Only 3D supported")
         }
     }

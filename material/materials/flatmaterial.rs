@@ -35,6 +35,11 @@ impl Material for FlatMaterial {
         Vec3::zero()
     }
 
+    #[allow(unused_variable)]
+    fn brdf(&self, n: &Vec3, i: &Vec3, l: &Vec3) -> f64 {
+        1.0
+    }
+
     fn ior(&self) -> f64 {
         1.0
     }
