@@ -9,6 +9,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
 [Assets repository](https://github.com/gyng/raytracer-assets)
 
+
 ## Usage
 
 1. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models and textures into the project directory as well.
@@ -34,6 +35,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 * teapot
 * heptoroid-white
 * heptoroid-shiny
+* tachikoma
 
 
 ## Features
@@ -51,6 +53,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)
 * Basic camera animation
+
 
 ## Missing/potential features
 
