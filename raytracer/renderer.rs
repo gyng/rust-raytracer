@@ -30,7 +30,7 @@ impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
         let photon_scene_local = shared_scene.clone();
-        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 128000, 0.01, 100);
+        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 512000 * 2, 0.001, 20);
 
         let mut surface = Surface::new(camera.image_width as uint,
                                        camera.image_height as uint,
@@ -133,8 +133,9 @@ impl Renderer {
 
         let start_time = ::time::get_time();
         let mut count = 0u;
-        let total = photon_count * scene.lights.len();
+        let total = photon_count * scene.lights.len() * 2;
 
+        // TODO: scale photon count by light power
         for light in scene.lights.iter() {
             for _ in range(0, photon_count) {
                 let ray = Ray {
@@ -142,14 +143,17 @@ impl Renderer {
                     direction: Vec3::random()
                 };
 
-                // TODO: light color should replace power argument?
-                photons.push_all_move(Renderer::shoot_photon(scene, &ray, power_threshold,
-                                                             light.color(), max_bounces, 0));
+                photons.push_all_move(Renderer::shoot_caustic_photon(scene, &ray, power_threshold, light.color(), 0, max_bounces, true));
+                photons.push_all_move(Renderer::shoot_diffuse_photon(scene, &ray, power_threshold, light.color(), 0, max_bounces, true));
 
-                count += 1;
-                ::util::print_progress("Photon", start_time, count, total);
+                count += 2;
+                if count % 1000 == 0 {
+                    ::util::print_progress("Photon", start_time, count, total);
+                }
             }
         }
+
+        println!("Photon caches: {}", photons.len());
 
         match KDTree::new_from_photons(photons, 0) {
             Some(tree) => tree,
@@ -157,9 +161,7 @@ impl Renderer {
         }
     }
 
-    fn shoot_photon(scene: &Scene, ray: &Ray, power_threshold: f64,
-                    power: Vec3, max_bounces: uint, bounces: uint) -> Vec<Photon> {
-
+    fn shoot_caustic_photon(scene: &Scene, ray: &Ray, power_threshold: f64, power: Vec3, bounces: uint, max_bounces: uint, from_light: bool) -> Vec<Photon> {
         let mut photons: Vec<Photon> = Vec::new();
 
         if bounces > max_bounces || power.len() < power_threshold {
@@ -168,75 +170,116 @@ impl Renderer {
 
         match ray.get_nearest_hit(scene) {
             Some(nearest_hit) => {
-                // We want caustics only, so photons which don't hit a specular material can be killed
-                if bounces == 0 && !nearest_hit.material.is_reflective() && !nearest_hit.material.is_refractive() {
+                // First bounce hit a diffuse surface, abort
+                // LD
+                if from_light &&
+                   !nearest_hit.material.is_reflective() &&
+                   !nearest_hit.material.is_refractive() {
+
                     return photons;
                 }
 
-                let n = nearest_hit.n.unit();
-                let i = ray.direction.scale(-1.0).unit();
-                // let l = Vec3::random();
-                let u = nearest_hit.u;
-                let v = nearest_hit.v;
+                // Photon has bounced off a specular/transmissive surface(s) onto a diffuse surface, store it
+                // and abort current photon trace
+                // LS+D
+                if !from_light &&
+                   !nearest_hit.material.is_reflective() &&
+                   !nearest_hit.material.is_refractive() {
 
-                // Randomly decide to reflect/transmit/absorb, Russian roulette
-                // In real life we split the photon up, but it's too slow as each photon
-                // intersection generates 3 new photons (absorb/reflect/refract) that way
-                // let mut rng = task_rng();
-                // let rand = rng.gen::<f64>();
-                // let p_reflect  = nearest_hit.material.global_specular(&Vec3::one()).len() / 2.0_f64.sqrt();
-                // let p_transmit = nearest_hit.material.global_transmissive(&Vec3::one()).len() / 2.0_f64.sqrt();
-                // let p_absorb = 1.0 - p_reflect - p_transmit;
-
-                // if rand < p_reflect {
-                    // Reflected
-                    if nearest_hit.material.is_reflective() {
-                        let r = Vec3::reflect(&i, &n);
-                        let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
-
-                        let reflect_scaled = nearest_hit.material.global_specular(&power);
-                        photons = photons + Renderer::shoot_photon(scene, &reflect_ray, power_threshold,
-                                                                   reflect_scaled, max_bounces, bounces + 1);
-                    }
-                // } else if rand < p_reflect + p_transmit {
-                    // Transmitted (refracted)
-
-                    if nearest_hit.material.is_refractive() {
-                        let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), false) {
-                            Some(ref t) => *t,
-                            None => Vec3::reflect(&i, &n)
-                        };
-                        let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
-                        let refract_scaled = nearest_hit.material.global_transmissive(&power);
-                        // let photon_color = Vec3::clamp(&(nearest_hit.material.sample(n, i, l, u, v)));
-                        photons = photons + Renderer::shoot_photon(scene, &refract_ray, power_threshold,
-                                                                   refract_scaled, max_bounces, bounces + 1);
-                    }
-                // } else {
-                    // Absorbed
                     photons.push(Photon {
                         position: nearest_hit.position,
                         incoming_dir: ray.direction.scale(-1.0),
                         power: power
                     });
-                // }
 
-                // Approach 2: slow
+                    return photons;
+                }
 
-                // Generate three photons: absorb/reflect/refract
-                // Store incoming indirect lighting
-                // photons.push(Photon {
-                //     position: nearest_hit.position,
-                //     incoming_dir: ray.direction.scale(-1.0),
-                //     power: power
-                // });
+                let n = nearest_hit.n.unit();
+                let i = ray.direction.scale(-1.0).unit();
 
-                // // Send out indirect diffuse lighting
-                // let photon_color = Vec3::clamp(&(nearest_hit.material.sample(n, i, i, u, v)));
-                // let r = Vec3::reflect(&i, &n);
-                // let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
-                // photons.push_all_move(Renderer::shoot_photon(scene, &reflect_ray, power_threshold,
-                //                                              photon_color, max_bounces, bounces + 1));
+                // We're on a specular surface
+                // TODO: base the probabilities off the material
+                let transmit_p = 0.45;
+                let reflect_p = 0.45;
+                // let absorb_p = 1.0 - transmit_p - reflect_p;
+                let mut rng = task_rng();
+                let rand = rng.gen::<f64>();
+
+                if rand < transmit_p {
+                    // Transmit
+                    let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), false) {
+                        Some(ref t) => *t,
+                        None => Vec3::reflect(&i, &n)
+                    };
+
+                    let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
+                    photons.push_all_move(Renderer::shoot_caustic_photon(scene, &refract_ray, power_threshold, power,
+                                                                         bounces + 1, max_bounces, false));
+                } else if rand < transmit_p + reflect_p {
+                    // Reflect
+                    let r = Vec3::reflect(&i, &n);
+                    let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                    photons.push_all_move(Renderer::shoot_caustic_photon(scene, &reflect_ray, power_threshold, power,
+                                                                         bounces + 1, max_bounces, false));
+                }
+            },
+            None => {}
+        }
+
+        photons
+    }
+
+    // only_specular: has this photon only been on specular surfaces?
+    fn shoot_diffuse_photon(scene: &Scene, ray: &Ray, power_threshold: f64, power: Vec3, bounces: uint, max_bounces: uint, only_specular: bool) -> Vec<Photon> {
+        let mut photons: Vec<Photon> = Vec::new();
+
+        if bounces > max_bounces || power.len() < power_threshold {
+            return photons;
+        }
+
+        match ray.get_nearest_hit(scene) {
+            Some(nearest_hit) => {
+                let is_diffuse = !nearest_hit.material.is_reflective() && !nearest_hit.material.is_refractive();
+
+                if only_specular && is_diffuse {
+                    // Photon has only been on specular surface: this is a caustic photon so we do not store it (LS+D)
+                    return photons;
+                } else if !only_specular && is_diffuse {
+                    // This photon came from a diffuse surface (L(S|D)*D+), store it
+                    photons.push(Photon {
+                        position: nearest_hit.position,
+                        incoming_dir: ray.direction.scale(-1.0),
+                        power: power
+                    });
+                }
+
+                // Propagate photon after colouring it
+                // TODO: base the probabilities off the material
+                let diffuse_transmit_p = 0.15;
+                let diffuse_reflect_p = 0.8;
+                // let absorb_p = 1.0 - diffuse_transmit_p - diffuse_reflect_p;
+
+                let mut rng = task_rng();
+                let rand = rng.gen::<f64>();
+
+                if rand < diffuse_transmit_p {
+                    // Subsurface (unimplemented)
+                } else if rand < diffuse_transmit_p + diffuse_reflect_p {
+                    // Reflect photon, colour bleed (diffuse-diffuse interactions)
+                    let n = nearest_hit.n.unit();
+                    let i = ray.direction.scale(-1.0).unit();
+                    let r = Vec3::reflect(&i, &n);
+                    let u = nearest_hit.u;
+                    let v = nearest_hit.v;
+                    let photon_color = power * Vec3::clamp(&(nearest_hit.material.sample(n, i, r, u, v)));
+                    let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                    let still_specular_only = is_diffuse && only_specular;
+                    photons.push_all_move(Renderer::shoot_caustic_photon(scene, &reflect_ray, power_threshold, photon_color,
+                                                                         bounces + 1, max_bounces, still_specular_only));
+                } else {
+                    // Absorbed; RIP Mr. Photon
+                }
             },
             None => {}
         }
@@ -301,7 +344,7 @@ impl Renderer {
 
                 // Get photon cache result for caustics/indirect lighting
                 // TODO: Use n-nearest photons instead of querying a region
-                let search_half_width = 3.0;
+                let search_half_width = 2.0;
                 let target = bbox::union_points(&nearest_hit.position, &nearest_hit.position).expand(search_half_width);
                 let photons = KDNode::query_region(photon_cache, target);
                 let mut power = Vec3::zero();
@@ -310,16 +353,15 @@ impl Renderer {
                 }
                 // This irradiance is completely wrong
                 // let caustics = power.scale(1.0 / (photons.len() as f64 + 1.0));
-                let total_photons = 128000.0;
-                let caustics = power.scale(1.0 / (search_half_width * search_half_width * 6.0 * 2.0 * total_photons / 32000.0));
+                let total_photons = 512000.0 * 2.0;
+                let indirect_lighting = power.scale(1.0 / (search_half_width * search_half_width * 6.0 * 2.0 * total_photons / 32000.0));
 
                 // let indirect_irradiance = match KDNode::nearest_neighbour(&Some(box photon_cache.clone()), nearest_hit.position, None) {
                 //     Some(p) => p.power,
                 //     None => Vec3::zero()
                 // };
 
-
-                result = result + caustics;
+                result = result + indirect_lighting;
                 // result = indirect_irradiance;
 
                 result

@@ -71,13 +71,13 @@ impl KDNode {
                 }
 
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(current.nearer_child(target), target, new_best),
+                    Some(_) => new_best = KDNode::nearest_neighbour(current.nearer_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
                 // Can be optimised (see SO link above)
                 match new_best {
-                    Some(b) => new_best = KDNode::nearest_neighbour(current.away_child(target), target, new_best),
+                    Some(_) => new_best = KDNode::nearest_neighbour(current.away_child(target), target, new_best),
                     None => fail!("This should not happen")
                 }
 
