@@ -129,6 +129,13 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
             let scene = my_scene::get_heptoroid_shiny_scene();
             Some((camera, scene))
         },
+        "tachikoma" => {
+            // Shiny heptoroid, 114688 tris, 57302 verts
+            // You can forget about refractions, it's too complex a scene
+            let camera = my_scene::get_tachikoma_camera(image_width, image_height, fov);
+            let scene = my_scene::get_tachikoma_scene();
+            Some((camera, scene))
+        },
         "sphere" => {
             // Sphere skybox test scene
             let camera = match config.animating {
