@@ -37,7 +37,10 @@ struct SceneConfig<'a> {
     shadow_samples: uint,
     pixel_samples: uint,
     output_file: String,
-    animating: bool
+    animating: bool,
+    fps: f64,
+    time_slice: (f64, f64),
+    starting_frame_number: uint
 }
 
 
@@ -237,14 +240,19 @@ fn main() {
     };
 
     if config.animating {
+        let (animate_from, animate_to) = config.time_slice;
+
         let animator = raytracer::animator::Animator {
-            fps: 25.0,
-            length: 5.0,
+            fps: config.fps,
+            animate_from: animate_from,
+            animate_to: animate_to,
+            starting_frame_number: config.starting_frame_number,
             renderer: renderer
         };
 
-        println!("Animating - tasks: {}, FPS: {}, length: {}s",
-                 renderer.tasks, animator.fps, animator.length);
+        println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
+                 renderer.tasks, animator.fps, animator.animate_from, animator.animate_to,
+                 animator.starting_frame_number);
         animator.animate(camera, shared_scene, config.output_file.as_slice());
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)",

@@ -7,7 +7,9 @@ use vec3::Vec3;
 
 pub struct Animator {
     pub fps: f64,
-    pub length: f64, // rounded down to nearest frame
+    pub animate_from: f64, // Number of frames is rounded down to nearest frame
+    pub animate_to: f64,
+    pub starting_frame_number: uint, // For filename
     pub renderer: Renderer
 }
 
@@ -18,18 +20,20 @@ impl Animator {
     // TODO: make this a Surface iterator so both single frame and animation
     // process flows are similar
     pub fn animate(&self, camera: Camera, shared_scene: Arc<Scene>, filename: &str) {
-        let start_time = ::time::get_time();
-        let total_frames = (self.fps * self.length).floor() as uint;
+        let animate_start = ::time::get_time();
+        let length = self.animate_to - self.animate_from;
+        let total_frames = (self.fps * length).floor() as uint;
 
         let (tx, rx) = sync_channel(1);
         tx.send(1i);
 
         for frame_number in range(0, total_frames) {
-            let time = frame_number as f64 / self.fps;
+            let time = self.animate_from + frame_number as f64 / self.fps;
             let lerped_camera = Animator::lerp_camera(&camera, time);
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
 
-            let shared_name = format!("{}{:06u}.ppm", filename, frame_number);
+            let file_frame_number = self.starting_frame_number + frame_number;
+            let shared_name = format!("{}{:06u}.ppm", filename, file_frame_number);
             let child_tx = tx.clone();
 
             rx.recv();
@@ -38,7 +42,7 @@ impl Animator {
                 child_tx.send(2i);
             });
 
-            ::util::print_progress("*** Frame", start_time, frame_number + 1 as uint, total_frames);
+            ::util::print_progress("*** Frame", animate_start, frame_number + 1 as uint, total_frames);
             println!("");
         }
 
