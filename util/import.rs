@@ -23,7 +23,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
     let mut processed_bytes = 0;
     let total_bytes = match path.stat() {
         Ok(stat) => stat.size,
-        Err(e) => fail!(e)
+        Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
     };
 
     for line_iter in file.lines() {
