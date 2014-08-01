@@ -15,7 +15,11 @@ pub fn print_progress(noun: &str, start_time: ::time::Timespec, done: uint, tota
            ::std::f64::to_str_exact(remaining_time / 60.0, 2),
            );
 
-    if remaining_jobs == 0 { println!(""); } else { ::std::io::stdio::flush(); }
+    if remaining_jobs == 0 {
+      println!("({:2f} min)", (current_time - start_time.sec) as f64 / 60.0);
+    } else {
+      ::std::io::stdio::flush();
+    }
 }
 
 fn make_progress_bar(ratio: f64, length: uint) -> String {
