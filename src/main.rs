@@ -122,14 +122,19 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
         "heptoroid-white" => {
             // Heptoroid, 114688 tris, 57302 verts
             let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
-            let scene = my_scene::get_heptoroid_scene();
+            let scene = my_scene::get_heptoroid_scene("white");
             Some((camera, scene))
         },
         "heptoroid-shiny" => {
             // Shiny heptoroid, 114688 tris, 57302 verts
-            // You can forget about refractions, it's too complex a scene
             let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
-            let scene = my_scene::get_heptoroid_shiny_scene();
+            let scene = my_scene::get_heptoroid_scene("shiny");
+            Some((camera, scene))
+        },
+        "heptoroid-refractive" => {
+            // Refractive heptoroid, you want to limit your reflect levels (2/3?) and up your refract levels (10/16?) for this
+            let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
+            let scene = my_scene::get_heptoroid_scene("refractive");
             Some((camera, scene))
         },
         "tachikoma" => {

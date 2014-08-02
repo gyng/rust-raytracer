@@ -146,8 +146,7 @@ impl Renderer {
                 if nearest_hit.material.is_reflective() ||
                    nearest_hit.material.is_refractive() {
 
-                    let cos_angle = -ray.direction.dot(&n);
-                    let reflect_fresnel = Renderer::fresnel_reflect(nearest_hit.material.ior(), cos_angle);
+                    let reflect_fresnel = Renderer::fresnel_reflect(nearest_hit.material.ior(), &i, &n, inside);
                     let mut refract_fresnel = 1.0 - reflect_fresnel;
 
                     // Global reflection
@@ -229,10 +228,27 @@ impl Renderer {
 
     /// Calculates the fresnel (reflectivity) given the index of refraction and the cos_angle
     /// This uses Schlick's approximation. cos_angle is normal_dot_incoming
-    fn fresnel_reflect(ior: f64, cos_angle: f64) -> f64 {
-        let n1 = 1.0;
-        let n2 = ior;
-        let r0 = ((n1 - n2) / (n1 + n2)).powf(2.0);
-        r0 + (1.0 - r0) * (1.0 - cos_angle).powf(5.0)
+    /// http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+    fn fresnel_reflect(ior: f64, i: &Vec3, n: &Vec3, inside: bool) -> f64 {
+        let (n1, n2) = if inside { (ior, 1.0) } else { (1.0, ior) };
+        let actual_n = if inside { n.scale(-1.0) } else { *n };
+
+        let r0_sqrt = (n1 - n2) / (n1 + n2);
+        let r0 = r0_sqrt * r0_sqrt;
+
+        let cos_angle = if n1 <= n2 {
+            i.dot(&actual_n)
+        } else {
+            let t = match Vec3::refract(i, &actual_n.scale(-1.0), ior, inside) {
+                Some(x) => x,
+                None => return 1.0 // n1 > n2 && TIR
+            };
+
+            -actual_n.dot(&t) // n1 > n2 && !TIR
+        };
+
+        let cos_term = 1.0 - cos_angle;
+
+        (r0 + ((1.0 - r0) * cos_term * cos_term * cos_term * cos_term * cos_term)).max(0.0).min(1.0)
     }
 }

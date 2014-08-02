@@ -36,17 +36,20 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
 ## Available Scenes
 
+These should use 30deg fov for squares and 45deg fov for 16:9.
+
 * box
 * bunny
 * cow
-* fresnel
+* fresnel (0s-10s animation)
 * lucy
-* sibenik
-* sphere
-* sponza
+* sibenik (0s-7s animation)
+* sphere (0s-10s animation)
+* sponza (45deg fov for a square; 67.5deg for 16:9)
 * teapot
 * heptoroid-white
 * heptoroid-shiny
+* heptoroid-refractive
 * tachikoma
 
 
