@@ -1,5 +1,5 @@
 {
-    "name": "box",
+    "name": "heptoroid-shiny",
     "size": [512, 512],
     "fov": 30.0,
     "reflect_depth": 4,
