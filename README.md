@@ -1,5 +1,6 @@
 rust-raytracer
 ==============
+[![Build Status](https://travis-ci.org/gyng/rust-raytracer.svg?branch=master)](https://travis-ci.org/gyng/rust-raytracer)
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
