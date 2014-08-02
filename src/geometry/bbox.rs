@@ -95,16 +95,32 @@ pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Share>>) -> BBox {
 impl BBox {
     #[allow(dead_code)]
     pub fn intersects(&self, ray: &Ray) -> bool {
-        let o = ray.origin;
-        let d = ray.direction.scale(-1.0);
+        // Using ray.inverse_dir is an optimisation. Normally, for simplicity we would do
+        //
+        //     let d = ray.direction.scale(-1.0);
+        //     tx1 = (self.min.x - o.x) / d.x;
+        //     tx2 = (self.min.y - o.y) / d.y;
+        //     ...
+        //
+        // but:
+        // 
+        //    1. div is usually more expensive than mul
+        //    2. we are recomputing the inverse of d each time we do an intersection check
+        //
+        // By caching 1.0 / ray.direction.scale(-1.0) inside the ray itself we do not need
+        // to waste CPU cycles recomputing that every intersection check.
+        //
+        // See: https://truesculpt.googlecode.com/hg-history/Release%25200.8/Doc/ray_box_intersect.pdf
 
-        let tx1 = (self.min.x - o.x) / d.x;
-        let ty1 = (self.min.y - o.y) / d.y;
-        let tz1 = (self.min.z - o.z) / d.z;
+        let o = ray.origin; 
 
-        let tx2 = (self.max.x - o.x) / d.x;
-        let ty2 = (self.max.y - o.y) / d.y;
-        let tz2 = (self.max.z - o.z) / d.z;
+        let tx1 = (self.min.x - o.x) * ray.inverse_dir.x;
+        let ty1 = (self.min.y - o.y) * ray.inverse_dir.y;
+        let tz1 = (self.min.z - o.z) * ray.inverse_dir.z;
+
+        let tx2 = (self.max.x - o.x) * ray.inverse_dir.x;
+        let ty2 = (self.max.y - o.y) * ray.inverse_dir.y;
+        let tz2 = (self.max.z - o.z) * ray.inverse_dir.z;
 
         let tx_min = tx1.min(tx2);
         let ty_min = ty1.min(ty2);

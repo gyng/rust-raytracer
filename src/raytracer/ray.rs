@@ -5,10 +5,23 @@ use vec3::Vec3;
 
 pub struct Ray {
     pub origin: Vec3,
-    pub direction: Vec3
+    pub direction: Vec3,
+    pub inverse_dir: Vec3 // This is used to optimise ray-bbox intersection checks
 }
 
 impl Ray {
+    pub fn new(origin: Vec3, direction: Vec3) -> Ray {
+        Ray {
+            origin: origin,
+            direction: direction,
+            inverse_dir: Vec3 {
+                x: 1.0 / direction.x,
+                y: 1.0 / direction.y,
+                z: 1.0 / direction.z
+            }.scale(-1.0)
+        }
+    }
+
     pub fn get_nearest_hit<'a>(&'a self, scene: &'a Scene) -> Option<Intersection<'a>> {
         let t_min = 0.000001;
         let mut nearest_hit = None;

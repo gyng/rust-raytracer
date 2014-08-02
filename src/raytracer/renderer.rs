@@ -153,7 +153,7 @@ impl Renderer {
                     // Global reflection
                     if nearest_hit.material.is_reflective() {
                         let r = Vec3::reflect(&i, &n);
-                        let reflect_ray = Ray {origin: nearest_hit.position, direction: r};
+                        let reflect_ray = Ray::new(nearest_hit.position, r);
                         let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
                                                          reflect_depth - 1, refract_depth, inside);
 
@@ -170,7 +170,7 @@ impl Renderer {
                             }
                         };
 
-                        let refract_ray = Ray {origin: nearest_hit.position + t.scale(EPSILON), direction: t};
+                        let refract_ray = Ray::new(nearest_hit.position + t.scale(EPSILON), t);
                         let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
                                                          reflect_depth, refract_depth - 1, !inside);
 
@@ -206,7 +206,7 @@ impl Renderer {
             // until light source.
             let sampled_light_position = light.position();
             let shadow_l = (sampled_light_position - nearest_hit.position).unit();
-            let shadow_ray = Ray {origin: nearest_hit.position, direction: shadow_l};
+            let shadow_ray = Ray::new(nearest_hit.position, shadow_l);
             let distance_to_light = (sampled_light_position - nearest_hit.position).len();
 
             // Check against candidate primitives in scene for occlusion

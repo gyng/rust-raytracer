@@ -59,12 +59,11 @@ impl Camera {
     }
 
     pub fn get_ray(&self, x: f64, y: f64) -> Ray {
-        Ray {
-            origin: self.position,
-            direction: (self.eye +
-                self.right.scale(x * self.pixel_width - self.half_width) +
-                self.up.scale(y * self.pixel_height - self.half_height)).unit()
-        }
+        Ray::new(
+            self.position,
+            (self.eye + self.right.scale(x * self.pixel_width - self.half_width) +
+            self.up.scale(y * self.pixel_height - self.half_height)).unit()
+        )
     }
 
     /// Add additional keyframes to the camera. The current state of the camera
