@@ -4,6 +4,9 @@ use material::Material;
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
+#[cfg(test)]
+use material::materials::FlatMaterial;
+
 #[allow(dead_code)]
 pub struct Sphere {
     pub center: Vec3,
@@ -66,4 +69,55 @@ impl Prim for Sphere {
             }
         })
     }
+}
+
+#[test]
+fn it_intersects_and_interpolates() {
+    let sphere = Sphere {
+        center: Vec3::zero(),
+        radius: 1.0,
+        material: box FlatMaterial {color: Vec3::one()}
+    };
+
+    // Tests actual intersection
+    let intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let intersection = sphere.intersects(&intersecting_ray, 0.0, 10.0).unwrap();
+    assert_eq!(intersection.position.x, 0.0);
+    assert_eq!(intersection.position.y, 0.0);
+    assert_eq!(intersection.position.z, -1.0);
+    assert_eq!(intersection.n.x, 0.0);
+    assert_eq!(intersection.n.y, 0.0);
+    assert_eq!(intersection.n.z, -1.0);
+
+    // Ray off to the sides
+    let mut non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 100.0, y: 100.0, z: 0.1});
+    let mut non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
+    assert!(non_intersection.is_none());
+
+    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: -100.0, y: -100.0, z: 0.1});
+    non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
+    assert!(non_intersection.is_none());
+
+    // Ray in opposite direction
+    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: -1.0});
+    non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
+    assert!(non_intersection.is_none());
+}
+
+#[test]
+fn it_intersects_only_in_tmin_tmax() {
+    let sphere = Sphere {
+        center: Vec3::zero(),
+        radius: 1.0,
+        material: box FlatMaterial {color: Vec3::one()}
+    };
+
+    // Tests tmin
+    let mut intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let mut non_intersection = sphere.intersects(&intersecting_ray, 1000.0, 10000.0);
+    assert!(non_intersection.is_none());
+
+    // Tests tmax
+    non_intersection = sphere.intersects(&intersecting_ray, 0.0, 0.0001);
+    assert!(non_intersection.is_none());
 }
