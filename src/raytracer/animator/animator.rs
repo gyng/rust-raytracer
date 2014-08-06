@@ -24,7 +24,7 @@ impl Animator {
         let length = self.animate_to - self.animate_from;
         let total_frames = (self.fps * length).floor() as uint;
 
-        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as int));
+        let sema = Arc::new(Semaphore::new(1));
 
         for frame_number in range(0, total_frames) {
             let time = self.animate_from + frame_number as f64 / self.fps;
