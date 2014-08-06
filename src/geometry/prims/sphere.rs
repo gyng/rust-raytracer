@@ -72,7 +72,7 @@ impl Prim for Sphere {
 }
 
 #[test]
-fn it_intersects_and_interpolates() {
+fn it_intersects() {
     let sphere = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
@@ -113,7 +113,7 @@ fn it_intersects_only_in_tmin_tmax() {
     };
 
     // Tests tmin
-    let mut intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
     let mut non_intersection = sphere.intersects(&intersecting_ray, 1000.0, 10000.0);
     assert!(non_intersection.is_none());
 
