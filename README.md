@@ -13,20 +13,39 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
 ## Usage
 
-1. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models and textures into the project directory as well.
-2. Convert PNG textures into PPM by running appropriate scripts (`ruby ./all_to_ppm.rb` in `./docs/assets/textures/skyboxes/`)
-3. Compile: `rustc src/main.rs -o main`
+1. Clone the project. `--recursive` clones most sample models and textures into the project directory as well.
+
+        git clone --recursive https://github.com/gyng/rust-raytracer.git
+
+2. Convert PNG textures into PPM by running appropriate scripts in `./docs/assets/textures/skyboxes/`.
+   This assumes you have, at the minimum, ImageMagick installed.
+
+        cd ./docs/assets/textures/skyboxes/
+
+        with Ruby and ImageMagick:
+        ruby ./all_to_ppm.rb
+
+        with plain ImageMagick:
+        find . -name '*.png' -execdir mogrify -format ppm {} \;
+
+3. Compile
+
+        rustc ./src/main.rs -o main
+
 4. Edit `sample-config.json` if you wish to render a scene besides the default,
    or if you wish to tweak the renderer parameters
-5. Run compiled program, passing sample-config.json as an argument. e.g.: `./main
-   sample-config.json`.
-6. If you are rendering a provided scene, run the binary in the project root so it can find the models.
+
+5. Run the compiled program, passing the render configuration as an argument.
+   If rendering a provided scene, run the binary in the project root so it can find the models and textures.
+
+        ./main sample-config.json
+
 
 ### With Cargo
 
 1. Follow steps 1 and 2 above
 2. `cargo build` or `cargo run sample-config.json` in project root
-3. To run tests `cargo test`
+3. `cargo test` to run tests
 
 ### Useful commands
 
