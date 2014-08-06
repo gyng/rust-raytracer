@@ -47,18 +47,23 @@ impl Prim for Triangle {
         let e1 = self.v1.pos - self.v0.pos;
         let e2 = self.v2.pos - self.v0.pos;
         let p = ray.direction.cross(&e2);
-        let a = e1.dot(&p);
+        let det = e1.dot(&p);
 
-        let f = 1.0 / a;
+        // if determinant is near zero, ray lies in plane of triangle
+        if det > -::std::f64::EPSILON && det < ::std::f64::EPSILON {
+            return None
+        }
+
+        let inv_det = 1.0 / det;
         let s = ray.origin - self.v0.pos;
-        let beta = f * s.dot(&p);
+        let beta = inv_det * s.dot(&p);
         if beta < 0.0 || beta > 1.0 { return None }
 
         let q = s.cross(&e1);
-        let gamma = f * ray.direction.dot(&q);
+        let gamma = inv_det * ray.direction.dot(&q);
         if gamma < 0.0 || beta + gamma > 1.0 { return None }
 
-        let t = f * e2.dot(&q);
+        let t = inv_det * e2.dot(&q);
 
         if t < t_min || t > t_max {
             None
