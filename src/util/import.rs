@@ -1,7 +1,7 @@
 use std::io::{BufferedReader, File};
 use material::materials::CookTorranceMaterial;
 use geometry::{Mesh, Prim};
-use geometry::prims::Triangle;
+use geometry::prims::{Triangle, TriangleVertex};
 use raytracer::compositor::{Surface, ColorRGBA};
 use vec3::Vec3;
 
@@ -37,7 +37,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
 
         match tokens[0].as_slice() {
             "v" => {
-                vertices.push(Vec3 {
+                vertices.push(Vec3{
                     x: parse_coord_str(tokens[1].as_slice(), scale, line.as_slice()),
                     y: parse_coord_str(tokens[2].as_slice(), scale, line.as_slice()),
                     z: parse_coord_str(tokens[3].as_slice(), scale, line.as_slice()),
@@ -51,7 +51,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
             },
             "vn" => {
                 let normals_flip_scale = if flip_normals { -1.0 } else { 1.0 } * scale;
-                normals.push(Vec3 {
+                normals.push(Vec3{
                     x: parse_coord_str(tokens[1].as_slice(), scale * normals_flip_scale, line.as_slice()),
                     y: parse_coord_str(tokens[2].as_slice(), scale * normals_flip_scale, line.as_slice()),
                     z: parse_coord_str(tokens[3].as_slice(), scale * normals_flip_scale, line.as_slice()),
@@ -70,35 +70,28 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 }).collect();
 
                 // If no texture coordinates were supplied, default to zero.
-                let mut u = Vec3::zero();
-                let mut v = Vec3::zero();
+                let mut u = vec![0.0, 0.0, 0.0];
+                let mut v = vec![0.0, 0.0, 0.0];
 
                 // We store nothing supplied as !0
                 if pairs[0][1] != !0 {
-                    u = Vec3 {
-                        x: tex_coords[pairs[0][1]][0],
-                        y: tex_coords[pairs[1][1]][0],
-                        z: tex_coords[pairs[2][1]][0]
-                    };
+                    u = vec![
+                        tex_coords[pairs[0][1]][0],
+                        tex_coords[pairs[1][1]][0],
+                        tex_coords[pairs[2][1]][0]
+                    ];
 
-                    v = Vec3 {
-                        x: tex_coords[pairs[0][1]][1],
-                        y: tex_coords[pairs[1][1]][1],
-                        z: tex_coords[pairs[2][1]][1]
-                    };
+                    v = vec![
+                        tex_coords[pairs[0][1]][1],
+                        tex_coords[pairs[1][1]][1],
+                        tex_coords[pairs[2][1]][1]
+                    ];
                 }
 
                 triangles.push(box Triangle {
-                    v0: vertices[pairs[0][0]],
-                    v1: vertices[pairs[1][0]],
-                    v2: vertices[pairs[2][0]],
-
-                    n0: normals[pairs[0][2]],
-                    n1: normals[pairs[1][2]],
-                    n2: normals[pairs[2][2]],
-
-                    u: u,
-                    v: v,
+                    v0: TriangleVertex{ pos: vertices[pairs[0][0]], n: normals[pairs[0][2]], u: u[0], v: v[0] },
+                    v1: TriangleVertex{ pos: vertices[pairs[1][0]], n: normals[pairs[1][2]], u: u[1], v: v[1] },
+                    v2: TriangleVertex{ pos: vertices[pairs[2][0]], n: normals[pairs[2][2]], u: u[2], v: v[2] },
                     material: box material.clone()
                 });
             },
@@ -139,8 +132,8 @@ pub fn from_ppm(filename: &str) -> Surface {
     let mut tokens: Vec<&str> = tex.as_slice().words().collect();
 
     tokens.remove(0); // PPM type
-    let width  = match tokens.remove(0) { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
-    let height = match tokens.remove(0) { Some(x) => uint_from_string(x), None => fail!("Bad PPM") };
+    let width  = from_str::<uint>(tokens.remove(0).unwrap()).unwrap();
+    let height = from_str::<uint>(tokens.remove(0).unwrap()).unwrap();
     tokens.remove(0); // Max color value
 
     print!("Importing image texture {}", filename);
@@ -158,18 +151,11 @@ pub fn from_ppm(filename: &str) -> Surface {
         if x >= width || y >= height { break };
 
         *surface.get_mut(x, y) = ColorRGBA::new_rgb(
-            uint_from_string(chunk[0]) as u8,
-            uint_from_string(chunk[1]) as u8,
-            uint_from_string(chunk[2]) as u8
+            from_str::<u8>(chunk[0]).unwrap(),
+            from_str::<u8>(chunk[1]).unwrap(),
+            from_str::<u8>(chunk[2]).unwrap()
         );
     }
 
     surface
-}
-
-fn uint_from_string(s: &str) -> uint {
-     match from_str::<uint>(s) {
-        Some(x) => x,
-        None => fail!("Bad uint string {}", s)
-    }
 }
