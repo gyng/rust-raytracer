@@ -38,7 +38,7 @@ impl<T> Octree<T> {
         }
     }
 
-    fn subdivide(&mut self) -> () {
+    fn subdivide(&mut self) {
         for x in range(0i, 2i) {
             for y in range(0i, 2i) {
                 for z in range(0i, 2i) {

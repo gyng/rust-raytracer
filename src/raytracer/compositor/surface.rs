@@ -69,7 +69,7 @@ impl Surface {
         (width, height)
     }
 
-    pub fn merge(&mut self, tile: Box<Surface>) -> () {
+    pub fn merge(&mut self, tile: Box<Surface>) {
         let x_len: uint = min(tile.width, self.width - tile.x_off);
         let y_len: uint = min(tile.height, self.height - tile.y_off);
 

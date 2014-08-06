@@ -1,9 +1,11 @@
+#![allow(dead_code)]
+
 use std::f64::{MAX_VALUE, MIN_VALUE};
 use geometry::Prim;
 use raytracer::Ray;
 use vec3::Vec3;
 
-#[allow(dead_code)]
+
 #[deriving(Clone)]
 pub struct BBox {
     pub min: Vec3,
@@ -13,7 +15,6 @@ pub struct BBox {
 
 /// Given a bounding box and a point, compute and return a new BBox that
 /// encompasses the point and the space the original box encompassed.
-#[allow(dead_code)]
 pub fn union_point(b: &BBox, p: &Vec3) -> BBox {
     BBox {
         min: Vec3 {
@@ -30,7 +31,6 @@ pub fn union_point(b: &BBox, p: &Vec3) -> BBox {
 }
 
 /// Given two points, compute and return a new BBox that encompasses both points
-#[allow(dead_code)]
 pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
     BBox {
         min: Vec3 {
@@ -48,7 +48,6 @@ pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
 
 /// Given two bounding boxes, compute and return a new BBox that encompasses
 /// both spaces the original two boxes encompassed.
-#[allow(dead_code)]
 pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
     BBox {
         min: Vec3 {
@@ -93,7 +92,6 @@ pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Share>>) -> BBox {
 
 
 impl BBox {
-    #[allow(dead_code)]
     pub fn intersects(&self, ray: &Ray) -> bool {
         // Using ray.inverse_dir is an optimisation. Normally, for simplicity we would do
         //
@@ -103,7 +101,7 @@ impl BBox {
         //     ...
         //
         // but:
-        // 
+        //
         //    1. div is usually more expensive than mul
         //    2. we are recomputing the inverse of d each time we do an intersection check
         //
@@ -112,7 +110,7 @@ impl BBox {
         //
         // See: https://truesculpt.googlecode.com/hg-history/Release%25200.8/Doc/ray_box_intersect.pdf
 
-        let o = ray.origin; 
+        let o = ray.origin;
 
         let tx1 = (self.min.x - o.x) * ray.inverse_dir.x;
         let ty1 = (self.min.y - o.y) * ray.inverse_dir.y;
@@ -135,7 +133,7 @@ impl BBox {
         t_min < t_max
     }
 
-    #[allow(dead_code)]
+
     pub fn overlaps(&self, other: &BBox) -> bool {
         let x = self.max.x >= other.min.x && self.min.x <= other.max.x;
         let y = self.max.y >= other.min.y && self.min.y <= other.max.y;
@@ -144,14 +142,12 @@ impl BBox {
         x && y && z
     }
 
-    #[allow(dead_code)]
     pub fn inside(&self, p: &Vec3) -> bool {
         p.x >= self.min.x && p.x <= self.max.x &&
         p.y >= self.min.y && p.y <= self.max.y &&
         p.z >= self.min.z && p.z <= self.max.z
     }
 
-    #[allow(dead_code)]
     pub fn contains(&self, other: &BBox) -> bool {
         !(other.min.x > self.max.x || other.max.x < self.min.x ||
           other.min.y > self.max.y || other.max.y < self.min.y ||
@@ -159,7 +155,6 @@ impl BBox {
     }
 
     /// Pad bounding box by a constant factor.
-    #[allow(dead_code)]
     pub fn expand(&self, delta: f64) -> BBox {
         let delta_vec3 = Vec3 {x: delta, y: delta, z: delta};
 
@@ -170,7 +165,6 @@ impl BBox {
     }
 
     /// Returns which axis is the widest. 0: x, 1: y, 2: z
-    #[allow(dead_code)]
     pub fn max_extent(&self) -> uint {
         let diag = self.max - self.min;
         if diag.x > diag.y && diag.x > diag.z {
@@ -183,7 +177,6 @@ impl BBox {
     }
 
     /// Interpolate between corners of the box.
-    #[allow(dead_code)]
     pub fn lerp(&self, t_x: f64, t_y: f64, t_z: f64) -> Vec3 {
         let diag = self.max - self.min;
         Vec3 {
@@ -194,7 +187,6 @@ impl BBox {
     }
 
     /// Offset from minimum corner point
-    #[allow(dead_code)]
     pub fn offset(&self, offset: &Vec3) -> Vec3 {
         let diag = self.max - self.min;
         Vec3 {
@@ -204,22 +196,18 @@ impl BBox {
         }
     }
 
-    #[allow(dead_code)]
     pub fn x_len(&self) -> f64 {
         self.max.x - self.min.x
     }
 
-    #[allow(dead_code)]
     pub fn y_len(&self) -> f64 {
         self.max.y - self.min.y
     }
 
-    #[allow(dead_code)]
     pub fn z_len(&self) -> f64 {
         self.max.z - self.min.z
     }
 
-    #[allow(dead_code)]
     pub fn len(&self) -> Vec3 {
         self.max - self.min
     }

@@ -82,12 +82,12 @@ impl Camera {
         self.keyframes = Some(keyframes);
     }
 
-    fn update_eye_vector(&mut self) -> () {
+    fn update_eye_vector(&mut self) {
         self.eye = (self.look_at - self.position).unit();
         self.right = self.eye.cross(&self.up);
     }
 
-    fn update_internal_sizes(&mut self) -> () {
+    fn update_internal_sizes(&mut self) {
         let fov_rad = self.fov_deg.to_radians();
         let ratio = self.image_height as f64 / self.image_width as f64;
 

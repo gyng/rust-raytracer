@@ -142,7 +142,6 @@ impl Renderer {
                     color_acc + light.color() * nearest_hit.material.sample(n, i, l, u, v) * shadow
                 });
 
-
                 if nearest_hit.material.is_reflective() ||
                    nearest_hit.material.is_refractive() {
 
@@ -210,8 +209,6 @@ impl Renderer {
 
             // Check against candidate primitives in scene for occlusion
             // and multiply shadow color by occluders' shadow colors
-            // TODO: Clean up
-
             let candidate_nodes = scene.prim_strat.get_intersection_objects(&shadow_ray);
 
             shadow = shadow + candidate_nodes.iter().fold(Vec3::one(), |shadow_acc, prim| {
