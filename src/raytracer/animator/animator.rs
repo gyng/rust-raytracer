@@ -1,7 +1,7 @@
 use raytracer::animator::CameraKeyframe;
 use raytracer::Renderer;
 use scene::{Camera, Scene};
-use std::sync::Arc;
+use std::sync::{Arc, Semaphore};
 use vec3::Vec3;
 
 
@@ -24,8 +24,7 @@ impl Animator {
         let length = self.animate_to - self.animate_from;
         let total_frames = (self.fps * length).floor() as uint;
 
-        let (tx, rx) = sync_channel(1);
-        tx.send(1i);
+        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as int));
 
         for frame_number in range(0, total_frames) {
             let time = self.animate_from + frame_number as f64 / self.fps;
@@ -34,19 +33,19 @@ impl Animator {
 
             let file_frame_number = self.starting_frame_number + frame_number;
             let shared_name = format!("{}{:06u}.ppm", filename, file_frame_number);
-            let child_tx = tx.clone();
 
-            rx.recv();
+            let child_sema = sema.clone();
+            sema.acquire();
             spawn(proc() {
                 ::util::export::to_ppm(frame_data, shared_name.as_slice());
-                child_tx.send(2i);
+                child_sema.release();
             });
 
             ::util::print_progress("*** Frame", animate_start, frame_number + 1 as uint, total_frames);
             println!("");
         }
 
-        rx.recv();
+        sema.acquire();
     }
 
     fn get_neighbour_keyframes(keyframes: Vec<CameraKeyframe>, time: f64)
