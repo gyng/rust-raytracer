@@ -1,4 +1,5 @@
 use material::textures::ImageTexture;
+use std::sync::{Semaphore, Arc};
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -10,16 +11,36 @@ impl CubeMap {
     /// For y-axis as up, load: left, right, down, up, front, back
     #[allow(dead_code)]
     pub fn load(x: &str, x_neg: &str, y: &str, y_neg: &str, z: &str, z_neg: &str) -> CubeMap {
-        CubeMap {
-            faces: vec![
-                ImageTexture::load(x),
-                ImageTexture::load(x_neg),
-                ImageTexture::load(y),
-                ImageTexture::load(y_neg),
-                ImageTexture::load(z),
-                ImageTexture::load(z_neg)
-            ]
+        let filenames = vec![x.clone(), x_neg.clone(), y.clone(), y_neg.clone(), z.clone(), z_neg.clone()];
+        let mut faces: Vec<ImageTexture> = Vec::with_capacity(6);
+        unsafe {
+            faces.set_len(6);
         }
+
+        let (tx, rx) = channel();
+        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as int));
+
+        for i in range(0u, 6) {
+            let task_sema = sema.clone();
+            let task_tx = tx.clone();
+            let filename = String::from_str(filenames[i].clone());
+
+            spawn(proc() {
+                task_sema.acquire();
+                task_tx.send((i, ImageTexture::load(filename.as_slice())));
+            });
+        }
+
+        for _ in range(0u, 6) {
+            let (i, tex) = rx.recv();
+            let p = faces.as_mut_ptr();
+            unsafe {
+                ::std::ptr::write::<ImageTexture>(p.offset(i as int), tex);
+            }
+            sema.release();
+        }
+
+        CubeMap {faces: faces}
     }
 
     #[allow(dead_code)]
