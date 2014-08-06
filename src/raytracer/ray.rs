@@ -14,11 +14,11 @@ impl Ray {
         Ray {
             origin: origin,
             direction: direction,
-            inverse_dir: Vec3 {
+            inverse_dir: -Vec3 {
                 x: 1.0 / direction.x,
                 y: 1.0 / direction.y,
                 z: 1.0 / direction.z
-            }.scale(-1.0)
+            }
         }
     }
 
