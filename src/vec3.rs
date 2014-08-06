@@ -80,7 +80,7 @@ impl Vec3 {
         let (n1, n2, n_dot_v, nn) = if !inside {
             (1.0, ior, n.dot(v), *n)
         } else {
-            (ior, 1.0, n.scale(-1.0).dot(v), n.scale(-1.0))
+            (ior, 1.0, -n.dot(v), -n)
         };
 
         let ratio = n1 / n2;
@@ -132,9 +132,13 @@ impl Mul<Vec3, Vec3> for Vec3 {
     }
 }
 
-impl fmt::Show for Vec3 {
-    fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
-        write!(f, "({}, {}, {})", self.x, self.y, self.z)
+impl Neg<Vec3> for Vec3 {
+    fn neg(&self) -> Vec3 {
+        Vec3 {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z
+        }
     }
 }
 
@@ -145,6 +149,12 @@ impl cmp::PartialEq for Vec3 {
 
     fn ne(&self, other: &Vec3) -> bool {
         !(self.eq(other))
+    }
+}
+
+impl fmt::Show for Vec3 {
+    fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 
@@ -160,6 +170,7 @@ fn it_implements_show() {
 fn it_does_vector_math() {
     assert!(Vec3::zero() != Vec3::one());
     assert!(Vec3::zero() == Vec3::zero());
+    assert_eq!(Vec3 {x: -1.0, y: -1.0, z: -1.0}, -Vec3::one());
     assert_eq!(29.0_f64.sqrt(), Vec3 {x: 2.0, y: 3.0, z: 4.0}.len());
     assert_eq!(1.0, Vec3 {x: 10.0, y: 0.0, z: 0.0}.unit().len());
     assert_eq!(5.0, Vec3 {x: 0.0, y: 1.0, z: 2.0}.dot(&Vec3 {x: 0.0, y: 1.0, z: 2.0}));

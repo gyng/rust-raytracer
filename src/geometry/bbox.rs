@@ -95,9 +95,9 @@ impl BBox {
     pub fn intersects(&self, ray: &Ray) -> bool {
         // Using ray.inverse_dir is an optimisation. Normally, for simplicity we would do
         //
-        //     let d = ray.direction.scale(-1.0);
+        //     let d = -ray.direction;
         //     tx1 = (self.min.x - o.x) / d.x;
-        //     tx2 = (self.min.y - o.y) / d.y;
+        //     ty1 = (self.min.y - o.y) / d.y;
         //     ...
         //
         // but:
@@ -105,7 +105,7 @@ impl BBox {
         //    1. div is usually more expensive than mul
         //    2. we are recomputing the inverse of d each time we do an intersection check
         //
-        // By caching 1.0 / ray.direction.scale(-1.0) inside the ray itself we do not need
+        // By caching 1.0 / -ray.direction inside the ray itself we do not need
         // to waste CPU cycles recomputing that every intersection check.
         //
         // See: https://truesculpt.googlecode.com/hg-history/Release%25200.8/Doc/ray_box_intersect.pdf

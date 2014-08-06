@@ -130,7 +130,7 @@ impl Renderer {
         match ray.get_nearest_hit(scene) {
             Some(nearest_hit) => {
                 let n = nearest_hit.n.unit();
-                let i = (ray.direction.scale(-1.0)).unit();
+                let i = (-ray.direction).unit();
 
                 // Local lighting computation: surface shading, shadows
                 let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
@@ -228,7 +228,7 @@ impl Renderer {
     /// http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
     fn fresnel_reflect(ior: f64, i: &Vec3, n: &Vec3, inside: bool) -> f64 {
         let (n1, n2) = if inside { (ior, 1.0) } else { (1.0, ior) };
-        let actual_n = if inside { n.scale(-1.0) } else { *n };
+        let actual_n = if inside { -n } else { *n };
 
         let r0_sqrt = (n1 - n2) / (n1 + n2);
         let r0 = r0_sqrt * r0_sqrt;
@@ -236,7 +236,7 @@ impl Renderer {
         let cos_angle = if n1 <= n2 {
             i.dot(&actual_n)
         } else {
-            let t = match Vec3::refract(i, &actual_n.scale(-1.0), ior, inside) {
+            let t = match Vec3::refract(i, &-actual_n, ior, inside) {
                 Some(x) => x,
                 None => return 1.0 // n1 > n2 && TIR
             };
