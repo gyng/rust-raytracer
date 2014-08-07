@@ -1,5 +1,6 @@
 use geometry::{BBox, Prim};
 use material::Material;
+use mat4::{Mat4, Transform};
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
@@ -44,6 +45,28 @@ impl Prim for Plane {
 
     fn bounding(&self) -> Option<BBox> {
         None // more infinite than infinityb
+    }
+
+    /// This transformation is entirely ad-hoc, do not trust this
+    fn mut_transform(&mut self, transform: &Transform) {
+        let new_v = Mat4::mult_v(&transform.m, &Vec3 { x: self.a, y: self.b, z: self.c });
+
+        self.a = new_v.x;
+        self.b = new_v.y;
+        self.c = new_v.z;
+
+        let trans = Vec3 {
+            x: transform.m.m[0][3],
+            y: transform.m.m[1][3],
+            z: transform.m.m[2][3]
+        };
+
+        let t_x = transform.m.m[0][3].powf(2.0) * if trans.x < 0.0 { -1.0 } else { 1.0 };
+        let t_y = transform.m.m[1][3].powf(2.0) * if trans.y < 0.0 { -1.0 } else { 1.0 };
+        let t_z = transform.m.m[2][3].powf(2.0) * if trans.z < 0.0 { -1.0 } else { 1.0 };
+        let add_sub = if t_x + t_y + t_z < 0.0 { -1.0 } else { 1.0 };
+
+        self.d = self.d + trans.len() * add_sub;
     }
 }
 

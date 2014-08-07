@@ -33,7 +33,7 @@ pub fn get_scene() -> Scene {
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box floor.clone() }); // Bottom
 
-    let tachikoma = ::util::import::from_obj(Vec3::zero(), blue, false, "./docs/assets/models/tachikoma.obj");
+    let tachikoma = ::util::import::from_obj(blue, false, "./docs/assets/models/tachikoma.obj");
     for triangle in tachikoma.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

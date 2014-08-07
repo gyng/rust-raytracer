@@ -1,10 +1,15 @@
 use geometry::Prim;
-use vec3::Vec3;
+use mat4::Transform;
 
 #[allow(dead_code)]
 pub struct Mesh {
-    pub position: Vec3, // Unimplemented
-    // rotation: Quaternion,
-    pub scale: f64, // Unimplemented
     pub triangles: Vec<Box<Prim+Send+Share>>
+}
+
+impl Mesh {
+    pub fn mut_transform(&mut self, transform: &Transform) {
+        for triangle in self.triangles.mut_iter() {
+            triangle.mut_transform(transform);
+        }
+    }
 }

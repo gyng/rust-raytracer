@@ -39,13 +39,13 @@ pub fn get_scene() -> Scene {
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box ground });
 
-    let sponza_other = ::util::import::from_obj(Vec3::zero(), stone, false, "./docs/assets/models/sponza_other.obj");
+    let sponza_other = ::util::import::from_obj(stone, false, "./docs/assets/models/sponza_other.obj");
     for triangle in sponza_other.triangles.move_iter() { prims.push(triangle); }
 
-    let sponza_column_shrubbery = ::util::import::from_obj(Vec3::zero(), shrubbery, false, "./docs/assets/models/sponza_column_shrubbery.obj");
+    let sponza_column_shrubbery = ::util::import::from_obj(shrubbery, false, "./docs/assets/models/sponza_column_shrubbery.obj");
     for triangle in sponza_column_shrubbery.triangles.move_iter() { prims.push(triangle); }
 
-    let sponza_cloth = ::util::import::from_obj(Vec3::zero(), cloth, false, "./docs/assets/models/sponza_cloth.obj");
+    let sponza_cloth = ::util::import::from_obj(cloth, false, "./docs/assets/models/sponza_cloth.obj");
     for triangle in sponza_cloth.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

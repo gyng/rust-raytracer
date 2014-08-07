@@ -83,7 +83,8 @@ These should use 30deg fov for squares and 45deg fov for 16:9.
 * Cook-Torrance, Phong materials
 * Sphere, plane, triangle primitives
 * Point, sphere lights
-* Very limited OBJ model and mesh support
+* Limited OBJ model and mesh support
+* Mesh transformations (4x4 matrices)
 * Basic spatial partitioning (octree)
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)

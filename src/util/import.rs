@@ -8,7 +8,7 @@ use vec3::Vec3;
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
 /// a new material for each triangle primitive in the object model.
 #[allow(dead_code)]
-pub fn from_obj(position: Vec3, material: CookTorranceMaterial /*Box<Material>*/,
+pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                 flip_normals: bool, filename: &str)
                 -> Mesh {
 
@@ -108,8 +108,6 @@ pub fn from_obj(position: Vec3, material: CookTorranceMaterial /*Box<Material>*/
     ::util::print_progress("Bytes", start_time, total_bytes as uint, total_bytes as uint);
 
     Mesh {
-        position: position,
-        scale: 1.0,
         triangles: triangles
     }
 }

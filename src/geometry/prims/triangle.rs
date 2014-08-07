@@ -3,6 +3,7 @@
 use geometry::bbox::{union_point, union_points, BBox};
 use geometry::prim::Prim;
 use material::Material;
+use mat4::{Mat4, Transform};
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
@@ -92,6 +93,24 @@ impl Prim for Triangle {
 
     fn bounding(&self) -> Option<BBox> {
         return Some(union_point(&union_points(&self.v0.pos, &self.v1.pos), &self.v2.pos));
+    }
+
+    fn mut_transform(&mut self, transform: &Transform) {
+        let v0_t = Mat4::mult_p(&transform.m, &self.v0.pos);
+        let v1_t = Mat4::mult_p(&transform.m, &self.v1.pos);
+        let v2_t = Mat4::mult_p(&transform.m, &self.v2.pos);
+
+        let n0_t = Mat4::transform_normal(&self.v0.n, &transform.m);
+        let n1_t = Mat4::transform_normal(&self.v1.n, &transform.m);
+        let n2_t = Mat4::transform_normal(&self.v2.n, &transform.m);
+
+        self.v0.pos = v0_t;
+        self.v1.pos = v1_t;
+        self.v2.pos = v2_t;
+
+        self.v0.n = n0_t;
+        self.v1.n = n1_t;
+        self.v2.n = n2_t;
     }
 }
 

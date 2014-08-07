@@ -15,8 +15,8 @@ pub struct Mat4 {
 
 /// We store the inverse matrix for convenience as per pbrt's recommendation
 pub struct Transform {
-    m: Mat4,
-    inv: Mat4
+    pub m: Mat4,
+    pub inv: Mat4
 }
 
 impl Transform {
@@ -109,6 +109,11 @@ impl Mat4 {
         Mat4::approx_eq(self.get(0, 0), self.get(2, 2))
     }
 
+    /// This assumes the matrix is scalar; check has_scale(&self) -> bool before use
+    pub fn scale(&self) -> f64 {
+        self.m[0][0]
+    }
+
     pub fn rotate_x_deg_matrix(angle: f64) -> Mat4 {
         let sin_t = Mat4::deg_to_rad(angle).sin();
         let cos_t = Mat4::deg_to_rad(angle).cos();
@@ -126,10 +131,10 @@ impl Mat4 {
         let cos_t = Mat4::deg_to_rad(angle).cos();
 
         Mat4::new(
-            cos_t, 0.0, sin_t, 0.0,
-              0.0, 1.0,   0.0, 0.0,
-            sin_t, 0.0, cos_t, 0.0,
-              0.0, 0.0,   0.0, 1.0
+             cos_t, 0.0, sin_t, 0.0,
+               0.0, 1.0,   0.0, 0.0,
+            -sin_t, 0.0, cos_t, 0.0,
+               0.0, 0.0,   0.0, 1.0
         )
     }
 
@@ -212,10 +217,12 @@ impl Mat4 {
         }
     }
 
+    #[allow(unused_variable)]
     pub fn transform_ray(r: &Ray) -> Ray {
         fail!("Ray transform not implemented");
     }
 
+    #[allow(unused_variable)]
     pub fn transform_bbox(bbox: &BBox) -> BBox {
         fail!("BBox transform not implemented");
     }
@@ -287,6 +294,37 @@ impl Mat4 {
         }
 
         out
+    }
+
+    pub fn mult_v(m: &Mat4, v: &Vec3) -> Vec3 {
+        Vec3 {
+            x: m.m[0][0] * v.x + m.m[0][1] * v.y + m.m[0][2] * v.z,
+            y: m.m[1][0] * v.x + m.m[1][1] * v.y + m.m[1][2] * v.z,
+            z: m.m[2][0] * v.x + m.m[2][1] * v.y + m.m[2][2] * v.z
+        }
+    }
+
+    pub fn mult_p(m: &Mat4, p: &Vec3) -> Vec3 {
+        let xp = m.m[0][0] * p.x + m.m[0][1] * p.y + m.m[0][2] * p.z + m.m[0][3];
+        let yp = m.m[1][0] * p.x + m.m[1][1] * p.y + m.m[1][2] * p.z + m.m[1][3];
+        let zp = m.m[2][0] * p.x + m.m[2][1] * p.y + m.m[2][2] * p.z + m.m[2][3];
+        let wp = m.m[3][0] * p.x + m.m[3][1] * p.y + m.m[3][2] * p.z + m.m[3][3];
+
+        if wp == 1.0 {
+            // Optimisation, wp == 1.0 is common
+            Vec3 {
+                x: xp,
+                y: yp,
+                z: zp
+            }
+        } else {
+            // Perspective division
+            Vec3 {
+                x: xp / wp,
+                y: yp / wp,
+                z: zp / wp
+            }
+        }
     }
 
     fn approx_eq(f1: f64, f2: f64) -> bool {
@@ -523,4 +561,29 @@ fn test_transpose() {
     );
 
     assert!(m.transpose() == mt);
+}
+
+#[test]
+fn test_mul_with_vec() {
+    let m = Mat4::new(
+         1.0,  2.0,  3.0,  4.0,
+         5.0,  6.0,  7.0,  8.0,
+         9.0, 10.0, 11.0, 12.0,
+        13.0, 14.0, 15.0, 16.0
+    );
+
+    let v = Vec3 {
+        x: 1.0,
+        y: 2.0,
+        z: 3.0
+    };
+
+    let expected_w0 = Vec3 {
+        x: 1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0,
+        y: 5.0 * 1.0 + 6.0 * 2.0 + 7.0 * 3.0,
+        z: 9.0 * 1.0 + 10.0 * 2.0 + 11.0 * 3.0
+    };
+
+    let multiplied_w0 = Mat4::mult_v(&m, &v);
+    assert_eq!(multiplied_w0, expected_w0);
 }

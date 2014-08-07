@@ -1,6 +1,7 @@
 use geometry::bbox::BBox;
 use geometry::prim::Prim;
 use material::Material;
+use mat4::{Mat4, Transform};
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
@@ -67,6 +68,19 @@ impl Prim for Sphere {
                 z: self.center.z + self.radius
             }
         })
+    }
+
+    fn mut_transform(&mut self, transform: &Transform) {
+        let new_center = Mat4::mult_p(&transform.m, &self.center);
+
+        let new_radius = if transform.m.has_scale() {
+            self.radius * transform.m.scale()
+        } else {
+            self.radius
+        };
+
+        self.center = new_center;
+        self.radius = new_radius;
     }
 }
 

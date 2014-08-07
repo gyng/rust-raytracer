@@ -7,6 +7,7 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
+use mat4::{Mat4, Transform};
 use raytracer::{Octree, VecPrimContainer};
 use raytracer::animator::CameraKeyframe;
 use scene::{Camera, Scene};
@@ -35,7 +36,9 @@ pub fn get_teapot_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     // prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box green });
-    let teapot = ::util::import::from_obj(Vec3::zero(), porcelain, false, "./docs/assets/models/teapot.obj");
+    let mut teapot = ::util::import::from_obj(porcelain, false, "./docs/assets/models/teapot.obj");
+    let rotate = Transform::new(Mat4::rotate_x_deg_matrix(1.0));
+    teapot.mut_transform(&rotate);
     for triangle in teapot.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

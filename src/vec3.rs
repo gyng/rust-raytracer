@@ -199,7 +199,7 @@ fn it_linearly_interpolates() {
 }
 
 #[test]
-fn its_macro_definitions_works() {
+fn its_macro_definitions_work() {
     let four = 4.0;
     assert_eq!(Vec3 { x: 2.0, y: 4.0, z: -6.0 }, vec3!(2.0, 1.0 * four, -1.0 * 6.0));
     assert_eq!(Vec3::one(), vec3!(1.0, 1.0, 1.0));
