@@ -400,14 +400,14 @@ impl Mul<Mat4, Mat4> for Mat4 {
 
 impl fmt::Show for Mat4 {
     fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
-        // 38 spaces in between
+        // 46 spaces in between
         write!(f,
-            "\n┌                                      ┐\n\
-               │{: >8.5f}, {: >8.5f}, {: >8.5f}, {: >8.5f}│\n\
-               │{: >8.5f}, {: >8.5f}, {: >8.5f}, {: >8.5f}│\n\
-               │{: >8.5f}, {: >8.5f}, {: >8.5f}, {: >8.5f}│\n\
-               │{: >8.5f}, {: >8.5f}, {: >8.5f}, {: >8.5f}│\n\
-               └                                      ┘\n",
+            "\n┌                                              ┐\n\
+               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
+               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
+               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
+               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
+               └                                              ┘\n",
                self.m[0][0], self.m[0][1], self.m[0][2], self.m[0][3],
                self.m[1][0], self.m[1][1], self.m[1][2], self.m[1][3],
                self.m[2][0], self.m[2][1], self.m[2][2], self.m[2][3],
@@ -471,7 +471,7 @@ fn test_mul() {
     );
 
     let out = Mat4::mult_m(&a, &b);
-    assert!(out == expected);
+    assert_eq!(out, expected);
 }
 
 #[test]
