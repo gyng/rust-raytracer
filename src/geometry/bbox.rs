@@ -127,7 +127,7 @@ impl BBox {
         let t_min = tx_min.max(ty_min).max(tz_min);
         let t_max = tx_max.min(ty_max).min(tz_max);
 
-        t_min < t_max
+        (t_min > 0.0 || t_max > 0.0) && t_min < t_max
     }
 
     pub fn overlaps(&self, other: &BBox) -> bool {
@@ -207,4 +207,28 @@ impl BBox {
     pub fn len(&self) -> Vec3 {
         self.max - self.min
     }
+}
+
+#[test]
+fn it_intersects_with_a_ray() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    // Out of the box
+    let mut intersecting_ray = Ray::new(Vec3 { x: 0.5, y: 1.5, z: 0.5 }, Vec3 { x: 0.0, y: -1.0, z: 0.0 });
+    assert!(bbox.intersects(&intersecting_ray));
+
+    // In the box
+    intersecting_ray = Ray::new(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3 { x: 0.0, y: -1.0, z: 0.0 });
+    assert!(bbox.intersects(&intersecting_ray));
+
+    // Away from box
+    let mut non_intersecting_ray = Ray::new(Vec3 { x: 0.5, y: 1.5, z: 0.5 }, Vec3 { x: 0.0, y: 1.0, z: 0.0 });
+    assert_eq!(false, bbox.intersects(&non_intersecting_ray));
+
+    // To the side
+    non_intersecting_ray = Ray::new(Vec3 { x: 0.5, y: 1.5, z: 0.5 }, Vec3 { x: 1000.0, y: -1.0, z: 1000.0 });
+    assert_eq!(false, bbox.intersects(&non_intersecting_ray));
 }
