@@ -20,6 +20,7 @@ mod raytracer;
 mod scene;
 mod util;
 mod vec3;
+mod mat4;
 
 // Replace this with argparse eventually
 struct ProgramArgs {
