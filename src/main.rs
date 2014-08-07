@@ -1,3 +1,5 @@
+#![feature(macro_rules)]
+
 extern crate time;
 extern crate serialize;
 
