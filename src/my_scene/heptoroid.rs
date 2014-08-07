@@ -36,7 +36,7 @@ pub fn get_scene(material_option: &str) -> Scene {
     };
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
-    let heptoroid = ::util::import::from_obj(Vec3::zero(), 1.0, heptoroid_material, false, "./docs/assets/models/heptoroid.obj");
+    let heptoroid = ::util::import::from_obj(Vec3::zero(), heptoroid_material, false, "./docs/assets/models/heptoroid.obj");
     for triangle in heptoroid.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

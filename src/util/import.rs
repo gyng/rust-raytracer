@@ -8,53 +8,53 @@ use vec3::Vec3;
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
 /// a new material for each triangle primitive in the object model.
 #[allow(dead_code)]
-pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box<Material>*/, flip_normals: bool, filename: &str) -> Mesh {
-    let path = Path::new(filename);
-    let mut file = BufferedReader::new(File::open(&path));
+pub fn from_obj(position: Vec3, material: CookTorranceMaterial /*Box<Material>*/,
+                flip_normals: bool, filename: &str)
+                -> Mesh {
 
-    let mut vertices: Vec<Vec3> = Vec::new();
-    let mut tex_coords: Vec<Vec<f64>> = Vec::new();
-    let mut normals: Vec<Vec3> = Vec::new();
-    let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let path = Path::new(filename);
+    let fh = File::open(&path);
+    let mut file = BufferedReader::new(fh);
 
     let start_time = ::time::get_time();
-    let print_progress_every = 1024u;
+    let print_every = 2048u;
     let mut current_line = 0;
     let mut processed_bytes = 0;
     let total_bytes = match path.stat() {
         Ok(stat) => stat.size,
-        Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
+        Err(e) => fail!("Could not open file {} (file missing?) : {}", filename, e)
     };
 
-    for line_iter in file.lines() {
-        let line: String = match line_iter {
-            Ok(x) => x,
-            Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
-        };
+    let mut vertices: Vec<Vec3> = Vec::new();
+    let mut normals : Vec<Vec3> = Vec::new();
+    let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut tex_coords: Vec<Vec<f64>> = Vec::new();
 
+    for line_iter in file.lines() {
+        let line = line_iter.unwrap();
         let tokens: Vec<&str> = line.as_slice().words().collect();
-        if tokens.len() < 4 { continue }
+        if tokens.len() == 0 { continue }
 
         match tokens[0].as_slice() {
             "v" => {
-                vertices.push(Vec3{
-                    x: parse_coord_str(tokens[1].as_slice(), scale, line.as_slice()),
-                    y: parse_coord_str(tokens[2].as_slice(), scale, line.as_slice()),
-                    z: parse_coord_str(tokens[3].as_slice(), scale, line.as_slice()),
+                vertices.push(Vec3 {
+                    x: from_str::<f64>(tokens[1].as_slice()).unwrap(),
+                    y: from_str::<f64>(tokens[2].as_slice()).unwrap(),
+                    z: from_str::<f64>(tokens[3].as_slice()).unwrap()
                 });
             },
             "vt" => {
                 tex_coords.push(vec![
-                    parse_coord_str(tokens[1].as_slice(), scale, line.as_slice()),
-                    parse_coord_str(tokens[2].as_slice(), scale, line.as_slice())
+                    from_str::<f64>(tokens[1].as_slice()).unwrap(),
+                    from_str::<f64>(tokens[2].as_slice()).unwrap()
                 ]);
             },
             "vn" => {
-                let normals_flip_scale = if flip_normals { -1.0 } else { 1.0 } * scale;
-                normals.push(Vec3{
-                    x: parse_coord_str(tokens[1].as_slice(), scale * normals_flip_scale, line.as_slice()),
-                    y: parse_coord_str(tokens[2].as_slice(), scale * normals_flip_scale, line.as_slice()),
-                    z: parse_coord_str(tokens[3].as_slice(), scale * normals_flip_scale, line.as_slice()),
+                let normal_scale = if flip_normals { -1.0 } else { 1.0 };
+                normals.push(Vec3 {
+                    x: from_str::<f64>(tokens[1].as_slice()).unwrap() * normal_scale,
+                    y: from_str::<f64>(tokens[2].as_slice()).unwrap() * normal_scale,
+                    z: from_str::<f64>(tokens[3].as_slice()).unwrap() * normal_scale
                 });
             },
             "f" => {
@@ -70,23 +70,22 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 }).collect();
 
                 // If no texture coordinates were supplied, default to zero.
-                let mut u = vec![0.0, 0.0, 0.0];
-                let mut v = vec![0.0, 0.0, 0.0];
-
                 // We store nothing supplied as !0
-                if pairs[0][1] != !0 {
-                    u = vec![
+                let (u, v) = if pairs[0][1] != !0 {
+                    (vec![
                         tex_coords[pairs[0][1]][0],
                         tex_coords[pairs[1][1]][0],
                         tex_coords[pairs[2][1]][0]
-                    ];
-
-                    v = vec![
+                    ],
+                    vec![
                         tex_coords[pairs[0][1]][1],
                         tex_coords[pairs[1][1]][1],
                         tex_coords[pairs[2][1]][1]
-                    ];
-                }
+                    ])
+                } else {
+                    (vec![0.0, 0.0, 0.0],
+                     vec![0.0, 0.0, 0.0])
+                };
 
                 triangles.push(box Triangle {
                     v0: TriangleVertex { pos: vertices[pairs[0][0]], n: normals[pairs[0][2]], u: u[0], v: v[0] },
@@ -100,7 +99,7 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
 
         current_line += 1;
         processed_bytes += line.as_bytes().len();
-        if current_line % print_progress_every == 0 {
+        if current_line % print_every == 0 {
             ::util::print_progress("Bytes", start_time, processed_bytes, total_bytes as uint);
         }
     }
@@ -110,18 +109,10 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
 
     Mesh {
         position: position,
-        scale: scale,
+        scale: 1.0,
         triangles: triangles
     }
 }
-
-fn parse_coord_str(coord: &str, scale: f64, line: &str) -> f64 {
-    match from_str::<f64>(coord.as_slice()) {
-        Some(f) => f * scale,
-        None => fail!(format!("Bad vertex or texture coordinate in file. `{}`", line))
-    }
-}
-
 
 #[allow(dead_code)]
 pub fn from_ppm(filename: &str) -> Surface {

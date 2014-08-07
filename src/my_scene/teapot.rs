@@ -18,8 +18,8 @@ use vec3::Vec3;
 // 2500 polys, marginal improvement from an octree
 pub fn get_teapot_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     Camera::new(
-        Vec3 { x: -2.0, y: 5.0, z: 10.0 },
-        Vec3 { x: 0.0, y: 3.0, z: 0.0 },
+        Vec3 { x: -0.2, y: 1.0, z: 2.0 },
+        Vec3 { x: 0.0, y: 0.6, z: 0.0 },
         Vec3 { x: 0.0, y: 1.0, z: 0.0 },
         fov,
         image_width,
@@ -29,13 +29,13 @@ pub fn get_teapot_camera(image_width: int, image_height: int, fov: f64) -> Camer
 
 pub fn get_teapot_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
-    lights.push(box SphereLight { position: Vec3 { x: 3.0, y: 10.0, z: 6.0 }, color: Vec3::one(), radius: 5.0 });
+    lights.push(box SphereLight { position: Vec3 { x: 0.6, y: 2.0, z: 1.2 }, color: Vec3::one(), radius: 1.0 });
 
     let porcelain = CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 1.1, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
 
     let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
     // prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box green });
-    let teapot = ::util::import::from_obj(Vec3::zero(), 5.0, porcelain, false, "./docs/assets/models/teapot.obj");
+    let teapot = ::util::import::from_obj(Vec3::zero(), porcelain, false, "./docs/assets/models/teapot.obj");
     for triangle in teapot.triangles.move_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
