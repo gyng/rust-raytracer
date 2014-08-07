@@ -145,9 +145,12 @@ impl BBox {
     }
 
     pub fn contains(&self, other: &BBox) -> bool {
-        !(other.min.x > self.max.x || other.max.x < self.min.x ||
-          other.min.y > self.max.y || other.max.y < self.min.y ||
-          other.min.z > self.max.z || other.max.z < self.min.z)
+        other.min.x >= self.min.x &&
+        other.min.y >= self.min.y &&
+        other.min.z >= self.min.z &&
+        other.max.x <= self.max.x &&
+        other.max.y <= self.max.y &&
+        other.max.z <= self.max.z
     }
 
     /// Pad bounding box by a constant factor.
@@ -231,4 +234,180 @@ fn it_intersects_with_a_ray() {
     // To the side
     non_intersecting_ray = Ray::new(Vec3 { x: 0.5, y: 1.5, z: 0.5 }, Vec3 { x: 1000.0, y: -1.0, z: 1000.0 });
     assert_eq!(false, bbox.intersects(&non_intersecting_ray));
+}
+
+#[test]
+fn it_unions_a_bbox_with_a_point() {
+    let original_bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let smaller_point = Vec3 { x: -1.0, y: -1.0, z: -1.0 };
+    let unioned_bbox = union_point(&original_bbox, &smaller_point);
+    assert_eq!(unioned_bbox.min, smaller_point);
+    assert_eq!(unioned_bbox.max, Vec3::one());
+
+    let larger_point = Vec3 { x: 2.0, y: 2.0, z: 2.0 };
+    let unioned_bbox2 = union_point(&unioned_bbox, &larger_point);
+    assert_eq!(unioned_bbox2.min, smaller_point);
+    assert_eq!(unioned_bbox2.max, larger_point);
+}
+
+#[test]
+fn it_unions_two_points() {
+    // Larger to smaller
+    let unioned_bbox = union_points(&Vec3::one(), &Vec3::zero());
+    assert_eq!(unioned_bbox.min, Vec3::zero());
+    assert_eq!(unioned_bbox.max, Vec3::one());
+
+    // Smaller to larger
+    let unioned_bbox2 = union_points(&-Vec3::one(), &Vec3::zero());
+    assert_eq!(unioned_bbox2.min, -Vec3::one());
+    assert_eq!(unioned_bbox2.max, Vec3::zero());
+}
+
+#[test]
+fn it_unions_two_bboxes() {
+    let bbox_one = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let bbox_two = BBox {
+        min: -Vec3::one(),
+        max: Vec3::zero()
+    };
+
+    let unioned_bbox = union_bbox(&bbox_one, &bbox_two);
+    assert_eq!(unioned_bbox.min, -Vec3::one());
+    assert_eq!(unioned_bbox.max, Vec3::one());
+}
+
+#[test]
+fn it_checks_for_bbox_overlap() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let overlapping = BBox {
+        min: Vec3 { x: 0.5, y: 0.5, z: 0.5 },
+        max: Vec3 { x: 1.5, y: 1.5, z: 1.5 }
+    };
+
+    let not_overlapping = BBox {
+        min: Vec3 { x: 1.5, y: 1.5, z: 1.5 },
+        max: Vec3 { x: 2.5, y: 2.5, z: 2.5 }
+    };
+
+    assert!(bbox.overlaps(&overlapping));
+    assert_eq!(false, bbox.overlaps(&not_overlapping));
+}
+
+#[test]
+fn it_checks_for_point_inside() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let inside = Vec3 { x: 0.5, y: 0.5, z: 0.5 };
+    assert!(bbox.inside(&inside));
+
+    let outside_1 = Vec3 { x: 1.5, y: 1.5, z: 1.5 };
+    let outside_2 = Vec3 { x: 0.5, y: 1.5, z: 0.5 };
+    let outside_3 = Vec3 { x: -0.5, y: 0.5, z: 0.5 };
+
+    assert_eq!(false, bbox.inside(&outside_1));
+    assert_eq!(false, bbox.inside(&outside_2));
+    assert_eq!(false, bbox.inside(&outside_3));
+}
+
+#[test]
+fn it_checks_for_contains_another_bbox() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let overlapping = BBox {
+        min: Vec3 { x: 0.5, y: 0.5, z: 0.5 },
+        max: Vec3 { x: 1.5, y: 1.5, z: 1.5 }
+    };
+
+    let not_overlapping = BBox {
+        min: Vec3 { x: 1.5, y: 1.5, z: 1.5 },
+        max: Vec3 { x: 2.5, y: 2.5, z: 2.5 }
+    };
+
+    let inside = BBox {
+        min: Vec3 { x: 0.25, y: 0.25, z: 0.25 },
+        max: Vec3 { x: 0.75, y: 0.75, z: 0.75 }
+    };
+
+    assert_eq!(false, bbox.contains(&overlapping));
+    assert_eq!(false, bbox.contains(&not_overlapping));
+    assert!(bbox.contains(&inside));
+}
+
+#[test]
+fn it_expands_by_a_factor() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3::one()
+    };
+
+    let expanded = bbox.expand(1.0);
+    assert_eq!(-Vec3::one(), expanded.min);
+    assert_eq!(Vec3::one().scale(2.0), expanded.max);
+
+    let shrunken = bbox.expand(-0.25);
+    assert_eq!(Vec3 { x: 0.25, y: 0.25, z: 0.25 }, shrunken.min);
+    assert_eq!(Vec3 { x: 0.75, y: 0.75, z: 0.75 }, shrunken.max);
+}
+
+#[test]
+fn it_returns_max_extent() {
+    let x = BBox {
+        min: Vec3::zero(),
+        max: Vec3 { x: 2.0, y: 1.0, z: 1.0 }
+    };
+
+    let y = BBox {
+        min: Vec3::zero(),
+        max: Vec3 { x: 1.0, y: 2.0, z: 1.0 }
+    };
+
+    let z = BBox {
+        min: Vec3::zero(),
+        max: Vec3 { x: 1.0, y: 1.0, z: 2.0 }
+    };
+
+    assert_eq!(0u, x.max_extent());
+    assert_eq!(1u, y.max_extent());
+    assert_eq!(2u, z.max_extent());
+}
+
+#[test]
+fn it_returns_offset_length_from_min_corner() {
+    let bbox = BBox {
+        min: -Vec3::one(),
+        max: Vec3::one()
+    };
+
+    let offset_point = bbox.offset(&Vec3::one());
+    assert_eq!(Vec3::one(), offset_point);
+}
+
+#[test]
+fn it_returns_side_lengths() {
+    let bbox = BBox {
+        min: Vec3::zero(),
+        max: Vec3 { x: 1.0, y: 2.0, z: 3.0 }
+    };
+
+    assert_eq!(1.0, bbox.x_len());
+    assert_eq!(2.0, bbox.y_len());
+    assert_eq!(3.0, bbox.z_len());
 }
