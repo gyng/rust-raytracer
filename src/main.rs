@@ -71,93 +71,93 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     return match scene_name.as_slice() {
         "box" => {
             // Box. Simplest scene with 9 primitives, no octree
-            let camera = my_scene::get_camera(image_width, image_height, fov);
-            let scene = my_scene::get_scene();
+            let camera = my_scene::cornell::get_camera(image_width, image_height, fov);
+            let scene = my_scene::cornell::get_scene();
             Some((camera, scene))
         },
         "bunny" => {
             // Bunny. Around 300 primitives, 2 lights. Uses octree. Has skybox, textures are
             // in another repository.
-            let camera = my_scene::get_bunny_camera(image_width, image_height, fov);
-            let scene = my_scene::get_bunny_scene();
+            let camera = my_scene::bunny::get_camera(image_width, image_height, fov);
+            let scene = my_scene::bunny::get_scene();
             Some((camera, scene))
         },
         "teapot" => {
             // Teapot. Around 2500 polygons. Octree helps a bit. Has skybox.
-            let camera = my_scene::get_teapot_camera(image_width, image_height, fov);
-            let scene = my_scene::get_teapot_scene();
+            let camera = my_scene::teapot::get_teapot_camera(image_width, image_height, fov);
+            let scene = my_scene::teapot::get_teapot_scene();
             Some((camera, scene))
         },
         "cow" => {
             // Cow. Around 5000 polygons. Octree helps considerably.
-            let camera = my_scene::get_cow_camera(image_width, image_height, fov);
-            let scene = my_scene::get_cow_scene();
+            let camera = my_scene::cow::get_camera(image_width, image_height, fov);
+            let scene = my_scene::cow::get_scene();
             Some((camera, scene))
         },
         "lucy" => {
             // Lucy. Around 525814+1 primitives. Octree pretty much required. The model is included
             // separately, in another repository. Has skybox.
-            let camera = my_scene::get_lucy_camera(image_width, image_height, fov);
-            let scene = my_scene::get_lucy_scene();
+            let camera = my_scene::lucy::get_camera(image_width, image_height, fov);
+            let scene = my_scene::lucy::get_scene();
             Some((camera, scene))
         },
         "sponza" => {
             // Sponza. Around 28K triangles, but more complex than Lucy. 2 lights.
-            let camera = my_scene::get_sponza_camera(image_width, image_height, fov);
-            let scene = my_scene::get_sponza_scene();
+            let camera = my_scene::sponza::get_camera(image_width, image_height, fov);
+            let scene = my_scene::sponza::get_scene();
             Some((camera, scene))
         },
         "sibenik" => {
             // Sibenik, around 70K triangles, no texture work, 3 lights.
             let camera = match config.animating {
-                true => my_scene::get_sibenik_animation_camera(image_width, image_height, fov),
-                false => my_scene::get_sibenik_camera(image_width, image_height, fov)
+                true => my_scene::sibenik::get_animation_camera(image_width, image_height, fov),
+                false => my_scene::sibenik::get_camera(image_width, image_height, fov)
             };
-            let scene = my_scene::get_sibenik_scene();
+            let scene = my_scene::sibenik::get_scene();
             Some((camera, scene))
         },
         "heptoroid-white" => {
             // Heptoroid, 114688 tris, 57302 verts
-            let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
-            let scene = my_scene::get_heptoroid_scene("white");
+            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
+            let scene = my_scene::heptoroid::get_scene("white");
             Some((camera, scene))
         },
         "heptoroid-shiny" => {
             // Shiny heptoroid, 114688 tris, 57302 verts
-            let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
-            let scene = my_scene::get_heptoroid_scene("shiny");
+            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
+            let scene = my_scene::heptoroid::get_scene("shiny");
             Some((camera, scene))
         },
         "heptoroid-refractive" => {
             // Refractive heptoroid, you want to limit your reflect levels (2/3?)
             // and up your refract levels (10/16?) for this
-            let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
-            let scene = my_scene::get_heptoroid_scene("refractive");
+            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
+            let scene = my_scene::heptoroid::get_scene("refractive");
             Some((camera, scene))
         },
         "tachikoma" => {
             // Shiny heptoroid, 114688 tris, 57302 verts
             // You can forget about refractions, it's too complex a scene
-            let camera = my_scene::get_tachikoma_camera(image_width, image_height, fov);
-            let scene = my_scene::get_tachikoma_scene();
+            let camera = my_scene::tachikoma::get_camera(image_width, image_height, fov);
+            let scene = my_scene::tachikoma::get_scene();
             Some((camera, scene))
         },
         "sphere" => {
             // Sphere skybox test scene
             let camera = match config.animating {
-                true => my_scene::get_sphere_animation_camera(image_width, image_height, fov),
-                false => my_scene::get_sphere_camera(image_width, image_height, fov)
+                true => my_scene::sphere::get_animation_camera(image_width, image_height, fov),
+                false => my_scene::sphere::get_camera(image_width, image_height, fov)
             };
-            let scene = my_scene::get_sphere_scene();
+            let scene = my_scene::sphere::get_scene();
             Some((camera, scene))
         },
         "fresnel" => {
             // Fresnel test scene
             let camera = match config.animating {
-                true => my_scene::get_fresnel_animation_camera(image_width, image_height, fov),
-                false => my_scene::get_fresnel_camera(image_width, image_height, fov)
+                true => my_scene::fresnel::get_animation_camera(image_width, image_height, fov),
+                false => my_scene::fresnel::get_camera(image_width, image_height, fov)
             };
-            let scene = my_scene::get_fresnel_scene();
+            let scene = my_scene::fresnel::get_scene();
             Some((camera, scene))
         },
         _ => None

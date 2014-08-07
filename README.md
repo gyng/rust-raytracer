@@ -51,6 +51,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
 * To update (assets) submodules only: `git submodule foreach git pull`
 * To convert frames into a video `ffmpeg -i test%06d.ppm -b 2000k out.webm`
+* Scenes are created in `./myscene/`. To hook up a scene, add it to `./myscene/mod.rs` and `get_camera_and_scene(&SceneConfig)` in `main.rs`.
 
 
 ## Available Scenes

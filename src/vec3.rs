@@ -1,5 +1,3 @@
-#![feature(macro_rules)]
-
 use std::fmt;
 use std::cmp;
 
