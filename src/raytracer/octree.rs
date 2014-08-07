@@ -4,8 +4,6 @@ use geometry::{BBox, Prim};
 use raytracer::{Ray, PrimContainer};
 use vec3::Vec3;
 
-
-
 pub struct Octree<T> {
     pub prims: Option<Vec<T>>,
     pub bbox: BBox,
@@ -70,13 +68,13 @@ impl<T> Octree<T> {
             Some(object_bbox) => {
                 // Max depth
                 if self.depth <= 0 {
-                    self.data.push(OctreeData {index: index, bbox: Some(object_bbox)});
+                    self.data.push(OctreeData { index: index, bbox: Some(object_bbox) });
                     return;
                 }
 
                 // Empty leaf node
                 if self.is_leaf() && self.data.len() == 0 {
-                    self.data.push(OctreeData {index: index, bbox: Some(object_bbox)});
+                    self.data.push(OctreeData { index: index, bbox: Some(object_bbox) });
                     return;
                 }
 
@@ -102,7 +100,7 @@ impl<T> Octree<T> {
             // Infinite object without bounds, this is added to
             // all get_intersection_indices calls
             None => {
-                self.infinite_data.push(OctreeData {index: index, bbox: None});
+                self.infinite_data.push(OctreeData { index: index, bbox: None });
             }
         }
     }

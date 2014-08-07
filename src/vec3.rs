@@ -160,7 +160,7 @@ impl fmt::Show for Vec3 {
 
 #[test]
 fn it_implements_show() {
-    let vec = Vec3 {x: 0.0, y: 1.0, z: 1.3};
+    let vec = Vec3 { x: 0.0, y: 1.0, z: 1.3 };
     let formatted_string = format!("{}", vec);
     let expected_string = "(0, 1, 1.3)";
     assert_eq!(formatted_string.as_slice(), expected_string);
@@ -170,20 +170,20 @@ fn it_implements_show() {
 fn it_does_vector_math() {
     assert!(Vec3::zero() != Vec3::one());
     assert!(Vec3::zero() == Vec3::zero());
-    assert_eq!(Vec3 {x: -1.0, y: -1.0, z: -1.0}, -Vec3::one());
-    assert_eq!(29.0_f64.sqrt(), Vec3 {x: 2.0, y: 3.0, z: 4.0}.len());
-    assert_eq!(1.0, Vec3 {x: 10.0, y: 0.0, z: 0.0}.unit().len());
-    assert_eq!(5.0, Vec3 {x: 0.0, y: 1.0, z: 2.0}.dot(&Vec3 {x: 0.0, y: 1.0, z: 2.0}));
-    assert_eq!(Vec3 {x: -1.0, y: 2.0, z: -1.0}, Vec3 {x: 1.0, y: 2.0, z: 3.0}.cross(&Vec3 {x: 2.0, y: 3.0, z: 4.0}));
-    assert_eq!(Vec3 {x: 2.0, y: 2.0, z: 2.0}, Vec3::one().scale(2.0));
-    assert_eq!(Vec3 {x: 2.0, y: 2.0, z: 2.0}, Vec3::one() + Vec3::one());
-    assert_eq!(Vec3 {x: 4.0, y: 9.0, z: -4.0}, Vec3 {x: 2.0, y: 3.0, z: 4.0} * Vec3 {x: 2.0, y: 3.0, z: -1.0});
+    assert_eq!(Vec3 { x: -1.0, y: -1.0, z: -1.0 }, -Vec3::one());
+    assert_eq!(29.0_f64.sqrt(), Vec3 { x: 2.0, y: 3.0, z: 4.0 }.len());
+    assert_eq!(1.0, Vec3 { x: 10.0, y: 0.0, z: 0.0 }.unit().len());
+    assert_eq!(5.0, Vec3 { x: 0.0, y: 1.0, z: 2.0 }.dot(&Vec3 { x: 0.0, y: 1.0, z: 2.0 }));
+    assert_eq!(Vec3 { x: -1.0, y: 2.0, z: -1.0 }, Vec3 { x: 1.0, y: 2.0, z: 3.0 }.cross(&Vec3 { x: 2.0, y: 3.0, z: 4.0 }));
+    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one().scale(2.0));
+    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() + Vec3::one());
+    assert_eq!(Vec3 { x: 4.0, y: 9.0, z: -4.0 }, Vec3 { x: 2.0, y: 3.0, z: 4.0 } * Vec3 { x: 2.0, y: 3.0, z: -1.0 });
     assert_eq!(Vec3::zero(), Vec3::one() - Vec3::one());
 }
 
 #[test]
 fn it_linearly_interpolates() {
     assert_eq!(Vec3::zero(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.0));
-    assert_eq!(Vec3 {x: 0.5, y: 0.5, z: 0.5}, Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.5));
+    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.5));
     assert_eq!(Vec3::one(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 1.0));
 }

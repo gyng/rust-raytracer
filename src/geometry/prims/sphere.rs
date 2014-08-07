@@ -14,7 +14,6 @@ pub struct Sphere {
     pub material: Box<Material+Send+Share>
 }
 
-
 impl Prim for Sphere {
     fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Intersection<'a>> {
         let i = ray.origin - self.center;
@@ -76,11 +75,11 @@ fn it_intersects() {
     let sphere = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
-        material: box FlatMaterial {color: Vec3::one()}
+        material: box FlatMaterial { color: Vec3::one() }
     };
 
     // Tests actual intersection
-    let intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.0, z: -2.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
     let intersection = sphere.intersects(&intersecting_ray, 0.0, 10.0).unwrap();
     assert_eq!(intersection.position.x, 0.0);
     assert_eq!(intersection.position.y, 0.0);
@@ -90,16 +89,16 @@ fn it_intersects() {
     assert_eq!(intersection.n.z, -1.0);
 
     // Ray off to the sides
-    let mut non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 100.0, y: 100.0, z: 0.1});
+    let mut non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.0, z: -2.0 }, Vec3 { x: 100.0, y: 100.0, z: 0.1 });
     let mut non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 
-    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: -100.0, y: -100.0, z: 0.1});
+    non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.0, z: -2.0 }, Vec3 { x: -100.0, y: -100.0, z: 0.1 });
     non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 
     // Ray in opposite direction
-    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: -1.0});
+    non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.0, z: -2.0 }, Vec3 {x: 0.0, y: 0.0, z: -1.0 });
     non_intersection = sphere.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 }
@@ -109,11 +108,11 @@ fn it_intersects_only_in_tmin_tmax() {
     let sphere = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
-        material: box FlatMaterial {color: Vec3::one()}
+        material: box FlatMaterial { color: Vec3::one() }
     };
 
     // Tests tmin
-    let intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.0, z: -2.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.0, z: -2.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
     let mut non_intersection = sphere.intersects(&intersecting_ray, 1000.0, 10000.0);
     assert!(non_intersection.is_none());
 

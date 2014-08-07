@@ -9,7 +9,6 @@ use vec3::Vec3;
 #[cfg(test)]
 use material::materials::FlatMaterial;
 
-
 pub struct Triangle {
     pub v0: TriangleVertex,
     pub v1: TriangleVertex,
@@ -17,14 +16,12 @@ pub struct Triangle {
     pub material: Box<Material+Send+Share>
 }
 
-
 pub struct TriangleVertex {
     pub pos: Vec3,
     pub n: Vec3,
     pub u: f64,
     pub v: f64
 }
-
 
 impl Triangle {
     /// All three normals at vertices are perpendicular to the triangle plane
@@ -42,7 +39,6 @@ impl Triangle {
         }
     }
 }
-
 
 impl Prim for Triangle {
     /// http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -102,14 +98,14 @@ impl Prim for Triangle {
 #[test]
 fn it_intersects_and_interpolates() {
     let triangle = Triangle {
-        v0: TriangleVertex {pos: Vec3 {x: -1.0, y: 0.0, z: 0.0}, n: Vec3 {x: -1.0, y: 0.0, z: 0.0}, u: 0.0, v: 0.0},
-        v1: TriangleVertex {pos: Vec3 {x:  1.0, y: 0.0, z: 0.0}, n: Vec3 {x:  1.0, y: 0.0, z: 0.0}, u: 1.0, v: 0.0},
-        v2: TriangleVertex {pos: Vec3 {x:  0.0, y: 1.0, z: 0.0}, n: Vec3 {x:  0.0, y: 1.0, z: 0.0}, u: 0.0, v: 1.0},
-        material: box FlatMaterial {color: Vec3::one()}
+        v0: TriangleVertex {pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, u: 0.0, v: 0.0 },
+        v1: TriangleVertex {pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, u: 1.0, v: 0.0 },
+        v2: TriangleVertex {pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, u: 0.0, v: 1.0 },
+        material: box FlatMaterial { color: Vec3::one() }
     };
 
     // Tests actual intersection
-    let intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.5, z: -1.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
     let intersection = triangle.intersects(&intersecting_ray, 0.0, 10.0).unwrap();
     assert_eq!(intersection.position.x, 0.0);
     assert_eq!(intersection.position.y, 0.5);
@@ -121,16 +117,16 @@ fn it_intersects_and_interpolates() {
     assert_eq!(intersection.n.z, 0.0);
 
     // Ray off to the sides
-    let mut non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.5, z: -1.0}, Vec3 {x: 100.0, y: 100.0, z: 1.0});
+    let mut non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 100.0, y: 100.0, z: 1.0 });
     let mut non_intersection = triangle.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 
-    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.5, z: -1.0}, Vec3 {x: -100.0, y: -100.0, z: 1.0});
+    non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: -100.0, y: -100.0, z: 1.0 });
     non_intersection = triangle.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 
     // Ray in opposite direction
-    non_intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.5, z: -1.0}, Vec3 {x: 0.0, y: 0.0, z: -1.0});
+    non_intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: -1.0 });
     non_intersection = triangle.intersects(&non_intersecting_ray, 0.0, 10.0);
     assert!(non_intersection.is_none());
 }
@@ -138,14 +134,14 @@ fn it_intersects_and_interpolates() {
 #[test]
 fn it_intersects_only_in_tmin_tmax() {
     let triangle = Triangle {
-        v0: TriangleVertex {pos: Vec3 {x: -1.0, y: 0.0, z: 0.0}, n: Vec3::zero(), u: 0.0, v: 0.0},
-        v1: TriangleVertex {pos: Vec3 {x: 1.0, y: 0.0, z: 0.0},  n: Vec3::zero(), u: 1.0, v: 0.0},
-        v2: TriangleVertex {pos: Vec3 {x: 0.0, y: 1.0, z: 0.0},  n: Vec3::one(),  u: 0.0, v: 1.0},
+        v0: TriangleVertex { pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 0.0, v: 0.0 },
+        v1: TriangleVertex { pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 1.0, v: 0.0 },
+        v2: TriangleVertex { pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3::one(),  u: 0.0, v: 1.0 },
         material: box FlatMaterial {color: Vec3::one()}
     };
 
     // Tests tmin
-    let mut intersecting_ray = Ray::new(Vec3 {x: 0.0, y: 0.5, z: -1.0}, Vec3 {x: 0.0, y: 0.0, z: 1.0});
+    let mut intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
     let mut non_intersection = triangle.intersects(&intersecting_ray, 1000.0, 10000.0);
     assert!(non_intersection.is_none());
 

@@ -24,8 +24,8 @@ impl Material for CookTorranceMaterial {
     fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
         let ambient  = self.ambient.scale(self.k_a);
         let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l)) * match self.diffuse_texture {
-            Some(ref x) => {x.color(u, v)}
-            None => {Vec3::one()}
+            Some(ref x) => x.color(u, v),
+            None => Vec3::one()
         };
 
         // Specular calculations

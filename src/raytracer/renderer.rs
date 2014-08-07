@@ -1,20 +1,13 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::deque::{BufferPool, Data, Empty, Abort};
-
-use raytracer::compositor::{
-    Surface,
-    SurfaceFactory,
-    ColorRGBA
-};
+use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
-
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
-
 
 pub struct Renderer {
     pub reflect_depth: uint,  // Maximum reflection recursions.
@@ -24,7 +17,6 @@ pub struct Renderer {
     pub tasks: uint           // Minimum number of tasks to spawn.
 }
 
-
 impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
@@ -33,7 +25,7 @@ impl Renderer {
                                        ColorRGBA::new_rgb(0, 0, 0));
 
         let (worker, stealer) = BufferPool::new().deque();
-        let (tx, rx) = channel();  // Responses
+        let (tx, rx) = channel();
 
         let mut jobs = 0;
         for subsurface_factory in surface.divide(128, 8) {
@@ -94,24 +86,23 @@ impl Renderer {
             for rel_x in range(0u, tile.width) {
                 let abs_x = tile.x_off + rel_x;
 
-                let mut color = Vec3::zero();
-
                 // Supersampling, jitter algorithm
                 let pixel_width = 1.0 / pixel_samples as f64;
+                let mut color = Vec3::zero();
 
                 for y_subpixel in range(0, pixel_samples) {
                     for x_subpixel in range(0, pixel_samples) {
-                        let mut j_x = abs_x as f64;
-                        let mut j_y = abs_y as f64;
-
                         // Don't jitter if not antialiasing
-                        if pixel_samples > 1 {
-                            j_x = j_x + x_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width as f64;
-                            j_y = j_y + y_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width as f64;
-                        }
+                        let (j_x, j_y) = if pixel_samples > 1 {
+                            (x_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width,
+                             y_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width)
+                        } else {
+                            (0.0, 0.0)
+                        };
 
-                        let ray = camera.get_ray(j_x, j_y);
-                        let result = Renderer::trace(scene, &ray, shadow_samples, reflect_depth, refract_depth, false);
+                        let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
+                        let result = Renderer::trace(scene, &ray, shadow_samples,
+                                                     reflect_depth, refract_depth, false);
                         color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
@@ -128,57 +119,52 @@ impl Renderer {
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
         match ray.get_nearest_hit(scene) {
-            Some(nearest_hit) => {
-                let n = nearest_hit.n.unit();
+            Some(hit) => {
+                let n = hit.n.unit();
                 let i = (-ray.direction).unit();
 
                 // Local lighting computation: surface shading, shadows
                 let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
-                    let shadow = Renderer::shadow_intensity(scene, &nearest_hit, light, shadow_samples);
-                    let l = (light.center() - nearest_hit.position).unit();
-                    let u = nearest_hit.u;
-                    let v = nearest_hit.v;
+                    let shadow = Renderer::shadow_intensity(scene, &hit, light, shadow_samples);
+                    let l = (light.center() - hit.position).unit();
 
-                    color_acc + light.color() * nearest_hit.material.sample(n, i, l, u, v) * shadow
+                    color_acc + light.color() * hit.material.sample(n, i, l, hit.u, hit.v) * shadow
                 });
 
-                if nearest_hit.material.is_reflective() ||
-                   nearest_hit.material.is_refractive() {
-
-                    let reflect_fresnel = Renderer::fresnel_reflect(nearest_hit.material.ior(), &i, &n, inside);
+                if hit.material.is_reflective() || hit.material.is_refractive() {
+                    let reflect_fresnel = Renderer::fresnel_reflect(hit.material.ior(), &i, &n, inside);
                     let mut refract_fresnel = 1.0 - reflect_fresnel;
 
                     // Global reflection
-                    if nearest_hit.material.is_reflective() {
+                    if hit.material.is_reflective() {
                         let r = Vec3::reflect(&i, &n);
-                        let reflect_ray = Ray::new(nearest_hit.position, r);
+                        let reflect_ray = Ray::new(hit.position, r);
                         let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
                                                          reflect_depth - 1, refract_depth, inside);
 
-                        result = result + nearest_hit.material.global_specular(&reflection).scale(reflect_fresnel);
+                        result = result + hit.material.global_specular(&reflection).scale(reflect_fresnel);
                     }
 
                     // Global refraction
-                    if nearest_hit.material.is_refractive() {
-                        let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), inside) {
+                    if hit.material.is_refractive() {
+                        let t = match Vec3::refract(&i, &n, hit.material.ior(), inside) {
                             Some(ref t) => *t,
                             None => {
-                                refract_fresnel = 1.0; // Total internal reflection (TODO: check that this is working)
+                                refract_fresnel = 1.0; // Total internal reflection (TODO: verify)
                                 Vec3::reflect(&i, &n)
                             }
                         };
 
-                        let refract_ray = Ray::new(nearest_hit.position + t.scale(EPSILON), t);
+                        let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
                         let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
                                                          reflect_depth, refract_depth - 1, !inside);
 
-                        result = result + nearest_hit.material.global_transmissive(&refraction).scale(refract_fresnel);
+                        result = result + hit.material.global_transmissive(&refraction).scale(refract_fresnel);
                     }
                 }
 
                 result
-            }
-
+            },
             None => {
                 match scene.skybox {
                     Some(ref skybox) => skybox.color(ray.direction),
@@ -188,10 +174,10 @@ impl Renderer {
         }
     }
 
-    fn shadow_intensity(scene: &Scene, nearest_hit: &Intersection,
+    fn shadow_intensity(scene: &Scene, hit: &Intersection,
                         light: &Box<Light+Send+Share>, shadow_samples: uint) -> Vec3 {
 
-        if shadow_samples <= 0 { return Vec3::one(); }
+        if shadow_samples <= 0 { return Vec3::one() }
 
         // Point light speedup (no point in sampling a point light multiple times)
         let shadow_sample_tries = if light.is_point() { 1 } else { shadow_samples };
@@ -203,9 +189,9 @@ impl Renderer {
             // distance to light to work. Shadow feelers only search up
             // until light source.
             let sampled_light_position = light.position();
-            let shadow_l = (sampled_light_position - nearest_hit.position).unit();
-            let shadow_ray = Ray::new(nearest_hit.position, shadow_l);
-            let distance_to_light = (sampled_light_position - nearest_hit.position).len();
+            let shadow_l = (sampled_light_position - hit.position).unit();
+            let shadow_ray = Ray::new(hit.position, shadow_l);
+            let distance_to_light = (sampled_light_position - hit.position).len();
 
             // Check against candidate primitives in scene for occlusion
             // and multiply shadow color by occluders' shadow colors

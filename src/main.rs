@@ -3,13 +3,12 @@ extern crate serialize;
 
 use scene::{Camera, Scene};
 
-use std::io;
 use std::io::File;
+use std::io;
 use std::os;
+use std::sync::Arc;
 use serialize::json;
 use serialize::json::MissingFieldError;
-
-use std::sync::Arc;
 
 mod geometry;
 mod light;
@@ -20,12 +19,10 @@ mod scene;
 mod util;
 mod vec3;
 
-
 // Replace this with argparse eventually
 struct ProgramArgs {
     config_file: String
 }
-
 
 #[deriving(Decodable, Encodable)]
 struct SceneConfig<'a> {
@@ -42,7 +39,6 @@ struct SceneConfig<'a> {
     time_slice: (f64, f64),
     starting_frame_number: uint
 }
-
 
 fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
     let (program_name, rest) = match args.as_slice() {
@@ -61,7 +57,6 @@ fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
         _ => Err(format!("Usage: {} scene_config.json", program_name)),
     }
 }
-
 
 fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     let scene_name = config.name.clone();
@@ -132,7 +127,8 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
             Some((camera, scene))
         },
         "heptoroid-refractive" => {
-            // Refractive heptoroid, you want to limit your reflect levels (2/3?) and up your refract levels (10/16?) for this
+            // Refractive heptoroid, you want to limit your reflect levels (2/3?)
+            // and up your refract levels (10/16?) for this
             let camera = my_scene::get_heptoroid_camera(image_width, image_height, fov);
             let scene = my_scene::get_heptoroid_scene("refractive");
             Some((camera, scene))

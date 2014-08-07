@@ -1,14 +1,12 @@
 use vec3::Vec3;
 use material::Texture;
 
-
 #[deriving(Clone)]
 pub struct CheckerTexture {
     pub color1: Vec3,
     pub color2: Vec3,
     pub scale: f64 // Controls how large the squares are.
 }
-
 
 impl Texture for CheckerTexture {
     fn color(&self, u: f64, v: f64) -> Vec3 {

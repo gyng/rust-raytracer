@@ -11,11 +11,13 @@ impl CubeMap {
     /// For y-axis as up, load: left, right, down, up, front, back
     #[allow(dead_code)]
     pub fn load(x: &str, x_neg: &str, y: &str, y_neg: &str, z: &str, z_neg: &str) -> CubeMap {
-        let filenames = vec![x.clone(), x_neg.clone(), y.clone(), y_neg.clone(), z.clone(), z_neg.clone()];
+        let filenames = vec![
+            x.clone(), x_neg.clone(),
+            y.clone(), y_neg.clone(),
+            z.clone(), z_neg.clone()
+        ];
         let mut faces: Vec<ImageTexture> = Vec::with_capacity(6);
-        unsafe {
-            faces.set_len(6);
-        }
+        unsafe { faces.set_len(6); }
 
         let (tx, rx) = channel();
         let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as int));
@@ -34,13 +36,11 @@ impl CubeMap {
         for _ in range(0u, 6) {
             let (i, tex) = rx.recv();
             let p = faces.as_mut_ptr();
-            unsafe {
-                ::std::ptr::write::<ImageTexture>(p.offset(i as int), tex);
-            }
+            unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as int), tex); }
             sema.release();
         }
 
-        CubeMap {faces: faces}
+        CubeMap { faces: faces }
     }
 
     #[allow(dead_code)]

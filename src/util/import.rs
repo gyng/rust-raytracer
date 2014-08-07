@@ -89,9 +89,9 @@ pub fn from_obj(position: Vec3, scale: f64, material: CookTorranceMaterial /*Box
                 }
 
                 triangles.push(box Triangle {
-                    v0: TriangleVertex{ pos: vertices[pairs[0][0]], n: normals[pairs[0][2]], u: u[0], v: v[0] },
-                    v1: TriangleVertex{ pos: vertices[pairs[1][0]], n: normals[pairs[1][2]], u: u[1], v: v[1] },
-                    v2: TriangleVertex{ pos: vertices[pairs[2][0]], n: normals[pairs[2][2]], u: u[2], v: v[2] },
+                    v0: TriangleVertex { pos: vertices[pairs[0][0]], n: normals[pairs[0][2]], u: u[0], v: v[0] },
+                    v1: TriangleVertex { pos: vertices[pairs[1][0]], n: normals[pairs[1][2]], u: u[1], v: v[1] },
+                    v2: TriangleVertex { pos: vertices[pairs[2][0]], n: normals[pairs[2][2]], u: u[2], v: v[2] },
                     material: box material.clone()
                 });
             },
@@ -128,7 +128,10 @@ pub fn from_ppm(filename: &str) -> Surface {
     let path = Path::new(filename);
     let mut file = BufferedReader::new(File::open(&path));
 
-    let tex = match file.read_to_string() { Ok(f) => f, Err(e) => { fail!("Could not open file {} (file missing?): {}", filename, e) }};
+    let tex = match file.read_to_string() {
+        Ok(f) => f,
+        Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
+    };
     let mut tokens: Vec<&str> = tex.as_slice().words().collect();
 
     tokens.remove(0); // PPM type

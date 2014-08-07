@@ -23,10 +23,7 @@ fn clamp<T: Ord>(value: T, min_value: T, max_value: T) -> T {
     max(min(value, max_value), min_value)
 }
 
-
 // Maybe later?: ColorRGBA<f64>.quantize() -> ColorRGBA<uint>
-
-
 // How do we implement this more generally so that we may have ColorRGBA<f64>
 impl ColorRGBA<u8> {
     #[inline]
@@ -74,7 +71,6 @@ impl ColorRGBA<u8> {
     }
 }
 
-
 impl<T: Add<T, T>> Add<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
     fn add(&self, other: &ColorRGBA<T>) -> ColorRGBA<T> {
         ColorRGBA {
@@ -118,7 +114,6 @@ fn color_add() {
     assert_eq!(foo_color.a, 3);
 }
 
-
 #[test]
 fn color_sub() {
     let foo_color: ColorRGBA<u8> = ColorRGBA::new_rgba(7, 7, 7, 7) -
@@ -128,8 +123,6 @@ fn color_sub() {
     assert_eq!(foo_color.b, 5);
     assert_eq!(foo_color.a, 5);
 }
-
-
 
 #[test]
 fn color_mul() {

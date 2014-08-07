@@ -9,7 +9,7 @@ pub fn to_ppm(surface: Surface, filename: &str) {
 
     let path = Path::new(filename);
     let mut f = match File::open_mode(&path, Truncate, Write) {
-        Ok(f)  => {f},
+        Ok(f)  => f,
         Err(e) => fail!("File error: {}", e),
     };
 

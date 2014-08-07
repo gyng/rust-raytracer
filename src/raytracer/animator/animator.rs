@@ -4,7 +4,6 @@ use scene::{Camera, Scene};
 use std::sync::{Arc, Semaphore};
 use vec3::Vec3;
 
-
 pub struct Animator {
     pub fps: f64,
     pub animate_from: f64, // Number of frames is rounded down to nearest frame
@@ -13,9 +12,7 @@ pub struct Animator {
     pub renderer: Renderer
 }
 
-
 // TODO: Non-linear interpolation
-// TODO: Improve keyframes (sort/order them as we don't need dynamic keyframe insertion)
 impl Animator {
     // TODO: make this a Surface iterator so both single frame and animation
     // process flows are similar
@@ -36,12 +33,14 @@ impl Animator {
 
             let child_sema = sema.clone();
             sema.acquire();
+
+            // Continue animating next frame as writing rendered frame to disk (slow) occurs
             spawn(proc() {
                 ::util::export::to_ppm(frame_data, shared_name.as_slice());
                 child_sema.release();
             });
 
-            ::util::print_progress("*** Frame", animate_start, frame_number + 1 as uint, total_frames);
+            ::util::print_progress("*** Frame", animate_start, frame_number + 1u, total_frames);
             println!("");
         }
 

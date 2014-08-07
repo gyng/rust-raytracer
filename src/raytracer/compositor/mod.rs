@@ -7,4 +7,3 @@ pub mod colorrgba;
 pub mod surface;
 pub mod surfacefactory;
 pub mod surfaceiterator;
-

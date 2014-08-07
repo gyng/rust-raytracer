@@ -5,28 +5,25 @@ use raytracer::compositor::Surface;
 #[cfg(test)]
 use raytracer::compositor::ColorRGBA;
 
-
 /// Maps the supplied (u, v) coordinate to the image (s, t).
 #[deriving(Clone)]
 pub struct ImageTexture {
     pub image: Surface
 }
 
-
 impl ImageTexture {
     #[allow(dead_code)]
     pub fn load(filename: &str) -> ImageTexture {
-        ImageTexture {image: ::util::import::from_ppm(filename)}
+        ImageTexture { image: ::util::import::from_ppm(filename) }
     }
 
-    // Alias, used by skybox sampling. This is needed because we aren't storing the skybox ImageTextures
-    // as a more generic Texture (vec of objects with the Texture trait). We need an ImageTexture-specific
-    // function to call.
+    // Alias, used by skybox sampling. This is needed because we aren't storing the skybox
+    // ImageTextures as a more generic Texture (vec of objects with the Texture trait).
+    // An ImageTexture-specific function needs to exist to be called.
     pub fn sample(&self, u: f64, v: f64) -> Vec3 {
         self.color(u, v)
     }
 }
-
 
 impl Texture for ImageTexture {
     fn color(&self, u: f64, v: f64) -> Vec3 {
@@ -41,8 +38,10 @@ impl Texture for ImageTexture {
         let u_opposite = 1.0 - u_ratio;
         let v_opposite = 1.0 - v_ratio;
 
-        (self.image.get(x, y    ).as_vec3().scale(u_opposite) + self.image.get(x + 1, y    ).as_vec3().scale(u_ratio)).scale(v_opposite) +
-        (self.image.get(x, y + 1).as_vec3().scale(u_opposite) + self.image.get(x + 1, y + 1).as_vec3().scale(u_ratio)).scale(v_ratio)
+        (self.image.get(x, y    ).as_vec3().scale(u_opposite)
+            + self.image.get(x + 1, y    ).as_vec3().scale(u_ratio)).scale(v_opposite) +
+        (self.image.get(x, y + 1).as_vec3().scale(u_opposite)
+            + self.image.get(x + 1, y + 1).as_vec3().scale(u_ratio)).scale(v_ratio)
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Share> {

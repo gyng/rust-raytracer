@@ -1,11 +1,9 @@
 use geometry::Prim;
 use raytracer::Ray;
 
-
 pub trait PrimContainer {
     fn get_intersection_objects<'a>(&'a self, ray: &'a Ray) -> Vec<&'a Box<Prim+Send+Share>>;
 }
-
 
 #[allow(dead_code)]
 pub struct VecPrimContainer {
