@@ -175,7 +175,7 @@ impl Renderer {
     }
 
     fn shadow_intensity(scene: &Scene, hit: &Intersection,
-                        light: &Box<Light+Send+Share>, shadow_samples: uint) -> Vec3 {
+                        light: &Box<Light+Send+Sync>, shadow_samples: uint) -> Vec3 {
 
         if shadow_samples <= 0 { return Vec3::one() }
 

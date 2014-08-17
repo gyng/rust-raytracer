@@ -3,7 +3,7 @@ use mat4::Transform;
 
 #[allow(dead_code)]
 pub struct Mesh {
-    pub triangles: Vec<Box<Prim+Send+Share>>
+    pub triangles: Vec<Box<Prim+Send+Sync>>
 }
 
 impl Mesh {

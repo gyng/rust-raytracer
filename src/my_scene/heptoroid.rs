@@ -25,7 +25,7 @@ pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
 }
 
 pub fn get_scene(material_option: &str) -> Scene {
-    let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
+    let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(box SphereLight { position: Vec3 { x: 2.0, y: 3.0, z: -2.0 }, color: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, radius: 1.0 });
 
     // Defaults to white
@@ -35,7 +35,7 @@ pub fn get_scene(material_option: &str) -> Scene {
         _ => CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.15, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None }
     };
 
-    let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let heptoroid = ::util::import::from_obj(heptoroid_material, false, "./docs/assets/models/heptoroid.obj");
     for triangle in heptoroid.triangles.move_iter() { prims.push(triangle); }
 

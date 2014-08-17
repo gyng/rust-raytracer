@@ -44,8 +44,8 @@ impl Texture for ImageTexture {
             + self.image.get(x + 1, y + 1).as_vec3().scale(u_ratio)).scale(v_ratio)
     }
 
-    fn clone_self(&self) -> Box<Texture+Send+Share> {
-        let tex: Box<Texture+Send+Share> = box ImageTexture {
+    fn clone_self(&self) -> Box<Texture+Send+Sync> {
+        let tex: Box<Texture+Send+Sync> = box ImageTexture {
             image: self.image.clone()
         };
         tex

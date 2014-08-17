@@ -17,7 +17,7 @@ pub struct CookTorranceMaterial {
     pub roughness: f64,      // Smaller = shininer => smaller highlight spot on surface
     pub gauss_constant: f64, // Controls curve of distribution of microfacets
     pub ior: f64,            // Index of refraction, also used for specular highlights
-    pub diffuse_texture: Option<Box<Texture+Send+Share>>
+    pub diffuse_texture: Option<Box<Texture+Send+Sync>>
 }
 
 impl Material for CookTorranceMaterial {

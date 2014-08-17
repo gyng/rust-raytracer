@@ -10,7 +10,7 @@ impl Texture for UVTexture {
         Vec3 { x: u % 1.0, y: v % 1.0, z: 0.0 }
     }
 
-    fn clone_self(&self) -> Box<Texture+Send+Share> {
-        box UVTexture as Box<Texture+Send+Share>
+    fn clone_self(&self) -> Box<Texture+Send+Sync> {
+        box UVTexture as Box<Texture+Send+Sync>
     }
 }

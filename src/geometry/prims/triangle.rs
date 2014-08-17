@@ -14,7 +14,7 @@ pub struct Triangle {
     pub v0: TriangleVertex,
     pub v1: TriangleVertex,
     pub v2: TriangleVertex,
-    pub material: Box<Material+Send+Share>
+    pub material: Box<Material+Send+Sync>
 }
 
 pub struct TriangleVertex {
@@ -26,7 +26,7 @@ pub struct TriangleVertex {
 
 impl Triangle {
     /// All three normals at vertices are perpendicular to the triangle plane
-    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, uv0: (f64, f64), uv1: (f64, f64), uv2: (f64, f64), material: Box<Material+Send+Share>) -> Triangle {
+    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, uv0: (f64, f64), uv1: (f64, f64), uv2: (f64, f64), material: Box<Material+Send+Sync>) -> Triangle {
         let n = (v1 - v0).cross(&(v2 - v0));
         let (ut0, vt0) = uv0;
         let (ut1, vt1) = uv1;

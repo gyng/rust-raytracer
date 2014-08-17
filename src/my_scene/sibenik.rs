@@ -44,17 +44,17 @@ pub fn get_animation_camera(image_width: int, image_height: int, fov: f64) -> Ca
 }
 
 pub fn get_scene() -> Scene {
-    let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
+    let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(box SphereLight { position: Vec3 { x: 8.0, y: 8.0, z: 0.0 }, color: Vec3 { x: 1.0, y: 0.8, z: 0.4}, radius: 0.5 });
     lights.push(box SphereLight { position: Vec3 { x: 8.0, y: -5.0, z: 0.0 }, color: Vec3 { x: 0.5, y: 0.4, z: 0.2}, radius: 1.0 });
     lights.push(box PointLight { position: Vec3 { x: -16.0, y: -14.5, z: -2.0 }, color: Vec3 { x: 0.15, y: 0.07, z: 0.05 } });
 
-    let checker: Box<Texture+Send+Share> = box CheckerTexture { color1: Vec3::one(), color2: Vec3 { x: 0.15, y: 0.11, z: 0.1 }, scale: 1.0 };
+    let checker: Box<Texture+Send+Sync> = box CheckerTexture { color1: Vec3::one(), color2: Vec3 { x: 0.15, y: 0.11, z: 0.1 }, scale: 1.0 };
 
     let stone     = CookTorranceMaterial { k_a: 0.1,  k_d: 0.8, k_s: 0.2, k_sg: 0.0, k_tg: 0.0, gauss_constant: 25.0, roughness: 1.0, ior: 1.5, ambient: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, diffuse: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
     let ground    = CookTorranceMaterial { k_a: 0.03, k_d: 0.9, k_s: 0.3, k_sg: 0.5, k_tg: 0.0, gauss_constant: 25.0, roughness: 0.1, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.38, y: 0.38, z: 0.5 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone()) };
 
-    let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(box Plane { a: 0.0,  b: -1.0, c: 0.0, d: -14.9, material: box ground.clone() });
 
     let sibenik = ::util::import::from_obj(stone, false, "./docs/assets/models/sibenik.obj");

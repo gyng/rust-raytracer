@@ -24,13 +24,13 @@ pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
 }
 
 pub fn get_scene() -> Scene {
-    let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
+    let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(box SphereLight { position: Vec3 { x: 0.0, y: 100.0, z: 0.0 }, color: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, radius: 25.0 });
 
     let blue =  CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.4, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 { x: 0.16, y: 0.29, z: 0.44 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
     let floor = CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.3, ior: 1.0,   ambient: Vec3::one(), diffuse: Vec3 { x: 0.58, y: 0.63, z: 0.44 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None };
 
-    let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box floor.clone() }); // Bottom
 
     let tachikoma = ::util::import::from_obj(blue, false, "./docs/assets/models/tachikoma.obj");

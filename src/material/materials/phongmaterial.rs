@@ -15,7 +15,7 @@ pub struct PhongMaterial {
     pub specular: Vec3,     // Specular color
     pub shininess: f64,     // Size of Phong specular highlight
     pub ior: f64,           // Index of refraction
-    pub diffuse_texture: Option<Box<Texture+Send+Share>>
+    pub diffuse_texture: Option<Box<Texture+Send+Sync>>
 }
 
 impl Material for PhongMaterial {

@@ -25,12 +25,12 @@ pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
 }
 
 pub fn get_scene() -> Scene {
-    let mut lights: Vec<Box<Light+Send+Share>> = Vec::new();
+    let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(box SphereLight { position: Vec3 { x: -1400.0, y: 200.0, z: 100.0 }, color: Vec3 { x: 1.0, y: 0.80, z: 0.40 }, radius: 50.0 });
 
     let grey = CookTorranceMaterial { k_a: 0.0, k_d: 0.5, k_s: 0.8, k_sg: 0.5, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.4, ambient: Vec3::one(), diffuse: Vec3 { x: 0.6, y: 0.6, z: 0.65 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
 
-    let mut prims: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let lucy = ::util::import::from_obj(grey, true, "./docs/assets/models/lucy.obj");
     for triangle in lucy.triangles.move_iter() { prims.push(triangle); }
 

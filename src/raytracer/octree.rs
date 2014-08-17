@@ -114,9 +114,9 @@ impl<T> Octree<T> {
 //             that returns Option<BBox>.  Some if finite, None if infinite.
 //             Then we can use impl<T: Bounded3D> Octree<Box<T>>, probably!
 
-impl Octree<Box<Prim+Send+Share>> {
+impl Octree<Box<Prim+Send+Sync>> {
     #[allow(dead_code)]
-    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Share>>) -> Octree<Box<Prim+Send+Share>> {
+    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Sync>>) -> Octree<Box<Prim+Send+Sync>> {
         let bounds = get_bounds_from_objects(&prims);
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
@@ -132,19 +132,19 @@ impl Octree<Box<Prim+Send+Share>> {
         octree
     }
 
-    fn get_intersected_objects_iter<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Share>> {
+    fn get_intersected_objects_iter<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         OctreeIterator::new(self, ray)
     }
 }
 
 // TODO: sell: Eliminate vectors
-impl PrimContainer for Octree<Box<Prim+Send+Share>> {
+impl PrimContainer for Octree<Box<Prim+Send+Sync>> {
     #[allow(dead_code)]
-    fn get_intersection_objects<'a>(&'a self, ray: &'a Ray) -> Vec<&'a Box<Prim+Send+Share>> {
+    fn get_intersection_objects<'a>(&'a self, ray: &'a Ray) -> Vec<&'a Box<Prim+Send+Sync>> {
         let mut out = Vec::new();
         out.extend(self.get_intersected_objects_iter(ray));
 
-        let prims: &Vec<Box<Prim+Send+Share>> = match self.prims {
+        let prims: &Vec<Box<Prim+Send+Sync>> = match self.prims {
             Some(ref prims) => prims,
             None => fail!("get_intersection_objects may only be called on the root")
         };
@@ -164,8 +164,8 @@ struct OctreeIterator<'a, T> {
 }
 
 
-impl<'a> OctreeIterator<'a, Box<Prim+Send+Share>> {
-    pub fn new<'a>(root: &'a Octree<Box<Prim+Send+Share>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Share>> {
+impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    pub fn new<'a>(root: &'a Octree<Box<Prim+Send+Sync>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         let prims = match root.prims {
             Some(ref prims) => prims,
             None => fail!("OctreeIterator must be constructed from an Octree root")
@@ -179,8 +179,8 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Share>> {
     }
 }
 
-impl<'a> Iterator<&'a Box<Prim+Send+Share>> for OctreeIterator<'a, Box<Prim+Send+Share>> {
-    fn next(&mut self) -> Option<&'a Box<Prim+Send+Share>> {
+impl<'a> Iterator<&'a Box<Prim+Send+Sync>> for OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    fn next(&mut self) -> Option<&'a Box<Prim+Send+Sync>> {
         loop {
             if self.stack.is_empty() && self.cur_iter.is_none() {
                 return None;
@@ -191,7 +191,7 @@ impl<'a> Iterator<&'a Box<Prim+Send+Share>> for OctreeIterator<'a, Box<Prim+Send
                     None => (None, None)
                 },
                 None => {
-                    let node: &Octree<Box<Prim+Send+Share>> = self.stack.pop().unwrap();
+                    let node: &Octree<Box<Prim+Send+Sync>> = self.stack.pop().unwrap();
                     for child in node.children.iter() {
                         if child.bbox.intersects(self.ray) {
                             self.stack.push(child);

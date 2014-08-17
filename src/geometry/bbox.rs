@@ -63,7 +63,7 @@ pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
 
 /// Given a vector of prims, compute and return a new BBox that encompasses
 /// all finite prims (ie. not including planes) in that vector.
-pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Share>>) -> BBox {
+pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Sync>>) -> BBox {
     let mut max = Vec3 { x: MIN_VALUE, y: MIN_VALUE, z: MIN_VALUE };
     let mut min = Vec3 { x: MAX_VALUE, y: MAX_VALUE, z: MAX_VALUE };
 

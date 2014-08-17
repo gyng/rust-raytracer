@@ -12,7 +12,7 @@ use material::materials::FlatMaterial;
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub material: Box<Material+Send+Share>
+    pub material: Box<Material+Send+Sync>
 }
 
 impl Prim for Sphere {

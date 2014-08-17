@@ -27,7 +27,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 
     let mut vertices: Vec<Vec3> = Vec::new();
     let mut normals : Vec<Vec3> = Vec::new();
-    let mut triangles: Vec<Box<Prim+Send+Share>> = Vec::new();
+    let mut triangles: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let mut tex_coords: Vec<Vec<f64>> = Vec::new();
 
     for line_iter in file.lines() {
