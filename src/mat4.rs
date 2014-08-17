@@ -271,7 +271,6 @@ impl Mat4 {
         m[3][2] = (-a[3][0] * s3 + a[3][1] * s1 - a[3][2] * s0) * invdet;
         m[3][3] = ( a[2][0] * s3 - a[2][1] * s1 + a[2][2] * s0) * invdet;
 
-
         Mat4 { m: m }
     }
 
@@ -328,7 +327,7 @@ impl Mat4 {
     }
 
     fn approx_eq(f1: f64, f2: f64) -> bool {
-        f1 - f2 < ::std::f64::EPSILON * 2.0
+        (f1 - f2).abs() < ::std::f64::EPSILON
     }
 
     fn deg_to_rad(deg: f64) -> f64 {
@@ -437,7 +436,7 @@ impl Mul<Mat4, Mat4> for Mat4 {
 }
 
 impl fmt::Show for Mat4 {
-    fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // 46 spaces in between
         write!(f,
             "\n┌                                              ┐\n\
