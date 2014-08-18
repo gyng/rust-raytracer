@@ -153,8 +153,8 @@ impl BBox {
             t_max = tz_max;
         }
 
-        // t_min > 0.0 || t_max > 0.0
-        t_max > 0.0
+        // tmin < t1 && tmax > t0
+        t_min < ::std::f64::INFINITY && t_max > 0.0
     }
 
     pub fn overlaps(&self, other: &BBox) -> bool {
