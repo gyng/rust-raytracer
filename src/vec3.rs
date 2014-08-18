@@ -100,6 +100,14 @@ impl Vec3 {
             z: v1.z + (v2.z - v1.z) * alpha
         }
     }
+
+    pub fn clamp(&self, min: f64, max: f64) -> Vec3 {
+        Vec3 {
+            x: self.x.max(min).min(max),
+            y: self.y.max(min).min(max),
+            z: self.z.max(min).min(max)
+        }
+    }
 }
 
 impl Add<Vec3, Vec3> for Vec3 {

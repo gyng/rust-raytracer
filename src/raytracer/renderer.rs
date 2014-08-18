@@ -103,7 +103,9 @@ impl Renderer {
                         let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
                         let result = Renderer::trace(scene, &ray, shadow_samples,
                                                      reflect_depth, refract_depth, false);
-                        color = color + result.scale(1.0 / (pixel_samples * pixel_samples) as f64);
+                        // Clamp subpixels for now to avoid intense aliasing when combined value is clamped later
+                        // Should think of a better way to handle this
+                        color = color + result.clamp(0.0, 1.0).scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
                 *tile.get_mut(rel_x, rel_y) = ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
