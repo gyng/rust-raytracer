@@ -12,24 +12,34 @@ use light::light::Light;
 #[cfg(test)]
 use material::materials::FlatMaterial;
 #[cfg(test)]
-use raytracer::VecPrimContainer;
+use raytracer::Octree;
 
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
-    pub inverse_dir: Vec3 // This is used to optimise ray-bbox intersection checks
+    pub inverse_dir: Vec3, // This is used to optimise ray-bbox intersection checks
+    pub signs: Vec<bool> // Handle degenerate case in bbox intersection
 }
 
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Ray {
+        let inv_x = 1.0 / direction.x;
+        let inv_y = 1.0 / direction.y;
+        let inv_z = 1.0 / direction.z;
+
         Ray {
             origin: origin,
             direction: direction,
             inverse_dir: Vec3 {
-                x: 1.0 / direction.x,
-                y: 1.0 / direction.y,
-                z: 1.0 / direction.z
-            }
+                x: inv_x,
+                y: inv_y,
+                z: inv_z
+            },
+            signs: vec![
+                inv_x > 0.0,
+                inv_y > 0.0,
+                inv_z > 0.0
+            ]
         }
     }
 
@@ -85,10 +95,12 @@ fn it_gets_the_nearest_hit() {
     prims.push(box sphere_mid);
     prims.push(box sphere_bot);
 
+    let octree = Octree::new_from_prims(prims);
+
     let scene = Scene {
         lights: lights,
         background: Vec3::one(),
-        prim_strat: box VecPrimContainer::new(prims),
+        prim_strat: box octree,
         skybox: None
     };
 

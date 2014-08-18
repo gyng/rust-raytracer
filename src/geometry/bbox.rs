@@ -109,25 +109,52 @@ impl BBox {
 
         let o = ray.origin;
 
-        let tx1 = (self.min.x - o.x) * ray.inverse_dir.x;
-        let ty1 = (self.min.y - o.y) * ray.inverse_dir.y;
-        let tz1 = (self.min.z - o.z) * ray.inverse_dir.z;
+        let (min_bound, max_bound) = if ray.signs[0] {
+            (self.min, self.max)
+        } else {
+            (self.max, self.min)
+        };
+        let mut t_min = (min_bound.x - o.x) * ray.inverse_dir.x;
+        let mut t_max = (max_bound.x - o.x) * ray.inverse_dir.x;
 
-        let tx2 = (self.max.x - o.x) * ray.inverse_dir.x;
-        let ty2 = (self.max.y - o.y) * ray.inverse_dir.y;
-        let tz2 = (self.max.z - o.z) * ray.inverse_dir.z;
+        let (min_y_bound, max_y_bound) = if ray.signs[1] {
+            (self.min, self.max)
+        } else {
+            (self.max, self.min)
+        };
+        let ty_min = (min_y_bound.y - o.y) * ray.inverse_dir.y;
+        let ty_max = (max_y_bound.y - o.y) * ray.inverse_dir.y;
 
-        let tx_min = tx1.min(tx2);
-        let ty_min = ty1.min(ty2);
-        let tz_min = tz1.min(tz2);
-        let tx_max = tx1.max(tx2);
-        let ty_max = ty1.max(ty2);
-        let tz_max = tz1.max(tz2);
+        if t_min > ty_max || ty_min > t_max {
+            return false
+        }
+        if ty_min > t_min {
+            t_min = ty_min;
+        }
+        if ty_max < t_max {
+            t_max = ty_max;
+        }
 
-        let t_min = tx_min.max(ty_min).max(tz_min);
-        let t_max = tx_max.min(ty_max).min(tz_max);
+        let (min_z_bound, max_z_bound) = if ray.signs[2] {
+            (self.min, self.max)
+        } else {
+            (self.max, self.min)
+        };
+        let tz_min = (min_z_bound.z - o.z) * ray.inverse_dir.z;
+        let tz_max = (max_z_bound.z - o.z) * ray.inverse_dir.z;
 
-        (t_min > 0.0 || t_max > 0.0) && t_min < t_max
+        if t_min > tz_max || tz_min > t_max {
+            return false
+        }
+        if tz_min > t_min {
+            t_min = tz_min;
+        }
+        if tz_max < t_max {
+            t_max = tz_max;
+        }
+
+        // t_min > 0.0 || t_max > 0.0
+        t_max > 0.0
     }
 
     pub fn overlaps(&self, other: &BBox) -> bool {
