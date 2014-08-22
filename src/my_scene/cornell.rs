@@ -7,7 +7,7 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
-use raytracer::{Octree, VecPrimContainer};
+use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
 use scene::{Camera, Scene};
 use vec3::Vec3;
@@ -51,14 +51,13 @@ pub fn get_scene() -> Scene {
     prims.push(box Sphere { center: Vec3 { x: 20.0, y: 13.0, z: 90.0 }, radius: 13.0, material: box blue.clone()});
     prims.push(box Triangle::auto_normal(Vec3 { x: 20.0, y: 95.0, z: 20.0 }, Vec3 { x: 15.0, y: 50.0, z: 40.0 }, Vec3 { x: 35.0, y: 50.0, z: 35.0 }, (0.5, 1.0), (0.0, 0.0), (1.0, 0.0), box blue));
 
-    // Not complex enough to benefit from an octree
-    // println!("Generating octree...");
-    // let octree = Octree::new_from_prims(prims);
-    // println!("Octree generated...");
+    println!("Generating octree...");
+    let octree = Octree::new_from_prims(prims);
+    println!("Octree generated...");
 
     Scene {
         lights: lights,
-        prim_strat: box VecPrimContainer::new(prims),
+        octree: octree,
         background: Vec3::one(),
         skybox: None
     }
