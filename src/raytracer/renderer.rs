@@ -197,9 +197,9 @@ impl Renderer {
 
             // Check against candidate primitives in scene for occlusion
             // and multiply shadow color by occluders' shadow colors
-            let candidate_nodes = scene.prim_strat.get_intersection_objects(&shadow_ray);
+            let mut candidate_nodes = scene.octree.get_intersected_objects(&shadow_ray);
 
-            shadow = shadow + candidate_nodes.iter().fold(Vec3::one(), |shadow_acc, prim| {
+            shadow = shadow + candidate_nodes.fold(Vec3::one(), |shadow_acc, prim| {
                 let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
                 match occlusion {
                     Some(occlusion) => shadow_acc * occlusion.material.transmission(),

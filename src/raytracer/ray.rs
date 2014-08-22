@@ -48,9 +48,7 @@ impl Ray {
         let mut nearest_hit = None;
         let mut nearest_t = INFINITY;
 
-        let candidate_nodes = scene.prim_strat.get_intersection_objects(self);
-
-        for prim in candidate_nodes.iter() {
+        for prim in scene.octree.get_intersected_objects(self) {
             let intersection = prim.intersects(self, t_min, nearest_t);
 
             nearest_hit = match intersection {
@@ -95,12 +93,14 @@ fn it_gets_the_nearest_hit() {
     prims.push(box sphere_mid);
     prims.push(box sphere_bot);
 
+    println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);
+    println!("Octree generated...");
 
     let scene = Scene {
         lights: lights,
         background: Vec3::one(),
-        prim_strat: box octree,
+        octree: octree,
         skybox: None
     };
 
