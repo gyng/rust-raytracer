@@ -7,7 +7,7 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
-use raytracer::{Octree, VecPrimContainer};
+use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
 use scene::{Camera, Scene};
 use vec3::Vec3;
@@ -66,7 +66,7 @@ pub fn get_scene() -> Scene {
 
     Scene {
         lights: lights,
-        prim_strat: box octree,
+        octree: octree,
         background: Vec3 { x: 0.5, y: 0.5, z: 0.5 },
         skybox: None
     }

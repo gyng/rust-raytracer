@@ -1,7 +1,7 @@
 use std::slice::Items;
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
-use raytracer::{Ray, PrimContainer};
+use raytracer::Ray;
 use vec3::Vec3;
 
 pub struct Octree<T> {
@@ -10,7 +10,7 @@ pub struct Octree<T> {
     pub depth: int,
     pub children: Vec<Octree<T>>,
     pub data: Vec<OctreeData>,
-    pub infinite_data: Vec<OctreeData> // for infinite prims (planes)
+    pub infinites: Vec<T> // for infinite prims (planes)
 }
 
 #[deriving(Clone)]
@@ -19,12 +19,23 @@ struct OctreeData {
     pub index: uint
 }
 
+
+impl OctreeData {
+    pub fn intersects(&self, ray: &Ray) -> bool {
+        match self.bbox {
+            Some(bbox) => bbox.intersects(ray),
+            None => true
+        }
+    }
+}
+
+
 impl<T> Octree<T> {
     #[allow(dead_code)]
     pub fn new(bbox: BBox, depth: int) -> Octree<T> {
         let vec_children: Vec<Octree<T>> = Vec::new();
         let vec_data: Vec<OctreeData> = Vec::new();
-        let vec_infinite_data: Vec<OctreeData> = Vec::new();
+        let vec_infinite_data: Vec<T> = Vec::new();
 
         Octree {
             prims: None,
@@ -32,7 +43,7 @@ impl<T> Octree<T> {
             depth: depth,
             children: vec_children,
             data: vec_data,
-            infinite_data: vec_infinite_data
+            infinites: vec_infinite_data
         }
     }
 
@@ -99,9 +110,7 @@ impl<T> Octree<T> {
 
             // Infinite object without bounds, this is added to
             // all get_intersection_indices calls
-            None => {
-                self.infinite_data.push(OctreeData { index: index, bbox: None });
-            }
+            None => fail!("Don't push infinites this way")
         }
     }
 
@@ -118,40 +127,25 @@ impl Octree<Box<Prim+Send+Sync>> {
     #[allow(dead_code)]
     pub fn new_from_prims(prims: Vec<Box<Prim+Send+Sync>>) -> Octree<Box<Prim+Send+Sync>> {
         let bounds = get_bounds_from_objects(&prims);
+        let (finites, infinites) = prims.partition(|prim| prim.bounding().is_some());
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
-        let depth = (1.2 * (prims.len() as f64).log(8.0)).round() as int;
+        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as int;
+
         println!("Octree maximum depth {}", depth);
         let mut octree = Octree::new(bounds, depth);
 
-        for i in range(0, prims.len()) {
-            octree.insert(i, prims[i].bounding());
+        for (i, prim) in finites.iter().enumerate() {
+            octree.insert(i, prim.bounding());
         }
-        octree.prims = Some(prims);
+        octree.prims = Some(finites);
+        octree.infinites = infinites;
 
         octree
     }
 
-    fn get_intersected_objects_iter<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         OctreeIterator::new(self, ray)
-    }
-}
-
-// TODO: sell: Eliminate vectors
-impl PrimContainer for Octree<Box<Prim+Send+Sync>> {
-    #[allow(dead_code)]
-    fn get_intersection_objects<'a>(&'a self, ray: &'a Ray) -> Vec<&'a Box<Prim+Send+Sync>> {
-        let mut out = Vec::new();
-        out.extend(self.get_intersected_objects_iter(ray));
-
-        let prims: &Vec<Box<Prim+Send+Sync>> = match self.prims {
-            Some(ref prims) => prims,
-            None => fail!("get_intersection_objects may only be called on the root")
-        };
-        for infinite in self.infinite_data.iter() {
-            out.push(&prims[infinite.index]);
-        }
-        out
     }
 }
 
@@ -160,12 +154,15 @@ struct OctreeIterator<'a, T> {
     prims: &'a Vec<T>,
     stack: Vec<&'a Octree<T>>,
     cur_iter: Option<Items<'a, OctreeData>>,
-    ray: &'a Ray
+    ray: &'a Ray,
+    infinites: Items<'a, T>,
+    just_infinites: bool
+
 }
 
 
 impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    pub fn new<'a>(root: &'a Octree<Box<Prim+Send+Sync>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    fn new<'a>(root: &'a Octree<Box<Prim+Send+Sync>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         let prims = match root.prims {
             Some(ref prims) => prims,
             None => fail!("OctreeIterator must be constructed from an Octree root")
@@ -174,39 +171,48 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
             prims: prims,
             stack: vec![root],
             cur_iter: None,
-            ray: ray
+            ray: ray,
+            infinites: root.infinites.iter(),
+            just_infinites: false
         }
     }
 }
 
+
 impl<'a> Iterator<&'a Box<Prim+Send+Sync>> for OctreeIterator<'a, Box<Prim+Send+Sync>> {
     fn next(&mut self) -> Option<&'a Box<Prim+Send+Sync>> {
+        if self.just_infinites {
+            return self.infinites.next();
+        }
         loop {
-            if self.stack.is_empty() && self.cur_iter.is_none() {
-                return None;
-            }
             let (new_cur_iter, val) = match self.cur_iter {
                 Some(mut cur_iter) => match cur_iter.next() {
                     Some(val) => (Some(cur_iter), Some(val)),
                     None => (None, None)
                 },
-                None => {
-                    let node: &Octree<Box<Prim+Send+Sync>> = self.stack.pop().unwrap();
-                    for child in node.children.iter() {
-                        if child.bbox.intersects(self.ray) {
-                            self.stack.push(child);
+                None => match self.stack.pop() {
+                    Some(node) => {
+                        for child in node.children.iter() {
+                            if child.bbox.intersects(self.ray) {
+                                self.stack.push(child);
+                            }
                         }
-                    }
-                    (Some(node.data.iter()), None)
+                        (Some(node.data.iter()), None)
+                    },
+                    None => break  // Empty stack and no iterator
                 }
             };
             self.cur_iter = new_cur_iter;
             match val {
                 Some(val) => {
-                    return Some(&self.prims[val.index])
+                    if val.intersects(self.ray) {
+                        return Some(&self.prims[val.index]);
+                    }
                 },
                 None => (),
             }
         }
+        self.just_infinites = true;
+        self.infinites.next()
     }
 }
