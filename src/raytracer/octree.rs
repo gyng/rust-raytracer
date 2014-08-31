@@ -150,7 +150,7 @@ impl Octree<Box<Prim+Send+Sync>> {
 }
 
 
-struct OctreeIterator<'a, T> {
+struct OctreeIterator<'a, T:'a> {
     prims: &'a Vec<T>,
     stack: Vec<&'a Octree<T>>,
     cur_iter: Option<Items<'a, OctreeData>>,
