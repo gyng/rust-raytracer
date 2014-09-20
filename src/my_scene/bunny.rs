@@ -38,7 +38,7 @@ pub fn get_scene() -> Scene {
     prims.push(box Sphere { center: Vec3 { x: -75.0, y: 60.0, z: 50.0 }, radius: 40.0, material: box shiny.clone() });
     prims.push(box Sphere { center: Vec3 { x: -75.0, y: 60.0, z: 140.0 }, radius: 40.0, material: box shiny.clone() });
     let bunny = ::util::import::from_obj(red, false, "./docs/assets/models/bunny.obj");
-    for triangle in bunny.triangles.move_iter() { prims.push(triangle); }
+    for triangle in bunny.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);

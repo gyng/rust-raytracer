@@ -1,4 +1,5 @@
 use std::io::{BufferedReader, File};
+use std::io::fs::PathExtensions;
 use material::materials::CookTorranceMaterial;
 use geometry::{Mesh, Prim};
 use geometry::prims::{Triangle, TriangleVertex};

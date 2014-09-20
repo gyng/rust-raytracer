@@ -32,7 +32,7 @@ pub fn get_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let lucy = ::util::import::from_obj(grey, true, "./docs/assets/models/lucy.obj");
-    for triangle in lucy.triangles.move_iter() { prims.push(triangle); }
+    for triangle in lucy.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);

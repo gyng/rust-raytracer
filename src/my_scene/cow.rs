@@ -34,7 +34,7 @@ pub fn get_scene() -> Scene {
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 3.6, material: box green });
     let cow = ::util::import::from_obj(red, true, "./docs/assets/models/cow.obj");
-    for triangle in cow.triangles.move_iter() { prims.push(triangle); }
+    for triangle in cow.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);
