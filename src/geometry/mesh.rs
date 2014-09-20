@@ -8,7 +8,7 @@ pub struct Mesh {
 
 impl Mesh {
     pub fn mut_transform(&mut self, transform: &Transform) {
-        for triangle in self.triangles.mut_iter() {
+        for triangle in self.triangles.iter_mut() {
             triangle.mut_transform(transform);
         }
     }

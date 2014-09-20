@@ -101,7 +101,7 @@ impl<T> Octree<T> {
                 }
 
                 // Interior node (has children)
-                for child in self.children.mut_iter() {
+                for child in self.children.iter_mut() {
                     if child.bbox.overlaps(&object_bbox) {
                         child.insert(index, Some(object_bbox));
                     }

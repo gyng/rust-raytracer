@@ -40,13 +40,13 @@ pub fn get_scene() -> Scene {
     prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box ground });
 
     let sponza_other = ::util::import::from_obj(stone, false, "./docs/assets/models/sponza_other.obj");
-    for triangle in sponza_other.triangles.move_iter() { prims.push(triangle); }
+    for triangle in sponza_other.triangles.into_iter() { prims.push(triangle); }
 
     let sponza_column_shrubbery = ::util::import::from_obj(shrubbery, false, "./docs/assets/models/sponza_column_shrubbery.obj");
-    for triangle in sponza_column_shrubbery.triangles.move_iter() { prims.push(triangle); }
+    for triangle in sponza_column_shrubbery.triangles.into_iter() { prims.push(triangle); }
 
     let sponza_cloth = ::util::import::from_obj(cloth, false, "./docs/assets/models/sponza_cloth.obj");
-    for triangle in sponza_cloth.triangles.move_iter() { prims.push(triangle); }
+    for triangle in sponza_cloth.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);

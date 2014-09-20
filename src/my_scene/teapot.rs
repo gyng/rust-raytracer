@@ -39,7 +39,7 @@ pub fn get_teapot_scene() -> Scene {
     let mut teapot = ::util::import::from_obj(porcelain, false, "./docs/assets/models/teapot.obj");
     let rotate = Transform::new(Mat4::rotate_x_deg_matrix(1.0));
     teapot.mut_transform(&rotate);
-    for triangle in teapot.triangles.move_iter() { prims.push(triangle); }
+    for triangle in teapot.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);
