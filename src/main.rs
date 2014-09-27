@@ -170,9 +170,10 @@ fn main() {
 
     let program_args = match parse_args(os::args()) {
         Ok(program_args) => program_args,
-        Err(error_str) => {
+        Err(mut error_str) => {
+            error_str.push_str("\n");
             let mut stderr = io::stderr();
-            assert!(stderr.write(error_str.append("\n").as_bytes()).is_ok());
+            assert!(stderr.write(error_str.as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -182,7 +183,7 @@ fn main() {
         Ok(file) => file,
         Err(err) => {
             let mut stderr = io::stderr();
-            assert!(stderr.write(format!("{}", err).append("\n").as_bytes()).is_ok());
+            assert!(stderr.write(format!("{}\n", err).as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -191,7 +192,7 @@ fn main() {
         Ok(data) => data,
         Err(err) => {
             let mut stderr = io::stderr();
-            assert!(stderr.write(format!("{}", err).append("\n").as_bytes()).is_ok());
+            assert!(stderr.write(format!("{}\n", err).as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }

@@ -21,6 +21,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     let print_every = 2048u;
     let mut current_line = 0;
     let mut processed_bytes = 0;
+    
     let total_bytes = match path.stat() {
         Ok(stat) => stat.size,
         Err(e) => fail!("Could not open file {} (file missing?) : {}", filename, e)

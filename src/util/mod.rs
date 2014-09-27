@@ -27,7 +27,7 @@ fn make_progress_bar(ratio: f64, length: uint) -> String {
     let mut bar = ::std::string::String::from_char(filled, '|');
 
     for _ in range(0, length - filled) {
-        bar.push_char('-');
+        bar.push('-');
     }
 
     bar
