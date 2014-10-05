@@ -34,29 +34,29 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 
     for line_iter in file.lines() {
         let line = line_iter.unwrap();
-        let tokens: Vec<&str> = line.as_slice().words().collect();
+        let tokens: Vec<&str> = line[].words().collect();
         if tokens.len() == 0 { continue }
 
-        match tokens[0].as_slice() {
+        match tokens[0][] {
             "v" => {
                 vertices.push(Vec3 {
-                    x: from_str::<f64>(tokens[1].as_slice()).unwrap(),
-                    y: from_str::<f64>(tokens[2].as_slice()).unwrap(),
-                    z: from_str::<f64>(tokens[3].as_slice()).unwrap()
+                    x: from_str::<f64>(tokens[1][]).unwrap(),
+                    y: from_str::<f64>(tokens[2][]).unwrap(),
+                    z: from_str::<f64>(tokens[3][]).unwrap()
                 });
             },
             "vt" => {
                 tex_coords.push(vec![
-                    from_str::<f64>(tokens[1].as_slice()).unwrap(),
-                    from_str::<f64>(tokens[2].as_slice()).unwrap()
+                    from_str::<f64>(tokens[1][]).unwrap(),
+                    from_str::<f64>(tokens[2][]).unwrap()
                 ]);
             },
             "vn" => {
                 let normal_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
-                    x: from_str::<f64>(tokens[1].as_slice()).unwrap() * normal_scale,
-                    y: from_str::<f64>(tokens[2].as_slice()).unwrap() * normal_scale,
-                    z: from_str::<f64>(tokens[3].as_slice()).unwrap() * normal_scale
+                    x: from_str::<f64>(tokens[1][]).unwrap() * normal_scale,
+                    y: from_str::<f64>(tokens[2][]).unwrap() * normal_scale,
+                    z: from_str::<f64>(tokens[3][]).unwrap() * normal_scale
                 });
             },
             "f" => {
@@ -123,7 +123,7 @@ pub fn from_ppm(filename: &str) -> Surface {
         Ok(f) => f,
         Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
     };
-    let mut tokens: Vec<&str> = tex.as_slice().words().collect();
+    let mut tokens: Vec<&str> = tex[].words().collect();
 
     tokens.remove(0); // PPM type
     let width  = from_str::<uint>(tokens.remove(0).unwrap()).unwrap();
@@ -137,7 +137,7 @@ pub fn from_ppm(filename: &str) -> Surface {
 
     let mut i = 0u;
 
-    for chunk in tokens.as_slice().chunks(3) {
+    for chunk in tokens[].chunks(3) {
         let x = i % width;
         let y = i / width;
         i += 1;

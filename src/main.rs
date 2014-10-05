@@ -44,7 +44,7 @@ struct SceneConfig<'a> {
 }
 
 fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
-    let (program_name, rest) = match args.as_slice() {
+    let (program_name, rest) = match args[] {
         // I wouldn't expect this in the wild
         [] => fail!("Args do not even include a program name"),
         [ref program_name, rest..] => (
@@ -69,7 +69,7 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     // Cameras, scenes created in ./my_scene.rs
     // Scenes with an octree supplied (see my_scene.rs) will use it.
     // Lower the render quality (especially shadow_samples) for complex scenes
-    return match scene_name.as_slice() {
+    return match scene_name[] {
         "box" => {
             // Box. Simplest scene with 9 primitives, no octree
             let camera = my_scene::cornell::get_camera(image_width, image_height, fov);
@@ -198,7 +198,7 @@ fn main() {
         }
     };
 
-    let config: SceneConfig = match json::decode(json_data.as_slice()) {
+    let config: SceneConfig = match json::decode(json_data[]) {
         Ok(data) => data,
         Err(err) => {
             let mut stderr = io::stderr();
@@ -258,7 +258,7 @@ fn main() {
         println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
                  renderer.tasks, animator.fps, animator.animate_from, animator.animate_to,
                  animator.starting_frame_number);
-        animator.animate(camera, shared_scene, config.output_file.as_slice());
+        animator.animate(camera, shared_scene, config.output_file[]);
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)",
                  render_time, render_time - scene_time);
@@ -270,12 +270,12 @@ fn main() {
         println!("Render done at {} ({}s)...\nWriting file...",
                  render_time, render_time - scene_time);
 
-        let out_file = format!("{}{}", config.output_file.as_slice(), ".ppm");
-        util::export::to_ppm(image_data, out_file.as_slice());
+        let out_file = format!("{}{}", config.output_file[], ".ppm");
+        util::export::to_ppm(image_data, out_file[]);
         let export_time = ::time::get_time().sec;
 
         println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
                  export_time, export_time - render_time,
-                 config.output_file.as_slice(), export_time - start_time);
+                 config.output_file[], export_time - start_time);
     }
 }
