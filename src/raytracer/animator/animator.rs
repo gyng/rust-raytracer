@@ -36,7 +36,7 @@ impl Animator {
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
             spawn(proc() {
-                ::util::export::to_ppm(frame_data, shared_name.as_slice());
+                ::util::export::to_ppm(frame_data, shared_name[]);
                 child_sema.release();
             });
 

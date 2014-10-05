@@ -29,7 +29,7 @@ impl CubeMap {
 
             spawn(proc() {
                 task_sema.acquire();
-                task_tx.send((i, ImageTexture::load(filename.as_slice())));
+                task_tx.send((i, ImageTexture::load(filename[])));
             });
         }
 
