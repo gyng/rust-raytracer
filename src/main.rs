@@ -1,4 +1,5 @@
 #![feature(macro_rules)]
+#![feature(slicing_syntax)]
 
 extern crate time;
 extern crate serialize;

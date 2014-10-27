@@ -1,4 +1,3 @@
-extern crate num;
 use std::cmp::min;
 
 use raytracer::compositor::{ColorRGBA, SurfaceFactory};
