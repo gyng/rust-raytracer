@@ -47,7 +47,7 @@ struct SceneConfig<'a> {
 fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
     let (program_name, rest) = match args[] {
         // I wouldn't expect this in the wild
-        [] => fail!("Args do not even include a program name"),
+        [] => panic!("Args do not even include a program name"),
         [ref program_name, rest..] => (
             program_name,
             rest

@@ -24,7 +24,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     
     let total_bytes = match path.stat() {
         Ok(stat) => stat.size,
-        Err(e) => fail!("Could not open file {} (file missing?) : {}", filename, e)
+        Err(e) => panic!("Could not open file {} (file missing?) : {}", filename, e)
     };
 
     let mut vertices: Vec<Vec3> = Vec::new();
@@ -121,7 +121,7 @@ pub fn from_ppm(filename: &str) -> Surface {
 
     let tex = match file.read_to_string() {
         Ok(f) => f,
-        Err(e) => fail!("Could not open file {} (file missing?): {}", filename, e)
+        Err(e) => panic!("Could not open file {} (file missing?): {}", filename, e)
     };
     let mut tokens: Vec<&str> = tex[].words().collect();
 

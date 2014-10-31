@@ -89,10 +89,10 @@ impl Surface {
     #[inline]
     fn get_idx(&self, x: uint, y: uint) -> uint {
         if self.width <= x {
-            fail!("`x` out of bounds (0 <= {} < {}", x, self.width);
+            panic!("`x` out of bounds (0 <= {} < {}", x, self.width);
         }
         if self.height <= y {
-            fail!("`y` out of bounds (0 <= {} < {}", y, self.height);
+            panic!("`y` out of bounds (0 <= {} < {}", y, self.height);
         }
         self.width * y + x
     }
@@ -208,13 +208,13 @@ fn test_paint_it_red() {
         for x in range(0, surf.width) {
             let color = surf.get(x, y);
             if color.r != 255 {
-                fail!("wrong pixel at {}x{}", x, y);
+                panic!("wrong pixel at {}x{}", x, y);
             }
             if color.g != 0 {
-                fail!("wrong pixel at {}x{}", x, y);
+                panic!("wrong pixel at {}x{}", x, y);
             }
             if color.b != 0 {
-                fail!("wrong pixel at {}x{}", x, y);
+                panic!("wrong pixel at {}x{}", x, y);
             }
         }
     }

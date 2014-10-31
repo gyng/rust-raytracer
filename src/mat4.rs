@@ -219,12 +219,12 @@ impl Mat4 {
 
     #[allow(unused_variable)]
     pub fn transform_ray(r: &Ray) -> Ray {
-        fail!("Ray transform not implemented");
+        panic!("Ray transform not implemented");
     }
 
     #[allow(unused_variable)]
     pub fn transform_bbox(bbox: &BBox) -> BBox {
-        fail!("BBox transform not implemented");
+        panic!("BBox transform not implemented");
     }
 
     pub fn inverse(&self) -> Mat4 {
