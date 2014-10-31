@@ -94,7 +94,7 @@ impl<T> Octree<T> {
                     self.subdivide();
                     let old = match self.data.remove(0) {
                         Some(x) => x,
-                        None => fail!("Trying to subdivide empty node in octree insertion")
+                        None => panic!("Trying to subdivide empty node in octree insertion")
                     };
                     // Reinsert old node and then fall through to insert current object
                     self.insert(old.index, old.bbox);
@@ -110,7 +110,7 @@ impl<T> Octree<T> {
 
             // Infinite object without bounds, this is added to
             // all get_intersection_indices calls
-            None => fail!("Don't push infinites this way")
+            None => panic!("Don't push infinites this way")
         }
     }
 
@@ -165,7 +165,7 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
     fn new<'a>(root: &'a Octree<Box<Prim+Send+Sync>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         let prims = match root.prims {
             Some(ref prims) => prims,
-            None => fail!("OctreeIterator must be constructed from an Octree root")
+            None => panic!("OctreeIterator must be constructed from an Octree root")
         };
         OctreeIterator {
             prims: prims,

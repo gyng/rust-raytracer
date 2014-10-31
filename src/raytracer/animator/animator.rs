@@ -51,7 +51,7 @@ impl Animator {
                                -> (CameraKeyframe, CameraKeyframe, f64) {
 
         if keyframes.len() <= 1 {
-            fail!("Not enough keyframes to interpolate: got: {} expected: >= 2", keyframes.len());
+            panic!("Not enough keyframes to interpolate: got: {} expected: >= 2", keyframes.len());
         }
 
         // Get the two keyframes inbetween current time
@@ -78,7 +78,7 @@ impl Animator {
     fn lerp_camera(camera: &Camera, time: f64) -> Camera {
         let keyframes = match camera.keyframes.clone() {
             Some(k) => k,
-            None => fail!("Cannot lerp a camera with no keyframes!")
+            None => panic!("Cannot lerp a camera with no keyframes!")
         };
 
         let (first, second, alpha) = Animator::get_neighbour_keyframes(keyframes, time);

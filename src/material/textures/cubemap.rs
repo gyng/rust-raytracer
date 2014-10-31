@@ -79,7 +79,7 @@ impl CubeMap {
         t = (1.0 - (t * 0.5 + 0.5)).max(seam_delta).min(1.0 - seam_delta);
 
         if face == !0 {
-            fail!("CubeMap could not get a cube face for direction {} {} {}", dir.x, dir.y, dir.z);
+            panic!("CubeMap could not get a cube face for direction {} {} {}", dir.x, dir.y, dir.z);
         }
 
         self.faces[face].sample(s, t)
