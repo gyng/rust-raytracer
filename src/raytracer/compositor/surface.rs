@@ -76,7 +76,7 @@ impl Surface {
             let dst_y = tile.y_off + src_y;
             for src_x in range(0, x_len) {
                 let dst_x = tile.x_off + src_x;
-                *self.get_mut(dst_x, dst_y) = tile.get(src_x, src_y)
+                self[(dst_x, dst_y)] = (&*tile)[(src_x, src_y)]
             }
         }
     }
@@ -96,20 +96,23 @@ impl Surface {
         }
         self.width * y + x
     }
+}
 
-    #[inline]
-    pub fn get(&self, x: uint, y: uint) -> ColorRGBA<u8> {
+impl Index<(uint, uint), ColorRGBA<u8>> for Surface {
+    fn index<'a>(&'a self, index: &(uint, uint)) -> &'a ColorRGBA<u8> {
+        let (x, y) = *index;
         let idx = self.get_idx(x, y);
-        self.buffer[idx]
-    }
-
-    #[inline]
-    pub fn get_mut<'a>(&'a mut self, x: uint, y: uint) -> &'a mut ColorRGBA<u8> {
-        let idx = self.get_idx(x, y);
-        self.buffer.get_mut(idx)
+        &self.buffer[idx]
     }
 }
 
+impl IndexMut<(uint, uint), ColorRGBA<u8>> for Surface {
+    fn index_mut<'a>(&'a mut self, index: &(uint, uint)) -> &'a mut ColorRGBA<u8> {
+        let (x, y) = *index;
+        let idx = self.get_idx(x, y);
+        &mut self.buffer[idx]
+    }
+}
 
 struct SubsurfaceIterator {
     x_delta: uint,
@@ -191,14 +194,14 @@ fn test_paint_it_red() {
         let mut tile = tile_factory.create();
         for y in range(0, tile.height) {
             for x in range(0, tile.width) {
-                *tile.get_mut(x, y) = ColorRGBA::new_rgb(255, 0, 0);
+                tile[(x, y)] = ColorRGBA::new_rgb(255, 0, 0);
             }
         }
         for y in range(0, tile.height) {
             for x in range(0, tile.width) {
-                assert_eq!(tile.get(x, y).r, 255);
-                assert_eq!(tile.get(x, y).g, 0);
-                assert_eq!(tile.get(x, y).b, 0);
+                assert_eq!(tile[(x, y)].r, 255);
+                assert_eq!(tile[(x, y)].g, 0);
+                assert_eq!(tile[(x, y)].b, 0);
             }
         }
         surf.merge(box tile);
@@ -206,7 +209,7 @@ fn test_paint_it_red() {
 
     for y in range(0, surf.height) {
         for x in range(0, surf.width) {
-            let color = surf.get(x, y);
+            let color = surf[(x, y)];
             if color.r != 255 {
                 panic!("wrong pixel at {}x{}", x, y);
             }

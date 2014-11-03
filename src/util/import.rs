@@ -144,7 +144,7 @@ pub fn from_ppm(filename: &str) -> Surface {
 
         if x >= width || y >= height { break };
 
-        *surface.get_mut(x, y) = ColorRGBA::new_rgb(
+        surface[(x, y)] = ColorRGBA::new_rgb(
             from_str::<u8>(chunk[0]).unwrap(),
             from_str::<u8>(chunk[1]).unwrap(),
             from_str::<u8>(chunk[2]).unwrap()
