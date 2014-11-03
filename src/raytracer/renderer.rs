@@ -108,7 +108,7 @@ impl Renderer {
                         color = color + result.clamp(0.0, 1.0).scale(1.0 / (pixel_samples * pixel_samples) as f64);
                     }
                 }
-                *tile.get_mut(rel_x, rel_y) = ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
+                tile[(rel_x, rel_y)] = ColorRGBA::new_rgb_clamped(color.x, color.y, color.z);
             }
         }
 

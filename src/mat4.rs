@@ -217,13 +217,11 @@ impl Mat4 {
         }
     }
 
-    #[allow(unused_variable)]
-    pub fn transform_ray(r: &Ray) -> Ray {
+    pub fn transform_ray(_r: &Ray) -> Ray {
         panic!("Ray transform not implemented");
     }
 
-    #[allow(unused_variable)]
-    pub fn transform_bbox(bbox: &BBox) -> BBox {
+    pub fn transform_bbox(_bbox: &BBox) -> BBox {
         panic!("BBox transform not implemented");
     }
 

@@ -8,8 +8,7 @@ pub struct FlatMaterial {
 }
 
 impl Material for FlatMaterial {
-    #[allow(unused_variable)]
-    fn sample(&self, n: Vec3, i: Vec3, l: Vec3, u: f64, v: f64) -> Vec3 {
+    fn sample(&self, _n: Vec3, _i: Vec3, _l: Vec3, _u: f64, _v: f64) -> Vec3 {
         self.color
     }
 
@@ -21,13 +20,11 @@ impl Material for FlatMaterial {
         false
     }
 
-    #[allow(unused_variable)]
-    fn global_specular(&self, color: &Vec3) -> Vec3 {
+    fn global_specular(&self, _color: &Vec3) -> Vec3 {
         Vec3::zero()
     }
 
-    #[allow(unused_variable)]
-    fn global_transmissive(&self, color: &Vec3) -> Vec3 {
+    fn global_transmissive(&self, _color: &Vec3) -> Vec3 {
         Vec3::zero()
     }
 

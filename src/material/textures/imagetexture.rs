@@ -38,10 +38,10 @@ impl Texture for ImageTexture {
         let u_opposite = 1.0 - u_ratio;
         let v_opposite = 1.0 - v_ratio;
 
-        (self.image.get(x, y    ).as_vec3().scale(u_opposite)
-            + self.image.get(x + 1, y    ).as_vec3().scale(u_ratio)).scale(v_opposite) +
-        (self.image.get(x, y + 1).as_vec3().scale(u_opposite)
-            + self.image.get(x + 1, y + 1).as_vec3().scale(u_ratio)).scale(v_ratio)
+        (self.image[(x, y    )].as_vec3().scale(u_opposite)
+            + self.image[(x + 1, y    )].as_vec3().scale(u_ratio)).scale(v_opposite) +
+        (self.image[(x, y + 1)].as_vec3().scale(u_opposite)
+            + self.image[(x + 1, y + 1)].as_vec3().scale(u_ratio)).scale(v_ratio)
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Sync> {
@@ -57,10 +57,10 @@ fn it_bilinearly_filters() {
     let background: ColorRGBA<u8> = ColorRGBA::new_rgb(0, 0, 0);
     let mut surface = Surface::new(2, 2, background);
 
-    *surface.get_mut(0, 0) = ColorRGBA::new_rgb(255, 0, 0);
-    *surface.get_mut(0, 1) = ColorRGBA::new_rgb(0, 255, 0);
-    *surface.get_mut(1, 0) = ColorRGBA::new_rgb(0, 0, 255);
-    *surface.get_mut(1, 1) = ColorRGBA::new_rgb(0, 0, 0);
+    surface[(0, 0)] = ColorRGBA::new_rgb(255, 0, 0);
+    surface[(0, 1)] = ColorRGBA::new_rgb(0, 255, 0);
+    surface[(1, 0)] = ColorRGBA::new_rgb(0, 0, 255);
+    surface[(1, 1)] = ColorRGBA::new_rgb(0, 0, 0);
 
     let texture = ImageTexture { image: surface };
 
