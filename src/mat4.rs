@@ -185,7 +185,7 @@ impl Mat4 {
 
     /// This matrix translates between world-space and camera-space
     pub fn look_at_matrix(pos: &Vec3, up: &Vec3, look_at: &Vec3) -> Mat4 {
-        let dir = (look_at - *pos).unit();
+        let dir = (*look_at - *pos).unit();
         let left = (up.unit().cross(&dir)).unit();
         let new_up = dir.cross(&left);
 
