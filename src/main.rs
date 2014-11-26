@@ -1,5 +1,6 @@
 #![feature(macro_rules)]
 #![feature(slicing_syntax)]
+#![deny(unused_imports)]
 
 extern crate time;
 extern crate serialize;

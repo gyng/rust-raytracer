@@ -1,5 +1,6 @@
 use std::fmt;
 use std::cmp;
+use std::num::{Float, FloatMath};
 
 #[deriving(Clone)]
 pub struct Vec3 {

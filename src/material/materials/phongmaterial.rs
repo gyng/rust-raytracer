@@ -1,3 +1,4 @@
+use std::num::Float;
 use material::{Material, Texture};
 use vec3::Vec3;
 

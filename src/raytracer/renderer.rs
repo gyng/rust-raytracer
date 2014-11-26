@@ -1,6 +1,7 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::deque::{BufferPool, Data, Empty, Abort};
+use std::num::FloatMath;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use light::Light;

@@ -1,3 +1,4 @@
+use std::num::Float;
 use raytracer::animator::CameraKeyframe;
 use raytracer::Renderer;
 use scene::{Camera, Scene};
@@ -29,7 +30,7 @@ impl Animator {
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
 
             let file_frame_number = self.starting_frame_number + frame_number;
-            let shared_name = format!("{}{:06u}.ppm", filename, file_frame_number);
+            let shared_name = format!("{}{:06}.ppm", filename, file_frame_number);
 
             let child_sema = sema.clone();
             sema.acquire();

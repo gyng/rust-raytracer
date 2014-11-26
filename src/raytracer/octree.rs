@@ -1,4 +1,5 @@
 use std::slice::Items;
+use std::num::{Float, FloatMath};
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
 use raytracer::Ray;

@@ -1,3 +1,4 @@
+use std::num::Float;
 use geometry::{BBox, Prim};
 use material::Material;
 use mat4::{Mat4, Transform};
