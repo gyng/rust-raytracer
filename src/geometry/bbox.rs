@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::f64::{MAX_VALUE, MIN_VALUE};
+use std::num::FloatMath;
 use geometry::Prim;
 use raytracer::Ray;
 use vec3::Vec3;

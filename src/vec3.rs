@@ -1,5 +1,6 @@
 use std::fmt;
 use std::cmp;
+use std::num::{Float, FloatMath};
 
 #[deriving(Clone)]
 pub struct Vec3 {
@@ -77,10 +78,10 @@ impl Vec3 {
     /// ior: Refractive index
     /// inside: Is the ray inside an object (ie. going out of an object)?
     pub fn refract(v: &Vec3, n: &Vec3, ior: f64, inside: bool) -> Option<Vec3> {
-        let (n1, n2, n_dot_v, nn) = if !inside {
+        let (n1, n2, n_dot_v, nn): (f64, f64, _, _) = if !inside {
             (1.0, ior, n.dot(v), *n)
         } else {
-            (ior, 1.0, -n.dot(v), -n)
+            (ior, 1.0, -n.dot(v), -*n)
         };
 
         let ratio = n1 / n2;

@@ -1,3 +1,4 @@
+use std::num::{Float, FloatMath};
 use material::textures::ImageTexture;
 use std::sync::{Semaphore, Arc};
 use vec3::Vec3;

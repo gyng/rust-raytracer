@@ -1,3 +1,4 @@
+use std::num::Float;
 use vec3::Vec3;
 use material::Texture;
 use raytracer::compositor::Surface;

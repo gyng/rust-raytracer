@@ -5,6 +5,7 @@ use raytracer::Ray;
 use std::cmp;
 use std::f64::consts::PI;
 use std::fmt;
+use std::num::{Float, FloatMath};
 use vec3::Vec3;
 
 /// Stored in row-major, M_(i, j) = i-th row and j-th column
@@ -185,7 +186,7 @@ impl Mat4 {
 
     /// This matrix translates between world-space and camera-space
     pub fn look_at_matrix(pos: &Vec3, up: &Vec3, look_at: &Vec3) -> Mat4 {
-        let dir = (look_at - *pos).unit();
+        let dir = (*look_at - *pos).unit();
         let left = (up.unit().cross(&dir)).unit();
         let new_up = dir.cross(&left);
 
@@ -438,10 +439,10 @@ impl fmt::Show for Mat4 {
         // 46 spaces in between
         write!(f,
             "\n┌                                              ┐\n\
-               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
-               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
-               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
-               │{: >10.3f}, {: >10.3f}, {: >10.3f}, {: >10.3f}│\n\
+               │{: >10.3}, {: >10.3}, {: >10.3}, {: >10.3}│\n\
+               │{: >10.3}, {: >10.3}, {: >10.3}, {: >10.3}│\n\
+               │{: >10.3}, {: >10.3}, {: >10.3}, {: >10.3}│\n\
+               │{: >10.3}, {: >10.3}, {: >10.3}, {: >10.3}│\n\
                └                                              ┘\n",
                self.m[0][0], self.m[0][1], self.m[0][2], self.m[0][3],
                self.m[1][0], self.m[1][1], self.m[1][2], self.m[1][3],

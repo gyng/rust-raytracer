@@ -1,6 +1,7 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::deque::{BufferPool, Data, Empty, Abort};
+use std::num::FloatMath;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use light::Light;
@@ -216,7 +217,7 @@ impl Renderer {
     /// http://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
     fn fresnel_reflect(ior: f64, i: &Vec3, n: &Vec3, inside: bool) -> f64 {
         let (n1, n2) = if inside { (ior, 1.0) } else { (1.0, ior) };
-        let actual_n = if inside { -n } else { *n };
+        let actual_n = if inside { -*n } else { *n };
 
         let r0_sqrt = (n1 - n2) / (n1 + n2);
         let r0 = r0_sqrt * r0_sqrt;
