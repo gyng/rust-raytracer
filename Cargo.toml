@@ -1,0 +1,10 @@
+[package]
+name = "rust-raytracer"
+version = "0.1.0"
+authors = [
+    "ng.guoyou@gmail.com",
+    "stacey.ell@gmail.com"
+]
+
+[dependencies.time]
+git = "http://github.com/rust-lang/time"

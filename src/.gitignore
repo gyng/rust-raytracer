@@ -1,9 +1,3 @@
-/target
-.cargo
-/config.stamp
-/Makefile
-/config.mk
-
 main
 main.exe
 *.ppm
@@ -14,6 +8,7 @@ main.exe
 *.png
 *.avi
 *.mkv
+*.dmp
 
 # Windows image file caches
 Thumbs.db

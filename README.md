@@ -1,5 +1,6 @@
 rust-raytracer
 ==============
+[![Build Status](https://travis-ci.org/gyng/rust-raytracer.svg?branch=master)](https://travis-ci.org/gyng/rust-raytracer)
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
@@ -9,29 +10,67 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
 [Assets repository](https://github.com/gyng/raytracer-assets)
 
+
 ## Usage
 
-1. `git clone --recursive https://github.com/gyng/rust-raytracer.git`. This clones the smaller models and textures into the project directory as well.
-2. Convert PNG textures into PPM by running appropriate scripts (`ruby ./all_to_ppm.rb` in `./docs/assets/textures/skyboxes/`)
-3. Compile: `rustc main.rs`
+1. Clone the project. `--recursive` clones most sample models and textures into the project directory as well.
+
+        git clone --recursive https://github.com/gyng/rust-raytracer.git
+
+2. Convert PNG textures into PPM by running appropriate scripts in `./docs/assets/textures/skyboxes/`.
+   This assumes you have, at the minimum, ImageMagick installed.
+
+        cd ./docs/assets/textures/skyboxes/
+
+        with Ruby and ImageMagick:
+        ruby ./all_to_ppm.rb
+
+        with plain ImageMagick:
+        find . -name '*.png' -execdir mogrify -format ppm {} \;
+
+3. Compile
+
+        rustc ./src/main.rs -o main
+
 4. Edit `sample-config.json` if you wish to render a scene besides the default,
    or if you wish to tweak the renderer parameters
-5. Run compiled program, passing sample-config.json as an argument. e.g.: `./main
-   sample-config.json`
-6. To update (assets) submodules only: `git submodule foreach git pull`
-7. To convert frames into a video `ffmpeg -i test%06d.ppm -b 1500k out.webm`
+
+5. Run the compiled program, passing the render configuration as an argument.
+   If rendering a provided scene, run the binary in the project root so it can find the models and textures.
+
+        ./main sample-config.json
+
+
+### With Cargo
+
+1. Follow steps 1 and 2 above
+2. `cargo build` or `cargo run sample-config.json` in project root
+3. `cargo test` to run tests
+
+### Useful commands
+
+* To update (assets) submodules only: `git submodule foreach git pull`
+* To convert frames into a video `ffmpeg -i test%06d.ppm -b 2000k out.webm`
+* Scenes are created in `./myscene/`. To hook up a scene, add it to `./myscene/mod.rs` and `get_camera_and_scene(&SceneConfig)` in `main.rs`.
 
 
 ## Available Scenes
+
+These should use 30deg fov for squares and 45deg fov for 16:9.
+
 * box
 * bunny
 * cow
-* fresnel
+* fresnel (0s-10s animation)
 * lucy
-* sibenik
-* sphere
-* sponza
+* sibenik (0s-7s animation)
+* sphere (0s-10s animation)
+* sponza (45deg fov for a square; 67.5deg for 16:9)
 * teapot
+* heptoroid-white
+* heptoroid-shiny
+* heptoroid-refractive
+* tachikoma
 
 
 ## Features
@@ -44,12 +83,15 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 * Cook-Torrance, Phong materials
 * Sphere, plane, triangle primitives
 * Point, sphere lights
-* Very limited OBJ model and mesh support
+* Limited OBJ model and mesh support
+* Mesh transformations (4x4 matrices)
 * Basic spatial partitioning (octree)
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)
 * Basic camera animation
 
+
 ## Missing/potential features
 
 * Scene description
+* Caustics/global illumination (in progress on `photon-trace` branch)
