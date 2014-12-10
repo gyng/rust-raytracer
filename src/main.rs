@@ -12,7 +12,7 @@ use std::io;
 use std::os;
 use std::sync::Arc;
 use serialize::json;
-use serialize::json::MissingFieldError;
+use serialize::json::DecoderError::MissingFieldError;
 
 mod geometry;
 mod light;

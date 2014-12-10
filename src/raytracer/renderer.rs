@@ -1,6 +1,6 @@
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
-use std::sync::deque::{BufferPool, Data, Empty, Abort};
+use std::sync::TaskPool;
 use std::num::FloatMath;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
@@ -25,44 +25,32 @@ impl Renderer {
                                        camera.image_height as uint,
                                        ColorRGBA::new_rgb(0, 0, 0));
 
-        let (worker, stealer) = BufferPool::new().deque();
+        let pool = TaskPool::new(self.tasks);
+
         let (tx, rx) = channel();
 
         let mut jobs = 0;
+
         for subsurface_factory in surface.divide(128, 8) {
             jobs += 1;
-            worker.push(subsurface_factory);
-        }
 
-        for _ in range(0, self.tasks) {
             let renderer = *self.clone();
             let child_tx = tx.clone();
-            let child_stealer = stealer.clone();
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
 
-            spawn(proc() {
-                loop {
-                    match child_stealer.steal() {
-                        Data(factory) => {
-                            child_tx.send(renderer.render_tile(camera_local.clone(),
-                                                               scene_local.deref(),
-                                                               factory))
-                        },
-                        Empty => break,
-                        Abort => ()
-                    }
-                }
+            pool.execute(proc() {
+                child_tx.send(renderer.render_tile(camera_local.clone(),
+                    scene_local.deref(), subsurface_factory));
             });
         }
 
         let start_time = ::time::get_time();
 
-        for i in range(0, jobs) {
-            surface.merge(rx.recv());
+        for (i, subsurface) in rx.iter().take(jobs).enumerate() {
+            surface.merge(subsurface);
             ::util::print_progress("Tile", start_time, (i + 1) as uint, jobs);
         }
-
         surface
     }
 
@@ -198,7 +186,7 @@ impl Renderer {
 
             // Check against candidate primitives in scene for occlusion
             // and multiply shadow color by occluders' shadow colors
-            let mut candidate_nodes = scene.octree.get_intersected_objects(&shadow_ray);
+            let candidate_nodes = scene.octree.get_intersected_objects(&shadow_ray);
 
             shadow = shadow + candidate_nodes.fold(Vec3::one(), |shadow_acc, prim| {
                 let occlusion = prim.intersects(&shadow_ray, EPSILON, distance_to_light);
