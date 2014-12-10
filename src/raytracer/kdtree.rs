@@ -4,8 +4,9 @@ use geometry::BBox;
 use geometry::bbox::get_bounds_from_photons;
 // use geometry::bbox;
 // use geometry::bbox::get_bounds_from_photons;
-use raytracer::{Photon};
+use raytracer::{Photon, PhotonQuery};
 use vec3::Vec3;
+use std::collections::BinaryHeap;
 
 
 #[deriving(Clone)]
@@ -62,8 +63,9 @@ impl KDNode {
     }
 
     // Adapted from Realistic Image Synthesis using Photon Mapping (Henrik Wann Jensen) pp. 73
-    pub fn query_nearest(current: Box<KDNode>, target: Vec3, max_dist: f64) -> Vec<Photon> {
-        let mut results: Vec<Photon> = Vec::new();
+    pub fn query_nearest(results: &mut BinaryHeap<PhotonQuery>, current: Box<KDNode>, target: Vec3, max_dist: f64, max_photons: uint) -> () {
+        // let results: BinaryHeap<Photon> = BinaryHeap::with_capacity(max_photons);
+        // let mut results: Vec<Photon> = Vec::new();
 
         let delta = (current.bbox.center() - target).len();
 
@@ -75,7 +77,7 @@ impl KDNode {
 
         match first_child {
             Some(child) => {
-                results = results + KDNode::query_nearest(child, target, max_dist);
+                KDNode::query_nearest(results, child, target, max_dist, max_photons);
             },
             None => {}
         }
@@ -84,20 +86,30 @@ impl KDNode {
         if delta * delta < max_dist * max_dist {
             match second_child {
                 Some(child) => {
-                    results = results + KDNode::query_nearest(child, target, max_dist);
+                    KDNode::query_nearest(results, child, target, max_dist, max_photons);
                 },
                 None => {}
             }
         }
 
         let photon_dist = (current.photon.position - current.bbox.center()).len();
+
         if photon_dist < max_dist {
-            results.push(current.photon);
-            // How does max_dist pruning work?
-            // max_dist = (root.bbox.center() - current.photon.position).len();
+            if results.len() < max_photons {
+                results.push(PhotonQuery { distance_to_point: photon_dist, photon: current.photon.clone() });
+            } else {
+                match results.top() {
+                    Some(farthest) => {
+                        if photon_dist < farthest.distance_to_point {
+                            results.replace(PhotonQuery { distance_to_point: photon_dist, photon: current.photon.clone() });
+                        }
+                    },
+                    None => {}
+                }
+            }
         }
 
-        results
+        // results
     }
 
     #[allow(dead_code)]

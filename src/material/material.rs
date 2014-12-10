@@ -9,4 +9,5 @@ pub trait Material {
     fn global_transmissive(&self, color: &Vec3) -> Vec3;
     fn transmission(&self) -> Vec3;
     fn ior(&self) -> f64;
+    fn brdf(&self, n: Vec3, incoming: Vec3, outgoing: Vec3, u: f64, v: f64) -> Vec3;
 }

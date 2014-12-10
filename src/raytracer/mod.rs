@@ -5,6 +5,7 @@ pub use self::octree::Octree;
 pub use self::renderer::Renderer;
 
 pub use self::photon::Photon;
+pub use self::photonquery::PhotonQuery;
 pub use self::kdtree::KDTree;
 pub use self::kdtree::KDNode;
 
@@ -16,4 +17,5 @@ pub mod ray;
 pub mod renderer;
 
 pub mod photon;
+pub mod photonquery;
 pub mod kdtree;

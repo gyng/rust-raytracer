@@ -3,14 +3,15 @@ use std::sync::Arc;
 use std::sync::TaskPool;
 use std::num::FloatMath;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
-use raytracer::{Intersection, KDNode, KDTree, Photon, Ray};
+use raytracer::{Intersection, KDNode, KDTree, Photon, PhotonQuery, Ray};
+use std::collections::BinaryHeap;
 
-use geometry::bbox::union_points;
 use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
 use std::num::Float;
+use std::f64::consts::PI;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
@@ -131,7 +132,6 @@ impl Renderer {
             for _ in range(0, photon_count) {
                 let ray = Ray::new(light.position(), Vec3::random());
 
-                // TODO: light color should replace power argument
                 photons = photons + Renderer::shoot_photon(scene, &ray, power_threshold,
                                                            light.color(), max_bounces, 0);
 
@@ -262,12 +262,45 @@ impl Renderer {
 
                 // Get photon cache result for caustics/indirect lighting
                 // TODO: Use n-nearest photons instead of querying a region
-                let search_half_width = 5.0;
-                let target = union_points(&hit.position, &hit.position).expand(search_half_width);
-                let photons = KDNode::query_region(photon_cache.clone(), target);
-                let mut power = Vec3::zero();
-                for photon in photons.iter() {
-                    power = power + Vec3::clamp(&photon.power, 0.0, 1.0);
+                // let search_half_width = 5.0;
+                // let target = union_points(&hit.position, &hit.position).expand(search_half_width);
+                // let photons = KDNode::query_region(photon_cache.clone(), target);
+                // let mut power = Vec3::zero();
+                // for photon in photons.iter() {
+                //     power = power + Vec3::clamp(&photon.power, 0.0, 1.0);
+                // }
+
+                // Radiance estimate
+                let initial_max_dist = 100.0; // winged-it
+                let max_photons = 1000;
+                let mut nearby_photons: BinaryHeap<PhotonQuery> = BinaryHeap::with_capacity(max_photons + 1);
+                KDNode::query_nearest(&mut nearby_photons, photon_cache.clone(), hit.position, initial_max_dist, max_photons);
+
+                let mut photons = Vec::new();
+                for result in nearby_photons.iter() {
+                    photons.push(result.photon)
+                }
+
+                let flux_sum = photons.iter().fold(Vec3::zero(), |flux_acc, p| {
+                    flux_acc + hit.material.brdf(n, p.incoming_dir, i, hit.u, hit.v) * p.power
+                });
+
+                // let photon_spread = match nearby_photons.top() {
+                //     Some(v) => v,
+                //     None => None
+                // };
+
+                // let photon_spread = photons.iter().fold(0.0, |max_r, p| {
+                //     max_r.max((p.position - max_r).len())
+                // });
+
+                match nearby_photons.top() {
+                    Some(photon_query) => {
+                        let photon_spread = photon_query.distance_to_point;
+                        let indirect_irradiance = flux_sum.scale(1.0 / (2.0 * PI * photon_spread));
+                        result + indirect_irradiance
+                    },
+                    None => result
                 }
 
                 // Actual irradiance according to my brain should be (search_size * 2) ** 3
@@ -280,11 +313,12 @@ impl Renderer {
                 // let search_width = 0.5 * 2.0 * search_half_width;
                 // let indirect_irradiance = power.scale((search_width * search_width * search_width) * (photons.len() as f64 / 32000.0));
                 // let indirect_irradiance = power.scale(photons.len() / 32000.0)
-                let indirect_irradiance = power.scale(1.0 / (photons.len() as f64 + 1.0));
-                result = result + indirect_irradiance;
+                // let indirect_irradiance = power.scale(1.0 / (photons.len() as f64 + 1.0));
+
+                // result = result + indirect_irradiance;
                 // result = indirect_irradiance;
 
-                result
+                // result
             },
             None => {
                 match scene.skybox {

@@ -35,4 +35,8 @@ impl Material for FlatMaterial {
     fn ior(&self) -> f64 {
         1.0
     }
+
+    fn brdf(&self, n: Vec3, incoming: Vec3, outgoing: Vec3, u: f64, v: f64) -> Vec3 {
+        self.color
+    }
 }

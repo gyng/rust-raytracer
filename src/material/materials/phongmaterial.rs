@@ -57,4 +57,9 @@ impl Material for PhongMaterial {
     fn ior(&self) -> f64 {
         self.ior
     }
+
+    // TODO: Move sample code into brdf
+    fn brdf(&self, n: Vec3, incoming: Vec3, outgoing: Vec3, u: f64, v: f64) -> Vec3 {
+        self.sample(n, outgoing, incoming, u, v) - self.ambient.scale(self.k_a)
+    }
 }
