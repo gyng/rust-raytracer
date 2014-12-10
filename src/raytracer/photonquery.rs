@@ -3,6 +3,7 @@ use raytracer::Photon;
 
 // For use in PhotonCache's querying of nearest N-neighbours
 // #[deriving(Eq, PartialOrd, PartialEq)]
+#[deriving(Clone)]
 pub struct PhotonQuery {
     pub photon: Photon,
     pub distance_to_point: f64

@@ -78,6 +78,12 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
             let scene = my_scene::cornell::get_scene();
             Some((camera, scene))
         },
+        "cornell" => {
+            // Alternative, simpler box scene.
+            let camera = my_scene::cornell2::get_camera(image_width, image_height, fov);
+            let scene = my_scene::cornell2::get_scene();
+            Some((camera, scene))
+        },
         "bunny" => {
             // Bunny. Around 300 primitives, 2 lights. Uses octree. Has skybox, textures are
             // in another repository.
