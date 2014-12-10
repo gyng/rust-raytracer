@@ -1,6 +1,7 @@
 use std::fmt;
 use std::cmp;
 use std::num::{Float, FloatMath};
+use std::rand::{task_rng, Rng};
 
 #[deriving(Clone)]
 pub struct Vec3 {
@@ -107,6 +108,22 @@ impl Vec3 {
             x: self.x.max(min).min(max),
             y: self.y.max(min).min(max),
             z: self.z.max(min).min(max)
+        }
+    }
+
+    /// Random unit vector around the origin.
+    /// Uniform distribution around a sphere.
+    pub fn random() -> Vec3 {
+        let mut rng = task_rng();
+
+        let theta = rng.gen::<f64>() * ::std::f64::consts::PI_2;
+        let z = (rng.gen::<f64>() - 0.5) * 2.0;
+        let z_sqrt = (1.0 - z * z).sqrt();
+
+        Vec3 {
+            x: z_sqrt * theta.cos(),
+            y: z_sqrt * theta.sin(),
+            z: z
         }
     }
 }

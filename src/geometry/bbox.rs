@@ -3,7 +3,7 @@
 use std::f64::{MAX_VALUE, MIN_VALUE};
 use std::num::FloatMath;
 use geometry::Prim;
-use raytracer::Ray;
+use raytracer::{Photon, Ray};
 use vec3::Vec3;
 
 #[deriving(Clone)]
@@ -87,6 +87,23 @@ pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Sync>>) -> BBox {
         min: min,
         max: max
     }
+}
+
+pub fn get_bounds_from_photons(photons: &Vec<Photon>) -> BBox {
+    if photons.len() == 0 {
+        panic!("Cannot get bounds for an empty vec");
+    }
+
+    let mut bbox = BBox {
+        min: photons[0].position,
+        max: photons[0].position
+    };
+
+    for photon in photons.iter() {
+        bbox = union_point(&bbox, &photon.position)
+    }
+
+    bbox
 }
 
 impl BBox {
