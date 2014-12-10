@@ -61,6 +61,45 @@ impl KDNode {
         results
     }
 
+    // Adapted from Realistic Image Synthesis using Photon Mapping (Henrik Wann Jensen) pp. 73
+    pub fn query_nearest(current: Box<KDNode>, target: Vec3, max_dist: f64) -> Vec<Photon> {
+        let mut results: Vec<Photon> = Vec::new();
+
+        let delta = (current.bbox.center() - target).len();
+
+        let (first_child, second_child) = if delta > 0.0 {
+            (current.left_child.clone(), current.right_child.clone())
+        } else {
+            (current.right_child.clone(), current.left_child.clone())
+        };
+
+        match first_child {
+            Some(child) => {
+                results = results + KDNode::query_nearest(child, target, max_dist);
+            },
+            None => {}
+        }
+
+        // TODO: combine this with above
+        if delta * delta < max_dist * max_dist {
+            match second_child {
+                Some(child) => {
+                    results = results + KDNode::query_nearest(child, target, max_dist);
+                },
+                None => {}
+            }
+        }
+
+        let photon_dist = (current.photon.position - current.bbox.center()).len();
+        if photon_dist < max_dist {
+            results.push(current.photon);
+            // How does max_dist pruning work?
+            // max_dist = (root.bbox.center() - current.photon.position).len();
+        }
+
+        results
+    }
+
     #[allow(dead_code)]
     pub fn is_leaf(&self) -> bool {
         match self.left_child {

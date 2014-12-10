@@ -198,6 +198,10 @@ impl BBox {
         other.max.z <= self.max.z
     }
 
+    pub fn center(&self) -> Vec3 {
+        (self.min + self.max).scale(0.5)
+    }
+
     /// Pad bounding box by a constant factor.
     pub fn expand(&self, delta: f64) -> BBox {
         let delta_vec3 = Vec3 { x: delta, y: delta, z: delta };
