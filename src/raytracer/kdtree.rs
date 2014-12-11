@@ -68,6 +68,8 @@ impl KDNode {
             None => {}
         }
 
+        // This is broken: we cannot use the centroid of the BBox
+        // Need to use the actual splitting plane
         // if delta * delta < max_dist * max_dist {
             match second_child {
                 Some(child) => {

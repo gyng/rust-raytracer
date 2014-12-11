@@ -1,12 +1,20 @@
 {
     "name": "cornell",
-    "size": [128, 128],
+    "size": [512, 512],
     "fov": 30.0,
-    "reflect_depth": 2,
-    "refract_depth": 4,
-    "shadow_samples": 1,
-    "pixel_samples": 1,
     "output_file": "test",
+
+    "reflect_depth": 4,
+    "refract_depth": 6,
+    "shadow_samples": 64,
+    "pixel_samples": 2,
+
+    "photons": 10000,
+    "photon_bounces": 10,
+    "photon_spread": 32.0,
+    "photon_samples": 100,
+    "photon_attempts": 10000000,
+
     "animating": false,
     "fps": 25.0,
     "time_slice": [0.0, 10.0],

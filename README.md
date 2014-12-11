@@ -30,7 +30,7 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
 3. Compile
 
-        rustc ./src/main.rs -o main
+        cargo build --release
 
 4. Edit `sample-config.json` if you wish to render a scene besides the default,
    or if you wish to tweak the renderer parameters
@@ -40,12 +40,10 @@ Early-stage raytracer in Rust. Developed on Rust `0.12.0-pre-nightly`.
 
         ./main sample-config.json
 
+6. Alternatively
 
-### With Cargo
+        cargo run --release sample-config.json
 
-1. Follow steps 1 and 2 above
-2. `cargo build` or `cargo run sample-config.json` in project root
-3. `cargo test` to run tests
 
 ### Useful commands
 
@@ -89,9 +87,9 @@ These should use 30deg fov for squares and 45deg fov for 16:9.
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)
 * Basic camera animation
+* Slow and primitive caustics/global illumination
 
 
 ## Missing/potential features
 
 * Scene description
-* Caustics/global illumination (in progress on `photon-trace` branch)

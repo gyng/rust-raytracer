@@ -35,7 +35,7 @@ impl Material for CookTorranceMaterial {
 
     fn brdf(&self, n: &Vec3, i: &Vec3, l: &Vec3) -> f64 {
         // Specular calculations
-        let h = (l + *i).unit();
+        let h = (*l + *i).unit();
         let n_dot_h = n.dot(&h);
         let n_dot_l = n.dot(l);
         let v_dot_h = i.dot(&h);
@@ -87,10 +87,5 @@ impl Material for CookTorranceMaterial {
 
     fn ior(&self) -> f64 {
         self.ior
-    }
-
-    // Move sample code into brdf
-    fn brdf(&self, n: Vec3, incoming: Vec3, outgoing: Vec3, u: f64, v: f64) -> Vec3 {
-        self.sample(n, outgoing, incoming, u, v) - self.ambient.scale(self.k_a)
     }
 }

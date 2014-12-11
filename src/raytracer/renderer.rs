@@ -1,42 +1,47 @@
+use std::collections::BinaryHeap;
+use std::f64::consts::PI;
+use std::num::Float;
+use std::num::FloatMath;
 use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::TaskPool;
-use std::num::FloatMath;
+use light::Light;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, KDNode, KDTree, Photon, PhotonQuery, Ray};
-use std::collections::BinaryHeap;
-
-use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
-use std::num::Float;
-use std::f64::consts::PI;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
+
 pub struct Renderer {
-    pub reflect_depth: uint,  // Maximum reflection recursions.
-    pub refract_depth: uint,  // Maximum refraction recursions. A sphere takes up 2 recursions.
-    pub shadow_samples: uint, // Number of samples for soft shadows and area lights.
-    pub pixel_samples: uint,  // The square of this is the number of samples per pixel.
-    pub tasks: uint           // Minimum number of tasks to spawn.
+    pub reflect_depth: uint,   // Maximum reflection recursions.
+    pub refract_depth: uint,   // Maximum refraction recursions. A sphere takes up 2 recursions.
+    pub shadow_samples: uint,  // Number of samples for soft shadows and area lights.
+    pub pixel_samples: uint,   // The square of this is the number of samples per pixel.
+    pub photons: uint,         // The number of total photons to shoot for caustics. 0 = off.
+    pub photon_bounces: uint,  // Maximum bounces for photons.
+    pub photon_spread: f64,    // Maximum distance to search for samples from a target point
+    pub photon_samples: uint,  // Maximum number of photon samples for irradiance estimation
+    pub photon_attempts: uint, // Maximum photons to attempt shooting.
+    pub tasks: uint            // Minimum number of tasks to spawn.
 }
+
 
 impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
         let photon_scene_local = shared_scene.clone();
-        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 200000, 0.01, 10);
+        let photon_map = Renderer::shoot_photons(photon_scene_local.deref(), self.photons, 0.01,
+                                                 self.photon_bounces, self.photon_attempts);
 
         let mut surface = Surface::new(camera.image_width as uint,
                                        camera.image_height as uint,
                                        ColorRGBA::new_rgb(0, 0, 0));
 
         let pool = TaskPool::new(self.tasks);
-
         let (tx, rx) = channel();
-
         let mut jobs = 0;
 
         for subsurface_factory in surface.divide(128, 8) {
@@ -46,11 +51,11 @@ impl Renderer {
             let child_tx = tx.clone();
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
-            let photon_cache_local = photon_cache.clone();
+            let photon_map_local = photon_map.clone();
 
             pool.execute(proc() {
                 child_tx.send(renderer.render_tile(camera_local.clone(),
-                    scene_local.deref(), subsurface_factory, &photon_cache_local.clone()));
+                    scene_local.deref(), subsurface_factory, &photon_map_local.clone()));
             });
         }
 
@@ -64,7 +69,7 @@ impl Renderer {
     }
 
     fn render_tile(&self, camera: Camera, scene: &Scene,
-                   tile_factory: SurfaceFactory, photon_cache: &Box<KDNode>) -> Box<Surface> {
+                   tile_factory: SurfaceFactory, photon_map: &Option<Box<KDNode>>) -> Box<Surface> {
 
         let shadow_samples = self.shadow_samples;
         let pixel_samples = self.pixel_samples;
@@ -100,7 +105,8 @@ impl Renderer {
 
                         let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
                         let result = Renderer::trace(scene, &ray, shadow_samples,
-                                                     reflect_depth, refract_depth, false, photon_cache);
+                                                     reflect_depth, refract_depth, false,
+                                                     photon_map, self.photon_spread, self.photon_samples);
                         // Clamp subpixels for now to avoid intense aliasing when combined value is clamped later
                         // Should think of a better way to handle this
                         color = color + result.clamp(0.0, 1.0).scale(1.0 / (pixel_samples * pixel_samples) as f64);
@@ -113,36 +119,47 @@ impl Renderer {
         box tile
     }
 
-    fn shoot_photons(scene: &Scene, photon_count: uint, power_threshold: f64, max_bounces: uint) -> Box<KDNode> {
+    fn shoot_photons(scene: &Scene, photons_per_light: uint, power_threshold: f64, max_bounces: uint, max_attempts: uint) -> Option<Box<KDNode>> {
+        if photons_per_light == 0 {
+            return None
+        }
+
         let mut photons: Vec<Photon> = Vec::new();
 
         let start_time = ::time::get_time();
-        let mut count = 0u;
-        let total = photon_count * scene.lights.len();
+        let total = photons_per_light * scene.lights.len();
 
         for light in scene.lights.iter() {
-            for _ in range(0, photon_count) {
-                let ray = Ray::new(light.position(), Vec3::random());
+            let caustic_modes = vec!(true, false);
 
-                photons = photons + Renderer::shoot_photon(scene, &ray, power_threshold,
-                                                           light.color(), max_bounces, 0, false);
+            for caustic_mode in caustic_modes.iter() {
+                let mut photons_shot = 0;
+                let mut successful_photon_count = 0;
+                while successful_photon_count < photons_per_light / 2 && photons_shot < max_attempts {
+                    let ray = Ray::new(light.position(), Vec3::random());
+                    let old_len = photons.len();
 
-                count += 1;
-                ::util::print_progress("Photon", start_time, count, total);
+                    photons = photons + Renderer::shoot_photon(scene, &ray, *caustic_mode, power_threshold,
+                                                               light.color(), max_bounces, 0, false);
+
+                    let change = photons.len() - old_len;
+                    successful_photon_count += change;
+                    photons_shot += 1;
+
+                    if change > 0 {
+                        ::util::print_progress("Photon", start_time, photons.len(), total);
+                    }
+                }
             }
         }
 
-        println!("{} indirect photons stored", photons.len());
+        println!("{} photons successfully stored.", photons.len());
 
-        match KDTree::new_from_photons(photons, 0) {
-            Some(tree) => tree,
-            None => panic!("Could not generate photon cache. Photon count is 0/KDTree is empty?")
-        }
+        KDTree::new_from_photons(photons, 0)
     }
 
-    fn shoot_photon(scene: &Scene, ray: &Ray, power_threshold: f64,
+    fn shoot_photon(scene: &Scene, ray: &Ray, caustic_mode: bool, power_threshold: f64,
                     power: Vec3, max_bounces: uint, bounces: uint, inside: bool) -> Vec<Photon> {
-
         let mut photons: Vec<Photon> = Vec::new();
 
         if bounces > max_bounces || power.len() < power_threshold {
@@ -151,7 +168,7 @@ impl Renderer {
 
         match ray.get_nearest_hit(scene) {
             Some(hit) => {
-                let n = -hit.n.unit();
+                let n = hit.n.unit();
                 let i = (-ray.direction).unit();
                 let l = Vec3::reflect(&n, &ray.direction);
                 let u = hit.u;
@@ -159,21 +176,30 @@ impl Renderer {
 
                 // Randomly decide to reflect/transmit/absorb
                 let mut rng = task_rng();
-                let rand = rng.gen::<f64>();
+                let spin = rng.gen::<f64>();
                 let p_diffuse_reflect = hit.material.global_diffuse();
-                let p_reflect = hit.material.global_specular();
+                let p_specular_reflect = hit.material.global_specular();
                 let p_transmit = hit.material.global_transmissive();
-                let p_absorb = 1.0 - p_reflect - p_transmit - p_diffuse_reflect;
+                let p_absorb = 1.0 - p_transmit - p_specular_reflect - p_diffuse_reflect;
 
-                if rand < p_absorb && bounces > 0 {
+                //   p_absorb   p_transmit    p_reflect
+                // *----------*------------*-------------*
+                //    eg. 0.2       0.4         0.4
+                //
+                // p_reflect is then again rolled to check if
+                // it is a specular (mirror) reflection or a
+                // diffuse reflection (random direction)
+                if spin < p_absorb && bounces > 0 {
                     photons.push(Photon {
                         position: hit.position,
                         incoming_dir: ray.direction.scale(-1.0),
                         power: power
                     });
-                } else if rand < p_absorb {
+                } else if spin < p_absorb {
                     // noop, don't store direct lighting
-                } else if rand < p_transmit + p_absorb {
+                } else if caustic_mode && !hit.material.is_refractive() && !hit.material.is_reflective() {
+                    // noop, don't bother with diffuse surfaces for caustic map
+                } else if spin < p_transmit + p_absorb {
                     // Transmit
                     // This if condition is an optimisation hack. For subsurface lighting
                     // we need a proper ray-marching implementation; since that doesn't exist
@@ -184,17 +210,29 @@ impl Renderer {
                             None => Vec3::reflect(&i, &n)
                         };
                         let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
-                        let photon_color = Vec3::clamp(&(hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
-                        photons = photons + Renderer::shoot_photon(scene, &refract_ray, power_threshold,
+                        let photon_color = power.scale(hit.material.global_transmissive());
+                        photons = photons + Renderer::shoot_photon(scene, &refract_ray, caustic_mode, power_threshold,
                                                                    photon_color, max_bounces, bounces + 1, !inside);
                     }
                 } else {
-                    // Reflect (always reflect for D* (diffuse-*) light interactions)
-                    let r = Vec3::reflect(&i, &n);
-                    let reflect_ray = Ray::new(hit.position, r);
+                    // Reflect, determine if it's a diffuse or specular reflection
+                    // Photon color determination is inaccurate, check the book for a proper implementation
+                    let specular_spin = rng.gen::<f64>() * (p_diffuse_reflect + p_specular_reflect);
 
-                    let photon_color = Vec3::clamp(&(hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
-                    photons = photons + Renderer::shoot_photon(scene, &reflect_ray, power_threshold,
+                    // Get output direction:
+                    // diffuse reflection = random output direction
+                    // specular reflection = mirror output direction
+                    let (r, photon_color) = if specular_spin < p_diffuse_reflect {
+                        let mut out = Vec3::random();
+                        // Get a ray in the direction inside the outward-facing hemisphere
+                        if out.dot(&n) < 0.0 { out = -out; }
+                        (out, power * Vec3::clamp(&(hit.material.sample(n, i, l, u, v)), 0.0, 1.0))
+                    } else {
+                        (Vec3::reflect(&i, &n), power.scale(hit.material.global_specular()))
+                    };
+
+                    let reflect_ray = Ray::new(hit.position, r);
+                    photons = photons + Renderer::shoot_photon(scene, &reflect_ray, caustic_mode, power_threshold,
                                                                photon_color, max_bounces, bounces + 1, inside);
                 }
             },
@@ -205,7 +243,8 @@ impl Renderer {
     }
 
     fn trace(scene: &Scene, ray: &Ray, shadow_samples: uint,
-             reflect_depth: uint, refract_depth: uint, inside: bool, photon_cache: &Box<KDNode>) -> Vec3 {
+             reflect_depth: uint, refract_depth: uint, inside: bool,
+             photon_map: &Option<Box<KDNode>>, photon_spread: f64, max_photons: uint) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
@@ -231,7 +270,8 @@ impl Renderer {
                         let r = Vec3::reflect(&i, &n);
                         let reflect_ray = Ray::new(hit.position, r);
                         let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
-                                                         reflect_depth - 1, refract_depth, inside, photon_cache);
+                                                         reflect_depth - 1, refract_depth, inside,
+                                                         photon_map, photon_spread, max_photons);
 
                         result = result + reflection.scale(hit.material.global_specular()).scale(reflect_fresnel);
                     }
@@ -248,38 +288,20 @@ impl Renderer {
 
                         let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
                         let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
-                                                         reflect_depth, refract_depth - 1, !inside, photon_cache);
+                                                         reflect_depth, refract_depth - 1, !inside,
+                                                         photon_map, photon_spread, max_photons);
 
                         result = result + refraction.scale(hit.material.global_transmissive()).scale(refract_fresnel);
                     }
                 }
 
-                // Add indirect illumination estimate
-                let initial_max_dist = 32.0; // This was winged. TODO: make this a configurable setting
-                let max_photons = 20; // This was winged as well. TODO: make this a configurable setting
-                let mut nearby_photons: BinaryHeap<PhotonQuery> = BinaryHeap::with_capacity(max_photons + 1);
-                KDNode::query_nearest(&mut nearby_photons, photon_cache.clone(), hit.position, initial_max_dist, max_photons);
-
-                let mut photons = Vec::new();
-                for p in nearby_photons.iter() {
-                    photons.push(p.photon)
+                // Indirect illumination, caustics
+                if photon_map.is_some() {
+                    result = result + Renderer::estimate_indirect_irradiance(photon_map.clone().unwrap(), photon_spread, max_photons,
+                                                                             &hit, &n, &i);
                 }
 
-                let flux_sum = photons.iter().fold(Vec3::zero(), |flux_acc, p| {
-                    flux_acc + (hit.material.brdf(n, p.incoming_dir, i, hit.u, hit.v) * p.power)
-                });
-
-                let indirect_irradiance = match nearby_photons.top() {
-                    Some(photon_query) => {
-                        let photon_spread = photon_query.distance_to_point.powf(2.0);
-                        flux_sum.scale(1.0 / (2.0 * PI * photon_spread))
-                        // flux_sum.scale(1.0 / (photon_spread))
-                    },
-                    None => Vec3::zero()
-                };
-
-                // indirect_irradiance
-                result + indirect_irradiance
+                result
             },
             None => {
                 match scene.skybox {
@@ -287,6 +309,36 @@ impl Renderer {
                     None => scene.background
                 }
             }
+        }
+    }
+
+    fn estimate_indirect_irradiance(photon_map: Box<KDNode>, photon_spread: f64, max_photons: uint,
+                                    hit: &Intersection, n: &Vec3, i: &Vec3) -> Vec3 {
+
+        let mut nearby_photons: BinaryHeap<PhotonQuery> = BinaryHeap::with_capacity(max_photons + 1);
+        KDNode::query_nearest(&mut nearby_photons, photon_map, hit.position, photon_spread, max_photons);
+
+        // Can't divide by a spread of zero
+        if nearby_photons.len() < 2 {
+            return Vec3::zero()
+        }
+
+        let mut photons = Vec::new();
+        for p in nearby_photons.iter() {
+            photons.push(p.photon)
+        }
+
+        let flux_sum = photons.iter().fold(Vec3::zero(), |flux_acc, p| {
+            flux_acc + p.power.scale(hit.material.brdf(n, &p.incoming_dir, i))
+        });
+
+        match nearby_photons.top() {
+            Some(photon_query) => {
+                let photon_spread = photon_query.distance_to_point.powf(2.0);
+                let density_factor = (1.0 / PI) / photon_spread;
+                flux_sum.scale(density_factor)
+            },
+            None => Vec3::zero()
         }
     }
 

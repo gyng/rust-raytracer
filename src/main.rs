@@ -34,11 +34,19 @@ struct SceneConfig<'a> {
     name: String,
     size: (int, int),
     fov: f64,
+    output_file: String,
+
     reflect_depth: uint,
     refract_depth: uint,
     shadow_samples: uint,
     pixel_samples: uint,
-    output_file: String,
+
+    photons: uint,
+    photon_bounces: uint,
+    photon_spread: f64,
+    photon_samples: uint,
+    photon_attempts: uint,
+
     animating: bool,
     fps: f64,
     time_slice: (f64, f64),
@@ -248,6 +256,11 @@ fn main() {
         refract_depth: config.refract_depth,
         shadow_samples: config.shadow_samples,
         pixel_samples: config.pixel_samples,
+        photons: config.photons,
+        photon_bounces: config.photon_bounces,
+        photon_spread: config.photon_spread,
+        photon_samples: config.photon_samples,
+        photon_attempts: config.photon_attempts,
         // Number of tasks to spawn. Will use up max available cores.
         tasks: std::os::num_cpus()
     };
