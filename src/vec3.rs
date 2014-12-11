@@ -116,13 +116,20 @@ impl Vec3 {
     pub fn random() -> Vec3 {
         let mut rng = task_rng();
 
-        let theta = rng.gen::<f64>() * ::std::f64::consts::PI_2;
-        let z = (rng.gen::<f64>() - 0.5) * 2.0;
-        let z_sqrt = (1.0 - z * z).sqrt();
+        // Use rejection sampling
+        let mut x = (rng.gen::<f64>() - 0.5) * 2.0;
+        let mut y = (rng.gen::<f64>() - 0.5) * 2.0;
+        let mut z = (rng.gen::<f64>() - 0.5) * 2.0;
+
+        while x * x + y * y + z * z > 1.0 {
+            x = rng.gen::<f64>();
+            y = rng.gen::<f64>();
+            z = rng.gen::<f64>();
+        }
 
         Vec3 {
-            x: z_sqrt * theta.cos(),
-            y: z_sqrt * theta.sin(),
+            x: x,
+            y: y,
             z: z
         }
     }

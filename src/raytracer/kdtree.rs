@@ -68,14 +68,14 @@ impl KDNode {
             None => {}
         }
 
-        if delta * delta < max_dist * max_dist {
+        // if delta * delta < max_dist * max_dist {
             match second_child {
                 Some(child) => {
                     KDNode::query_nearest(results, child, target, max_dist, max_photons);
                 },
                 None => {}
             }
-        }
+        // }
 
         let photon_dist = (current.photon.position - target).len();
 

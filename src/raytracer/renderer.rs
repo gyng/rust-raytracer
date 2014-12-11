@@ -27,15 +27,7 @@ impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
         let photon_scene_local = shared_scene.clone();
-        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 10000, 0.01, 10);
-
-        // let target = BBox {
-        //     min: Vec3 {x: -100.0, y:-100.0, z: -100.0},
-        //     max: Vec3 {x: 100.0, y: 100.0, z: 100.0}
-        // };
-
-        // let test_results = KDNode::query_region(photon_cache, target);
-        // panic!("TEST {}", test_results.len());
+        let photon_cache = Renderer::shoot_photons(photon_scene_local.deref(), 200000, 0.01, 10);
 
         let mut surface = Surface::new(camera.image_width as uint,
                                        camera.image_height as uint,
@@ -140,6 +132,8 @@ impl Renderer {
             }
         }
 
+        println!("{} indirect photons stored", photons.len());
+
         match KDTree::new_from_photons(photons, 0) {
             Some(tree) => tree,
             None => panic!("Could not generate photon cache. Photon count is 0/KDTree is empty?")
@@ -156,50 +150,50 @@ impl Renderer {
         }
 
         match ray.get_nearest_hit(scene) {
-            Some(nearest_hit) => {
-                let n = nearest_hit.n.unit();
+            Some(hit) => {
+                let n = -hit.n.unit();
                 let i = (-ray.direction).unit();
                 let l = Vec3::reflect(&n, &ray.direction);
-                let u = nearest_hit.u;
-                let v = nearest_hit.v;
+                let u = hit.u;
+                let v = hit.v;
 
                 // Randomly decide to reflect/transmit/absorb
                 let mut rng = task_rng();
                 let rand = rng.gen::<f64>();
-                let p_diffuse_reflect = nearest_hit.material.global_diffuse();
-                let p_reflect = nearest_hit.material.global_specular();
-                let p_transmit = nearest_hit.material.global_transmissive();
+                let p_diffuse_reflect = hit.material.global_diffuse();
+                let p_reflect = hit.material.global_specular();
+                let p_transmit = hit.material.global_transmissive();
                 let p_absorb = 1.0 - p_reflect - p_transmit - p_diffuse_reflect;
 
-                if rand < p_absorb {
-                    // ---- LINE ---
-                    //  END OF LINE
+                if rand < p_absorb && bounces > 0 {
                     photons.push(Photon {
-                        position: nearest_hit.position,
+                        position: hit.position,
                         incoming_dir: ray.direction.scale(-1.0),
                         power: power
                     });
+                } else if rand < p_absorb {
+                    // noop, don't store direct lighting
                 } else if rand < p_transmit + p_absorb {
                     // Transmit
                     // This if condition is an optimisation hack. For subsurface lighting
                     // we need a proper ray-marching implementation; since that doesn't exist
                     // in here we just kill the ray if the material is not refractive
-                    if nearest_hit.material.is_refractive() {
-                        let t = match Vec3::refract(&i, &n, nearest_hit.material.ior(), inside) {
+                    if hit.material.is_refractive() {
+                        let t = match Vec3::refract(&i, &n, hit.material.ior(), inside) {
                             Some(ref t) => *t,
                             None => Vec3::reflect(&i, &n)
                         };
-                        let refract_ray = Ray::new(nearest_hit.position + t.scale(EPSILON), t);
-                        let photon_color = power * Vec3::clamp(&(nearest_hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
+                        let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
+                        let photon_color = Vec3::clamp(&(hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
                         photons = photons + Renderer::shoot_photon(scene, &refract_ray, power_threshold,
                                                                    photon_color, max_bounces, bounces + 1, !inside);
                     }
                 } else {
                     // Reflect (always reflect for D* (diffuse-*) light interactions)
                     let r = Vec3::reflect(&i, &n);
-                    let reflect_ray = Ray::new(nearest_hit.position, r);
+                    let reflect_ray = Ray::new(hit.position, r);
 
-                    let photon_color = power * Vec3::clamp(&(nearest_hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
+                    let photon_color = Vec3::clamp(&(hit.material.sample(n, i, l, u, v)), 0.0, 1.0);
                     photons = photons + Renderer::shoot_photon(scene, &reflect_ray, power_threshold,
                                                                photon_color, max_bounces, bounces + 1, inside);
                 }
@@ -261,8 +255,8 @@ impl Renderer {
                 }
 
                 // Add indirect illumination estimate
-                let initial_max_dist = 150.0; // This was winged. TODO: make this a configurable setting
-                let max_photons = 10; // This was winged as well. TODO: make this a configurable setting
+                let initial_max_dist = 32.0; // This was winged. TODO: make this a configurable setting
+                let max_photons = 20; // This was winged as well. TODO: make this a configurable setting
                 let mut nearby_photons: BinaryHeap<PhotonQuery> = BinaryHeap::with_capacity(max_photons + 1);
                 KDNode::query_nearest(&mut nearby_photons, photon_cache.clone(), hit.position, initial_max_dist, max_photons);
 
@@ -272,19 +266,20 @@ impl Renderer {
                 }
 
                 let flux_sum = photons.iter().fold(Vec3::zero(), |flux_acc, p| {
-                    flux_acc + hit.material.brdf(n, p.incoming_dir, i, hit.u, hit.v).clamp(0.0, 1.0) * p.power
+                    flux_acc + (hit.material.brdf(n, p.incoming_dir, i, hit.u, hit.v) * p.power)
                 });
 
                 let indirect_irradiance = match nearby_photons.top() {
                     Some(photon_query) => {
-                        let photon_spread = photon_query.distance_to_point.abs();
+                        let photon_spread = photon_query.distance_to_point.powf(2.0);
                         flux_sum.scale(1.0 / (2.0 * PI * photon_spread))
+                        // flux_sum.scale(1.0 / (photon_spread))
                     },
                     None => Vec3::zero()
                 };
 
-                indirect_irradiance
-                // result + indirect_irradiance
+                // indirect_irradiance
+                result + indirect_irradiance
             },
             None => {
                 match scene.skybox {
