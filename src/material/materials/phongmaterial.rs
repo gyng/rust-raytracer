@@ -8,6 +8,7 @@ pub struct PhongMaterial {
     pub k_a: f64,           // Ambient coefficient
     pub k_d: f64,           // Diffuse coefficient
     pub k_s: f64,           // Local specular coefficient
+    pub k_dg: f64,          // Global diffuse reflectance (color bleed)
     pub k_sg: f64,          // Global specular coefficient (mirror reflection)
     pub k_tg: f64,          // Global transmissive coefficient (refraction)
     pub ambient: Vec3,      // Ambient color
@@ -47,12 +48,16 @@ impl Material for PhongMaterial {
         self.k_tg > 0.0
     }
 
-    fn global_specular(&self, color: &Vec3) -> Vec3 {
-        color.scale(self.k_sg)
+    fn global_diffuse(&self) -> f64 {
+        self.k_dg
     }
 
-    fn global_transmissive(&self, color: &Vec3) -> Vec3 {
-        color.scale(self.k_tg)
+    fn global_specular(&self) -> f64 {
+        self.k_sg
+    }
+
+    fn global_transmissive(&self) -> f64 {
+        self.k_tg
     }
 
     fn transmission(&self) -> Vec3 {

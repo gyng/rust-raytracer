@@ -20,12 +20,16 @@ impl Material for FlatMaterial {
         false
     }
 
-    fn global_specular(&self, _color: &Vec3) -> Vec3 {
-        Vec3::zero()
+    fn global_diffuse(&self) -> f64 {
+        0.0
     }
 
-    fn global_transmissive(&self, _color: &Vec3) -> Vec3 {
-        Vec3::zero()
+    fn global_specular(&self) -> f64 {
+        0.0
+    }
+
+    fn global_transmissive(&self) -> f64 {
+        0.0
     }
 
     fn transmission(&self) -> Vec3 {
@@ -41,7 +45,7 @@ impl Material for FlatMaterial {
         1.0
     }
 
-    fn brdf(&self, n: Vec3, incoming: Vec3, outgoing: Vec3, u: f64, v: f64) -> Vec3 {
+    fn brdf(&self, _n: Vec3, _incoming: Vec3, _outgoing: Vec3, _u: f64, _v: f64) -> Vec3 {
         self.color
     }
 }

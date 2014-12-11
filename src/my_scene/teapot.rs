@@ -32,7 +32,7 @@ pub fn get_teapot_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(box SphereLight { position: Vec3 { x: 0.6, y: 2.0, z: 1.2 }, color: Vec3::one(), radius: 1.0 });
 
-    let porcelain = CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 1.1, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let porcelain = CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_dg: 0.6, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 1.1, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     // prims.push(box Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box green });

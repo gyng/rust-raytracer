@@ -1,9 +1,9 @@
 {
-    "name": "box",
-    "size": [64, 64],
+    "name": "cornell",
+    "size": [128, 128],
     "fov": 30.0,
     "reflect_depth": 2,
-    "refract_depth": 2,
+    "refract_depth": 4,
     "shadow_samples": 1,
     "pixel_samples": 1,
     "output_file": "test",

@@ -1,5 +1,6 @@
 pub mod bunny;
 pub mod cornell;
+pub mod cornell2;
 pub mod cow;
 pub mod fresnel;
 pub mod heptoroid;

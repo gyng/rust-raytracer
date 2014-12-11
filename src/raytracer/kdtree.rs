@@ -22,41 +22,30 @@ impl KDNode {
     pub fn query_region(current: Box<KDNode>, target: BBox) -> Vec<Photon> {
         let mut results: Vec<Photon> = Vec::new();
 
-        // println!("At current [{}, {}, {}]",
-        //     current.photon.position.x,
-        //     current.photon.position.y,
-        //     current.photon.position.z,
-        // );
-
         if !target.overlaps(&current.bbox) {
             return results;
         }
 
         if target.inside(&current.photon.position) {
-            // println!("\t\t ADD is in target");
             results.push(current.photon);
         }
 
         match current.left_child {
             Some(ref child) => {
-                // println!("\t left child");
                 if target.overlaps(&child.bbox) {
-                    // println!("\t\t is in target");
                     results = results + KDNode::query_region(child.clone(), target);
                 }
             },
-            None => {/*println!("\t no left child");*/}
+            None => {}
         }
 
         match current.right_child {
             Some(ref child) => {
-                // println!("\t right child");
                 if target.overlaps(&child.bbox) {
-                    // println!("\t\t is in target");
                     results = results + KDNode::query_region(child.clone(), target);
                 }
             },
-            None => {/*println!("\t no right_child");*/}
+            None => {}
         }
 
         results
@@ -64,9 +53,6 @@ impl KDNode {
 
     // Adapted from Realistic Image Synthesis using Photon Mapping (Henrik Wann Jensen) pp. 73
     pub fn query_nearest(results: &mut BinaryHeap<PhotonQuery>, current: Box<KDNode>, target: Vec3, max_dist: f64, max_photons: uint) -> () {
-        // let results: BinaryHeap<Photon> = BinaryHeap::with_capacity(max_photons);
-        // let mut results: Vec<Photon> = Vec::new();
-
         let delta = (current.bbox.center() - target).len();
 
         let (first_child, second_child) = if delta > 0.0 {
@@ -82,47 +68,27 @@ impl KDNode {
             None => {}
         }
 
-        // TODO: combine this with above
-        if delta * delta < max_dist * max_dist {
+        // if delta * delta < max_dist * max_dist {
             match second_child {
                 Some(child) => {
                     KDNode::query_nearest(results, child, target, max_dist, max_photons);
                 },
                 None => {}
             }
-        }
+        // }
 
-        let photon_dist = (current.photon.position - current.bbox.center()).len();
+        let photon_dist = (current.photon.position - target).len();
 
         if photon_dist < max_dist {
             if results.len() < max_photons {
                 results.push(PhotonQuery { distance_to_point: photon_dist, photon: current.photon.clone() });
             } else {
-                match results.top() {
-                    Some(farthest) => {
-                        if photon_dist < farthest.distance_to_point {
-                            results.replace(PhotonQuery { distance_to_point: photon_dist, photon: current.photon.clone() });
-                        }
-                    },
-                    None => {}
+                if let Some(farthest) = results.top().cloned() {
+                    if photon_dist < farthest.distance_to_point {
+                        results.replace(PhotonQuery { distance_to_point: photon_dist, photon: current.photon.clone() });
+                    }
                 }
             }
-        }
-
-        // results
-    }
-
-    #[allow(dead_code)]
-    pub fn is_leaf(&self) -> bool {
-        match self.left_child {
-            Some(_) => match self.right_child {
-                Some(_) => {/*println!("a");*/ false},
-                None => {/*println!("b");*/ false}
-            },
-            None => {match self.right_child {
-                Some(_) => {/*println!("c");*/ false},
-                None => {/*println!("d");*/ true}
-            }}
         }
     }
 }
@@ -133,7 +99,6 @@ pub struct KDTree;
 
 // TODO: Generalise this for Prims as well
 impl KDTree {
-    #[allow(dead_code)]
     pub fn new_from_photons(point_list: Vec<Photon>, depth: int) -> Option<Box<KDNode>> {
         if point_list.len() == 0 {
             return None;
@@ -226,4 +191,52 @@ fn it_creates_and_range_queries() {
     assert_eq!(results.len(), 2);
     assert_eq!(results[0].power.x, 1.0);
     assert_eq!(results[1].power.x, 1.1);
+}
+
+#[test]
+fn it_creates_and_gets_nearest_photons() {
+    let mut photons: Vec<Photon> = Vec::new();
+    photons.push(Photon {
+        position: Vec3 {x: 0.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.2, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 0.5, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.1, y: 0.0, z: 0.0}
+    });
+
+    // Not in region
+    photons.push(Photon {
+        position: Vec3 {x: 2.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 5.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+    photons.push(Photon {
+        position: Vec3 {x: 10.0, y: 0.0, z: 0.0},
+        incoming_dir: Vec3::zero(),
+        power: Vec3 {x: 0.0, y: 0.0, z: 0.0}
+    });
+
+    let tree = match KDTree::new_from_photons(photons, 0) {
+        Some(x) => x,
+        None => panic!("Could not create KD-Tree")
+    };
+
+    let mut nearby_photons: BinaryHeap<PhotonQuery> = BinaryHeap::with_capacity(2 + 1);
+    let target = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
+    let max_dist = 5.0;
+    let max_photons = 2;
+    KDNode::query_nearest(&mut nearby_photons, tree, target, max_dist, max_photons);
+
+    assert_eq!(nearby_photons.len(), 2);
+    assert_eq!(nearby_photons.top().unwrap().distance_to_point, 0.5);
+    assert_eq!(nearby_photons.pop().unwrap().photon.power.x, 0.1);
+    assert_eq!(nearby_photons.pop().unwrap().photon.power.x, 0.2);
 }
