@@ -2,6 +2,7 @@ use std::num::Float;
 use std::cmp::{min, max, Ord};
 use vec3::Vec3;
 
+#[deriving(Copy)]
 pub struct ColorRGBA<T> {
     pub r: T,
     pub g: T,

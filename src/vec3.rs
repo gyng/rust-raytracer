@@ -2,7 +2,7 @@ use std::fmt;
 use std::cmp;
 use std::num::{Float, FloatMath};
 
-#[deriving(Clone)]
+#[deriving(Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,

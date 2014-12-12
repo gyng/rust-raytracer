@@ -41,7 +41,7 @@ impl Animator {
                 child_sema.release();
             });
 
-            ::util::print_progress("*** Frame", animate_start, frame_number + 1u, total_frames);
+            ::util::print_progress("*** Frame", animate_start.clone(), frame_number + 1u, total_frames);
             println!("");
         }
 

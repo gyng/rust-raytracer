@@ -258,7 +258,7 @@ fn main() {
         };
 
         println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
-                 renderer.tasks, animator.fps, animator.animate_from, animator.animate_to,
+                 std::os::num_cpus(), animator.fps, animator.animate_from, animator.animate_to,
                  animator.starting_frame_number);
         animator.animate(camera, shared_scene, config.output_file[]);
         let render_time = ::time::get_time().sec;
@@ -266,7 +266,7 @@ fn main() {
                  render_time, render_time - scene_time);
     } else {
         // Still frame
-        println!("Rendering with {} tasks...", renderer.tasks);
+        println!("Rendering with {} tasks...", std::os::num_cpus());
         let image_data = renderer.render(camera, shared_scene);
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)...\nWriting file...",

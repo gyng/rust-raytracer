@@ -6,7 +6,7 @@ use geometry::Prim;
 use raytracer::Ray;
 use vec3::Vec3;
 
-#[deriving(Clone)]
+#[deriving(Clone, Copy)]
 pub struct BBox {
     pub min: Vec3,
     pub max: Vec3

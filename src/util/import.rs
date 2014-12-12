@@ -21,7 +21,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     let print_every = 2048u;
     let mut current_line = 0;
     let mut processed_bytes = 0;
-    
+
     let total_bytes = match path.stat() {
         Ok(stat) => stat.size,
         Err(e) => panic!("Could not open file {} (file missing?) : {}", filename, e)
@@ -102,7 +102,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
         current_line += 1;
         processed_bytes += line.as_bytes().len();
         if current_line % print_every == 0 {
-            ::util::print_progress("Bytes", start_time, processed_bytes, total_bytes as uint);
+            ::util::print_progress("Bytes", start_time.clone(), processed_bytes, total_bytes as uint);
         }
     }
 

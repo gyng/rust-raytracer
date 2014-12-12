@@ -34,7 +34,7 @@ impl Renderer {
         for subsurface_factory in surface.divide(128, 8) {
             jobs += 1;
 
-            let renderer = *self.clone();
+            let renderer = self.clone();
             let child_tx = tx.clone();
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
@@ -49,7 +49,7 @@ impl Renderer {
 
         for (i, subsurface) in rx.iter().take(jobs).enumerate() {
             surface.merge(subsurface);
-            ::util::print_progress("Tile", start_time, (i + 1) as uint, jobs);
+            ::util::print_progress("Tile", start_time.clone(), (i + 1) as uint, jobs);
         }
         surface
     }
