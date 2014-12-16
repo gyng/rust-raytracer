@@ -10,6 +10,7 @@ use vec3::Vec3;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
+#[deriving(Clone)]
 pub struct Renderer {
     pub reflect_depth: uint,  // Maximum reflection recursions.
     pub refract_depth: uint,  // Maximum refraction recursions. A sphere takes up 2 recursions.
@@ -39,7 +40,7 @@ impl Renderer {
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
 
-            pool.execute(proc() {
+            pool.execute(move || {
                 child_tx.send(renderer.render_tile(camera_local.clone(),
                     scene_local.deref(), subsurface_factory));
             });

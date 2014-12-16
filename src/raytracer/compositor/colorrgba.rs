@@ -74,7 +74,7 @@ impl ColorRGBA<u8> {
 }
 
 impl<T: Add<T, T>> Add<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
-    fn add(&self, other: &ColorRGBA<T>) -> ColorRGBA<T> {
+    fn add(self, other: ColorRGBA<T>) -> ColorRGBA<T> {
         ColorRGBA {
             r: self.r + other.r,
             g: self.g + other.g,
@@ -85,7 +85,7 @@ impl<T: Add<T, T>> Add<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
 }
 
 impl<T: Sub<T, T>> Sub<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
-    fn sub(&self, other: &ColorRGBA<T>) -> ColorRGBA<T> {
+    fn sub(self, other: ColorRGBA<T>) -> ColorRGBA<T> {
         ColorRGBA {
             r: self.r - other.r,
             g: self.g - other.g,
@@ -96,7 +96,7 @@ impl<T: Sub<T, T>> Sub<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
 }
 
 impl<T: Mul<T, T>> Mul<ColorRGBA<T>, ColorRGBA<T>> for ColorRGBA<T> {
-    fn mul(&self, other: &ColorRGBA<T>) -> ColorRGBA<T> {
+    fn mul(self, other: ColorRGBA<T>) -> ColorRGBA<T> {
         ColorRGBA {
             r: self.r * other.r,
             g: self.g * other.g,

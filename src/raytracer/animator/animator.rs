@@ -36,7 +36,7 @@ impl Animator {
             sema.acquire();
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
-            spawn(proc() {
+            spawn(move || {
                 ::util::export::to_ppm(frame_data, shared_name[]);
                 child_sema.release();
             });

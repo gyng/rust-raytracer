@@ -364,7 +364,7 @@ impl cmp::PartialEq for Mat4 {
 }
 
 impl Add<Mat4, Mat4> for Mat4 {
-    fn add(&self, other: &Mat4) -> Mat4 {
+    fn add(self, other: Mat4) -> Mat4 {
         let mut out = Mat4 {
             m: [[0.0, 0.0, 0.0, 0.0],
                 [0.0, 0.0, 0.0, 0.0],
@@ -397,7 +397,7 @@ impl Add<Mat4, Mat4> for Mat4 {
 }
 
 impl Sub<Mat4, Mat4> for Mat4 {
-    fn sub(&self, other: &Mat4) -> Mat4 {
+    fn sub(self, other: Mat4) -> Mat4 {
         let mut out = Mat4 {
             m: [[0.0, 0.0, 0.0, 0.0],
                 [0.0, 0.0, 0.0, 0.0],
@@ -430,8 +430,8 @@ impl Sub<Mat4, Mat4> for Mat4 {
 }
 
 impl Mul<Mat4, Mat4> for Mat4 {
-    fn mul(&self, other: &Mat4) -> Mat4 {
-        Mat4::mult_m(self, other)
+    fn mul(self, other: Mat4) -> Mat4 {
+        Mat4::mult_m(&self, &other)
     }
 }
 
