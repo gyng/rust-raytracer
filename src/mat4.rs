@@ -524,7 +524,7 @@ fn test_equality() {
 #[test]
 fn test_inverse() {
     let i = Mat4::identity();
-    assert_eq!(i, i.inverse())
+    assert_eq!(i, i.inverse());
 
     let m = Mat4::new(
         1.0, 0.0, 1.0, 1.0,

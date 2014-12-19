@@ -65,11 +65,10 @@ impl Renderer {
 
         let mut tile = tile_factory.create();
 
-        let mut random_data = [0u64, ..64];
-        for i in range(0u, 64u) {
-            random_data[i] = task_rng().next_u64();
-        }
-        let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.clone());
+        let random_data: Vec<u64> = Vec::from_fn(64, |_| {
+            task_rng().next_u64()
+        });
+        let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.as_slice());
 
         for rel_y in range(0u, tile.height) {
             let abs_y = (camera.image_height as uint) - (tile.y_off + rel_y) - 1;

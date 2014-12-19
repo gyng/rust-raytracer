@@ -163,7 +163,7 @@ struct OctreeIterator<'a, T:'a> {
 
 
 impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    fn new<'a>(root: &'a Octree<Box<Prim+Send+Sync>>, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    fn new<'b>(root: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
         let prims = match root.prims {
             Some(ref prims) => prims,
             None => panic!("OctreeIterator must be constructed from an Octree root")
