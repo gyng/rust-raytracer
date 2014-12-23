@@ -8,3 +8,6 @@ authors = [
 
 [dependencies.time]
 git = "http://github.com/rust-lang/time"
+
+[dependencies.rustc-serialize]
+rustc-serialize = "0.1.1"

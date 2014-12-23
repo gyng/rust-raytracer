@@ -142,7 +142,7 @@ impl Mul<Vec3, Vec3> for Vec3 {
 }
 
 impl Neg<Vec3> for Vec3 {
-    fn neg(&self) -> Vec3 {
+    fn neg(self) -> Vec3 {
         Vec3 {
             x: -self.x,
             y: -self.y,

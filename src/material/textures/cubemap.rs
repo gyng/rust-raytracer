@@ -1,6 +1,7 @@
-use std::num::{Float, FloatMath};
 use material::textures::ImageTexture;
+use std::num::{Float, FloatMath};
 use std::sync::{Semaphore, Arc};
+use std::thread::Thread;
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -28,10 +29,10 @@ impl CubeMap {
             let task_tx = tx.clone();
             let filename = String::from_str(filenames[i].clone());
 
-            spawn(move || {
+            Thread::spawn(move || {
                 task_sema.acquire();
                 task_tx.send((i, ImageTexture::load(filename[])));
-            });
+            }).detach();
         }
 
         for _ in range(0u, 6) {

@@ -1,4 +1,4 @@
-use std::slice::Items;
+use std::slice::Iter;
 use std::num::{Float, FloatMath};
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
@@ -154,9 +154,9 @@ impl Octree<Box<Prim+Send+Sync>> {
 struct OctreeIterator<'a, T:'a> {
     prims: &'a Vec<T>,
     stack: Vec<&'a Octree<T>>,
-    cur_iter: Option<Items<'a, OctreeData>>,
+    cur_iter: Option<Iter<'a, OctreeData>>,
     ray: &'a Ray,
-    infinites: Items<'a, T>,
+    infinites: Iter<'a, T>,
     just_infinites: bool
 
 }

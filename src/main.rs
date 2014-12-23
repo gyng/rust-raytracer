@@ -3,7 +3,7 @@
 #![deny(unused_imports)]
 
 extern crate time;
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 
 use scene::{Camera, Scene};
 
@@ -11,8 +11,8 @@ use std::io::File;
 use std::io;
 use std::os;
 use std::sync::Arc;
-use serialize::json;
-use serialize::json::DecoderError::MissingFieldError;
+use rustc_serialize::json;
+use rustc_serialize::json::DecoderError::MissingFieldError;
 
 mod geometry;
 mod light;
@@ -29,7 +29,7 @@ struct ProgramArgs {
     config_file: String
 }
 
-#[deriving(Decodable, Encodable)]
+#[deriving(RustcDecodable, RustcEncodable)]
 struct SceneConfig<'a> {
     name: String,
     size: (int, int),

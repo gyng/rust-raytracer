@@ -1,5 +1,6 @@
 use std::io::{BufferedReader, File};
 use std::io::fs::PathExtensions;
+use std::str::StrExt;
 use material::materials::CookTorranceMaterial;
 use geometry::{Mesh, Prim};
 use geometry::prims::{Triangle, TriangleVertex};
@@ -40,23 +41,23 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
         match tokens[0][] {
             "v" => {
                 vertices.push(Vec3 {
-                    x: from_str::<f64>(tokens[1][]).unwrap(),
-                    y: from_str::<f64>(tokens[2][]).unwrap(),
-                    z: from_str::<f64>(tokens[3][]).unwrap()
+                    x: StrExt::parse::<f64>(tokens[1][]).unwrap(),
+                    y: StrExt::parse::<f64>(tokens[2][]).unwrap(),
+                    z: StrExt::parse::<f64>(tokens[3][]).unwrap()
                 });
             },
             "vt" => {
                 tex_coords.push(vec![
-                    from_str::<f64>(tokens[1][]).unwrap(),
-                    from_str::<f64>(tokens[2][]).unwrap()
+                    StrExt::parse::<f64>(tokens[1][]).unwrap(),
+                    StrExt::parse::<f64>(tokens[2][]).unwrap()
                 ]);
             },
             "vn" => {
                 let normal_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
-                    x: from_str::<f64>(tokens[1][]).unwrap() * normal_scale,
-                    y: from_str::<f64>(tokens[2][]).unwrap() * normal_scale,
-                    z: from_str::<f64>(tokens[3][]).unwrap() * normal_scale
+                    x: StrExt::parse::<f64>(tokens[1][]).unwrap() * normal_scale,
+                    y: StrExt::parse::<f64>(tokens[2][]).unwrap() * normal_scale,
+                    z: StrExt::parse::<f64>(tokens[3][]).unwrap() * normal_scale
                 });
             },
             "f" => {
@@ -64,7 +65,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                 let pairs: Vec<Vec<uint>> = tokens.tail().iter().map( |token| {
                     let str_tokens: Vec<&str> = token.as_slice().split('/').collect();
                     str_tokens.iter().map( |str_tok| {
-                        match from_str::<uint>(*str_tok) {
+                        match StrExt::parse::<uint>(*str_tok) {
                             Some(uint_tok) => uint_tok - 1,
                             None => !0 // No data available/not supplied
                         }
@@ -126,8 +127,8 @@ pub fn from_ppm(filename: &str) -> Surface {
     let mut tokens: Vec<&str> = tex[].words().collect();
 
     tokens.remove(0); // PPM type
-    let width  = from_str::<uint>(tokens.remove(0).unwrap()).unwrap();
-    let height = from_str::<uint>(tokens.remove(0).unwrap()).unwrap();
+    let width  = StrExt::parse::<uint>(tokens.remove(0).unwrap()).unwrap();
+    let height = StrExt::parse::<uint>(tokens.remove(0).unwrap()).unwrap();
     tokens.remove(0); // Max color value
 
     print!("Importing image texture {}", filename);
@@ -145,9 +146,9 @@ pub fn from_ppm(filename: &str) -> Surface {
         if x >= width || y >= height { break };
 
         surface[(x, y)] = ColorRGBA::new_rgb(
-            from_str::<u8>(chunk[0]).unwrap(),
-            from_str::<u8>(chunk[1]).unwrap(),
-            from_str::<u8>(chunk[2]).unwrap()
+            StrExt::parse::<u8>(chunk[0]).unwrap(),
+            StrExt::parse::<u8>(chunk[1]).unwrap(),
+            StrExt::parse::<u8>(chunk[2]).unwrap()
         );
     }
 

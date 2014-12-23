@@ -1,8 +1,9 @@
-use std::num::Float;
 use raytracer::animator::CameraKeyframe;
 use raytracer::Renderer;
 use scene::{Camera, Scene};
+use std::num::Float;
 use std::sync::{Arc, Semaphore};
+use std::thread::Thread;
 use vec3::Vec3;
 
 pub struct Animator {
@@ -36,10 +37,10 @@ impl Animator {
             sema.acquire();
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
-            spawn(move || {
+            Thread::spawn(move || {
                 ::util::export::to_ppm(frame_data, shared_name[]);
                 child_sema.release();
-            });
+            }).detach();
 
             ::util::print_progress("*** Frame", animate_start.clone(), frame_number + 1u, total_frames);
             println!("");
