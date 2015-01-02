@@ -1,4 +1,5 @@
 use std::cmp::min;
+use std::iter::repeat;
 
 use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
@@ -22,7 +23,7 @@ impl Surface {
             x_off: 0,
             y_off: 0,
             background: background,
-            buffer: Vec::from_elem(width * height, background)
+            buffer: repeat(background).take(width * height).collect()
         }
     }
 
@@ -34,7 +35,7 @@ impl Surface {
             x_off: x_off,
             y_off: y_off,
             background: background,
-            buffer: Vec::from_elem(width * height, background)
+            buffer: repeat(background).take(width * height).collect()
         }
     }
 

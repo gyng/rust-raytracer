@@ -1,10 +1,11 @@
-use std::rand::{task_rng, Rng, SeedableRng, Isaac64Rng};
+use std::iter::range;
+use std::num::FloatMath;
+use std::rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::TaskPool;
-use std::num::FloatMath;
+use light::Light;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
-use light::Light;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
@@ -65,9 +66,9 @@ impl Renderer {
 
         let mut tile = tile_factory.create();
 
-        let random_data: Vec<u64> = Vec::from_fn(64, |_| {
-            task_rng().next_u64()
-        });
+        let random_data: Vec<u64> = range(0u, 64u).map(|_| {
+            thread_rng().next_u64()
+        }).collect();
         let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.as_slice());
 
         for rel_y in range(0u, tile.height) {

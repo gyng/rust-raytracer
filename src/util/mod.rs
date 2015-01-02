@@ -1,3 +1,4 @@
+use std::iter::repeat;
 use std::num::Float;
 
 pub mod export;
@@ -26,7 +27,7 @@ pub fn print_progress(noun: &str, start_time: ::time::Timespec, done: uint, tota
 
 fn make_progress_bar(ratio: f64, length: uint) -> String {
     let filled = (ratio * length as f64).round() as uint;
-    let mut bar = ::std::string::String::from_char(filled, '|');
+    let mut bar: String = repeat('|').take(filled).collect();
 
     for _ in range(0, length - filled) {
         bar.push('-');

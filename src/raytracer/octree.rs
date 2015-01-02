@@ -1,5 +1,5 @@
-use std::slice::Iter;
 use std::num::{Float, FloatMath};
+use std::slice::Iter;
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};
 use raytracer::Ray;
@@ -93,10 +93,7 @@ impl<T> Octree<T> {
                 // Occupied leaf node and not max depth: subdivide node
                 if self.is_leaf() && self.data.len() == 1 {
                     self.subdivide();
-                    let old = match self.data.remove(0) {
-                        Some(x) => x,
-                        None => panic!("Trying to subdivide empty node in octree insertion")
-                    };
+                    let old = self.data.remove(0);
                     // Reinsert old node and then fall through to insert current object
                     self.insert(old.index, old.bbox);
                 }
@@ -128,7 +125,7 @@ impl Octree<Box<Prim+Send+Sync>> {
     #[allow(dead_code)]
     pub fn new_from_prims(prims: Vec<Box<Prim+Send+Sync>>) -> Octree<Box<Prim+Send+Sync>> {
         let bounds = get_bounds_from_objects(&prims);
-        let (finites, infinites) = prims.partition(|prim| prim.bounding().is_some());
+        let (finites, infinites): (Vec<Box<Prim+Send+Sync>>, Vec<Box<Prim+Send+Sync>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
         let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as int;

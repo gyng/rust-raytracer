@@ -1,4 +1,4 @@
-use std::rand::{task_rng, Rng};
+use std::rand::{thread_rng, Rng};
 use light::light::Light;
 use vec3::Vec3;
 
@@ -11,7 +11,7 @@ pub struct SphereLight {
 
 impl Light for SphereLight {
     fn position(&self) -> Vec3 {
-        let mut rng = task_rng();
+        let mut rng = thread_rng();
 
         let jitter = Vec3 {
             x: self.radius * (rng.gen::<f64>() - 0.5),

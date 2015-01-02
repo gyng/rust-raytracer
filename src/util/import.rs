@@ -127,8 +127,8 @@ pub fn from_ppm(filename: &str) -> Surface {
     let mut tokens: Vec<&str> = tex[].words().collect();
 
     tokens.remove(0); // PPM type
-    let width  = StrExt::parse::<uint>(tokens.remove(0).unwrap()).unwrap();
-    let height = StrExt::parse::<uint>(tokens.remove(0).unwrap()).unwrap();
+    let width  = StrExt::parse::<uint>(tokens.remove(0)).unwrap();
+    let height = StrExt::parse::<uint>(tokens.remove(0)).unwrap();
     tokens.remove(0); // Max color value
 
     print!("Importing image texture {}", filename);
