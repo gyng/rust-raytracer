@@ -4,7 +4,7 @@ rust-raytracer
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
-Early-stage raytracer in Rust.
+A raytracer in Rust.
 
 [Gallery](http://gyng.github.io/rust-raytracer-gallery/) <br>
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
@@ -30,7 +30,7 @@ Early-stage raytracer in Rust.
 
 3. Compile
 
-        rustc ./src/main.rs -o main
+        cargo build --release
 
 4. Edit `sample-config.json` if you wish to render a scene besides the default,
    or if you wish to tweak the renderer parameters
@@ -40,12 +40,10 @@ Early-stage raytracer in Rust.
 
         ./main sample-config.json
 
+6. Alternatively
 
-### With Cargo
+        cargo run --release sample-config.json
 
-1. Follow steps 1 and 2 above
-2. `cargo build` or `cargo run sample-config.json` in project root
-3. `cargo test` to run tests
 
 ### Useful commands
 
