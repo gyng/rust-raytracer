@@ -112,7 +112,9 @@ impl Vec3 {
     }
 }
 
-impl Add<Vec3, Vec3> for Vec3 {
+impl Add for Vec3 {
+    type Output = Vec3;
+
     fn add(self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.x + other.x,
@@ -122,7 +124,9 @@ impl Add<Vec3, Vec3> for Vec3 {
     }
 }
 
-impl Sub<Vec3, Vec3> for Vec3 {
+impl Sub for Vec3 {
+    type Output = Vec3;
+
     fn sub(self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.x - other.x,
@@ -132,7 +136,9 @@ impl Sub<Vec3, Vec3> for Vec3 {
     }
 }
 
-impl Mul<Vec3, Vec3> for Vec3 {
+impl Mul for Vec3 {
+    type Output = Vec3;
+
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3 {
             x: self.x * other.x,
@@ -142,7 +148,9 @@ impl Mul<Vec3, Vec3> for Vec3 {
     }
 }
 
-impl Neg<Vec3> for Vec3 {
+impl Neg for Vec3 {
+    type Output = Vec3;
+
     fn neg(self) -> Vec3 {
         Vec3 {
             x: -self.x,

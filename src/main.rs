@@ -1,3 +1,4 @@
+#![feature(associated_types)]
 #![feature(macro_rules)]
 #![feature(slicing_syntax)]
 #![feature(old_orphan_check)]

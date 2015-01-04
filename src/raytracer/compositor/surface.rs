@@ -100,7 +100,9 @@ impl Surface {
     }
 }
 
-impl Index<(uint, uint), ColorRGBA<u8>> for Surface {
+impl Index<(uint, uint)> for Surface {
+    type Output = ColorRGBA<u8>;
+
     fn index<'a>(&'a self, index: &(uint, uint)) -> &'a ColorRGBA<u8> {
         let (x, y) = *index;
         let idx = self.get_idx(x, y);
@@ -108,7 +110,9 @@ impl Index<(uint, uint), ColorRGBA<u8>> for Surface {
     }
 }
 
-impl IndexMut<(uint, uint), ColorRGBA<u8>> for Surface {
+impl IndexMut<(uint, uint)> for Surface {
+    type Output = ColorRGBA<u8>;
+
     fn index_mut<'a>(&'a mut self, index: &(uint, uint)) -> &'a mut ColorRGBA<u8> {
         let (x, y) = *index;
         let idx = self.get_idx(x, y);
@@ -152,7 +156,9 @@ impl SubsurfaceIterator {
     }
 }
 
-impl Iterator<SurfaceFactory> for SubsurfaceIterator {
+impl Iterator for SubsurfaceIterator {
+    type Item = SurfaceFactory;
+
     fn next(&mut self) -> Option<SurfaceFactory> {
         let tile = self.current_tile();
         self.incr_tile();

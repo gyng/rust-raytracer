@@ -37,7 +37,9 @@ impl SurfaceIterator {
     }
 }
 
-impl Iterator<SurfaceFactory> for SurfaceIterator {
+impl Iterator for SurfaceIterator {
+    type Item = SurfaceFactory;
+
     fn next(&mut self) -> Option<SurfaceFactory> {
         let tile = self.current_tile();
         self.incr_tile();
