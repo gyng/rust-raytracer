@@ -1,5 +1,6 @@
 use material::textures::ImageTexture;
 use std::num::{Float, FloatMath};
+use std::sync::mpsc::channel;
 use std::sync::{Semaphore, Arc};
 use std::thread::Thread;
 use vec3::Vec3;
@@ -36,7 +37,7 @@ impl CubeMap {
         }
 
         for _ in range(0u, 6) {
-            let (i, tex) = rx.recv();
+            let (i, tex) = rx.recv().unwrap();
             let p = faces.as_mut_ptr();
             unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as int), tex); }
             sema.release();

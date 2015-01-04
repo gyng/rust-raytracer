@@ -1,17 +1,19 @@
-use std::iter::range;
-use std::num::FloatMath;
-use std::rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
-use std::sync::Arc;
-use std::sync::TaskPool;
 use light::Light;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use scene::{Camera, Scene};
+use std::iter::range;
+use std::num::FloatMath;
+use std::ops::Deref;
+use std::rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
+use std::sync::Arc;
+use std::sync::mpsc::channel;
+use std::sync::TaskPool;
 use vec3::Vec3;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Renderer {
     pub reflect_depth: uint,  // Maximum reflection recursions.
     pub refract_depth: uint,  // Maximum refraction recursions. A sphere takes up 2 recursions.

@@ -14,7 +14,7 @@ pub struct Octree<T> {
     pub infinites: Vec<T> // for infinite prims (planes)
 }
 
-#[deriving(Clone, Copy)]
+#[derive(Clone, Copy)]
 struct OctreeData {
     pub bbox: Option<BBox>,
     pub index: uint

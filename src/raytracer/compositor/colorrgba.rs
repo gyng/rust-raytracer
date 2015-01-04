@@ -1,8 +1,9 @@
 use std::num::Float;
 use std::cmp::{min, max, Ord};
+use std::ops::{Add, Mul, Sub};
 use vec3::Vec3;
 
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct ColorRGBA<T> {
     pub r: T,
     pub g: T,

@@ -3,7 +3,7 @@ use raytracer::Ray;
 use raytracer::animator::CameraKeyframe;
 use vec3::Vec3;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Camera {
     pub position: Vec3,
     pub look_at: Vec3,

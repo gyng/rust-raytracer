@@ -2,7 +2,7 @@ use std::num::Float;
 use vec3::Vec3;
 use material::Texture;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct CheckerTexture {
     pub color1: Vec3,
     pub color2: Vec3,

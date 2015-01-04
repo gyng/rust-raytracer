@@ -2,7 +2,7 @@ use vec3::Vec3;
 use material::Texture;
 
 /// Maps the supplied (u, v) coordinate to the (red, green) color channels.
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct UVTexture;
 
 impl Texture for UVTexture {

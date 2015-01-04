@@ -6,13 +6,14 @@ use std::cmp;
 use std::f64::consts::PI;
 use std::fmt;
 use std::num::{Float, FloatMath};
+use std::ops::{Add, Mul, Sub};
 use vec3::Vec3;
 
 /// Stored in row-major, M_(i, j) = i-th row and j-th column
 /// 0-indexed
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Mat4 {
-    pub m: [[f64, ..4], ..4]
+    pub m: [[f64; 4]; 4]
 }
 
 /// We store the inverse matrix for convenience as per pbrt's recommendation

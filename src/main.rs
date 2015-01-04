@@ -1,5 +1,6 @@
 #![feature(macro_rules)]
 #![feature(slicing_syntax)]
+#![feature(old_orphan_check)]
 #![deny(unused_imports)]
 
 extern crate time;
@@ -29,7 +30,7 @@ struct ProgramArgs {
     config_file: String
 }
 
-#[deriving(RustcDecodable, RustcEncodable)]
+#[derive(RustcDecodable, RustcEncodable)]
 struct SceneConfig<'a> {
     name: String,
     size: (int, int),

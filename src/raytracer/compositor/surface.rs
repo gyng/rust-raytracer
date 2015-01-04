@@ -1,9 +1,10 @@
 use std::cmp::min;
 use std::iter::repeat;
+use std::ops::{Index, IndexMut};
 
 use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct Surface {
     pub width: uint,
     pub height: uint,

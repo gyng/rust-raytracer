@@ -1,8 +1,9 @@
-use std::fmt;
 use std::cmp;
+use std::fmt;
 use std::num::{Float, FloatMath};
+use std::ops::{Add, Mul, Neg, Sub};
 
-#[deriving(Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,

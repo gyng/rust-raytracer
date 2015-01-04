@@ -1,6 +1,6 @@
 use vec3::Vec3;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct CameraKeyframe {
     pub time: f64,
     pub position: Vec3,

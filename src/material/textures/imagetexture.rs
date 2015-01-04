@@ -7,7 +7,7 @@ use raytracer::compositor::Surface;
 use raytracer::compositor::ColorRGBA;
 
 /// Maps the supplied (u, v) coordinate to the image (s, t).
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct ImageTexture {
     pub image: Surface
 }

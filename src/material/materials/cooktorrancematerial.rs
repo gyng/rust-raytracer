@@ -4,7 +4,7 @@ use material::{Material, Texture};
 use vec3::Vec3;
 
 #[allow(dead_code)]
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct CookTorranceMaterial {
     pub k_a: f64,            // Ambient coefficient
     pub k_d: f64,            // Diffuse coefficient
