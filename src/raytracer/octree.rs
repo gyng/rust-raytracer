@@ -177,7 +177,9 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
 }
 
 
-impl<'a> Iterator<&'a Box<Prim+Send+Sync>> for OctreeIterator<'a, Box<Prim+Send+Sync>> {
+impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    type Item = &'a Box<Prim+Send+Sync>;
+
     fn next(&mut self) -> Option<&'a Box<Prim+Send+Sync>> {
         if self.just_infinites {
             return self.infinites.next();
