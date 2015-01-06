@@ -32,7 +32,7 @@ impl CubeMap {
 
             Thread::spawn(move || {
                 task_sema.acquire();
-                task_tx.send((i, ImageTexture::load(filename[])));
+                let _ = task_tx.send((i, ImageTexture::load(filename[])));
             }).detach();
         }
 

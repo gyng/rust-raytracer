@@ -44,7 +44,7 @@ impl Renderer {
             let camera_local = camera.clone();
 
             pool.execute(move || {
-                child_tx.send(renderer.render_tile(camera_local.clone(),
+                let _ = child_tx.send(renderer.render_tile(camera_local.clone(),
                     scene_local.deref(), subsurface_factory));
             });
         }
