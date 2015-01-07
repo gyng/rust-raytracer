@@ -1,5 +1,3 @@
-#![feature(associated_types)]
-#![feature(macro_rules)]
 #![feature(slicing_syntax)]
 #![deny(unused_imports)]
 

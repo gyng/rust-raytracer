@@ -1,4 +1,4 @@
-use std::num::{Float, FloatMath};
+use std::num::Float;
 use std::f64::consts::PI;
 use material::{Material, Texture};
 use vec3::Vec3;

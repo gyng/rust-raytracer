@@ -1,5 +1,5 @@
 use material::textures::ImageTexture;
-use std::num::{Float, FloatMath};
+use std::num::Float;
 use std::sync::mpsc::channel;
 use std::sync::{Semaphore, Arc};
 use std::thread::Thread;

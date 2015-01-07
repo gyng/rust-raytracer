@@ -1,6 +1,6 @@
 use std::cmp;
 use std::fmt;
-use std::num::{Float, FloatMath};
+use std::num::Float;
 use std::ops::{Add, Mul, Neg, Sub};
 
 #[derive(Clone, Copy)]

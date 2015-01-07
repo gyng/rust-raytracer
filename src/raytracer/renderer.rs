@@ -3,7 +3,7 @@ use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use scene::{Camera, Scene};
 use std::iter::range;
-use std::num::FloatMath;
+use std::num::Float;
 use std::ops::Deref;
 use std::rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
