@@ -1,7 +1,7 @@
 use std::cmp;
 use std::fmt;
 use std::num::Float;
-use std::ops::{Add, Mul, Neg, Sub};
+use std::ops::{Add, Mul, Div, Neg, Sub};
 
 #[derive(Clone, Copy)]
 pub struct Vec3 {
@@ -124,6 +124,18 @@ impl Add for Vec3 {
     }
 }
 
+impl Add<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn add(self, other: f64) -> Vec3 {
+        Vec3 {
+            x: self.x + other,
+            y: self.y + other,
+            z: self.z + other
+        }
+    }
+}
+
 impl Sub for Vec3 {
     type Output = Vec3;
 
@@ -136,6 +148,18 @@ impl Sub for Vec3 {
     }
 }
 
+impl Sub<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: f64) -> Vec3 {
+        Vec3 {
+            x: self.x - other,
+            y: self.y - other,
+            z: self.z - other
+        }
+    }
+}
+
 impl Mul for Vec3 {
     type Output = Vec3;
 
@@ -144,6 +168,42 @@ impl Mul for Vec3 {
             x: self.x * other.x,
             y: self.y * other.y,
             z: self.z * other.z
+        }
+    }
+}
+
+impl Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: f64) -> Vec3 {
+        Vec3 {
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other
+        }
+    }
+}
+
+impl Div for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x / other.x,
+            y: self.y / other.y,
+            z: self.z / other.z
+        }
+    }
+}
+
+impl Div<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, other: f64) -> Vec3 {
+        Vec3 {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other
         }
     }
 }
@@ -195,18 +255,51 @@ fn it_implements_show() {
 }
 
 #[test]
-fn it_does_vector_math() {
-    assert!(Vec3::zero() != Vec3::one());
-    assert!(Vec3::zero() == Vec3::zero());
+fn it_does_cross_product() {
+    assert_eq!(Vec3 { x: -1.0, y: 2.0, z: -1.0 }, Vec3 { x: 1.0, y: 2.0, z: 3.0 }.cross(&Vec3 { x: 2.0, y: 3.0, z: 4.0 }));
+}
+
+#[test]
+fn it_does_dot_product() {
+    assert_eq!(5.0, Vec3 { x: 0.0, y: 1.0, z: 2.0 }.dot(&Vec3 { x: 0.0, y: 1.0, z: 2.0 }));
+}
+
+#[test]
+fn it_computes_length_of_a_vec3() {
     assert_eq!(Vec3 { x: -1.0, y: -1.0, z: -1.0 }, -Vec3::one());
     assert_eq!(29.0_f64.sqrt(), Vec3 { x: 2.0, y: 3.0, z: 4.0 }.len());
     assert_eq!(1.0, Vec3 { x: 10.0, y: 0.0, z: 0.0 }.unit().len());
-    assert_eq!(5.0, Vec3 { x: 0.0, y: 1.0, z: 2.0 }.dot(&Vec3 { x: 0.0, y: 1.0, z: 2.0 }));
-    assert_eq!(Vec3 { x: -1.0, y: 2.0, z: -1.0 }, Vec3 { x: 1.0, y: 2.0, z: 3.0 }.cross(&Vec3 { x: 2.0, y: 3.0, z: 4.0 }));
-    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one().scale(2.0));
+}
+
+#[test]
+fn it_has_vec3vec3_equality() {
+    assert!(Vec3::zero() != Vec3::one());
+    assert!(Vec3::zero() == Vec3::zero());
+}
+
+#[test]
+fn it_adds_vec3s_and_scalars() {
     assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() + Vec3::one());
-    assert_eq!(Vec3 { x: 4.0, y: 9.0, z: -4.0 }, Vec3 { x: 2.0, y: 3.0, z: 4.0 } * Vec3 { x: 2.0, y: 3.0, z: -1.0 });
+    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() + 1.0);
+}
+
+#[test]
+fn it_subtracts_vec3s_and_scalars() {
     assert_eq!(Vec3::zero(), Vec3::one() - Vec3::one());
+    assert_eq!(Vec3::zero(), Vec3::one() - 1.0);
+}
+
+#[test]
+fn it_multiplies_vec3s_and_scalars_elementwise() {
+    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one().scale(2.0));
+    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() * 2.0);
+    assert_eq!(Vec3 { x: 4.0, y: 9.0, z: -4.0 }, Vec3 { x: 2.0, y: 3.0, z: 4.0 } * Vec3 { x: 2.0, y: 3.0, z: -1.0 });
+}
+
+#[test]
+fn it_divides_vec3s_and_scalars_elementwise() {
+    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::one() / 2.0);
+    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::one() / Vec3 { x: 2.0, y: 2.0, z: 2.0 });
 }
 
 #[test]
