@@ -229,3 +229,40 @@ impl Renderer {
         (r0 + ((1.0 - r0) * cos_term * cos_term * cos_term * cos_term * cos_term)).max(0.0).min(1.0)
     }
 }
+
+#[test]
+fn it_renders_the_background_of_an_empty_scene() {
+    let camera = Camera::new(
+        Vec3 { x: 0.0, y: 0.0, z: 0.0 },
+        Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+        Vec3 { x: 0.0, y: 0.0, z: 1.0 },
+        45.0,
+        32,
+        32
+    );
+
+    let test_scene = Scene {
+        lights: vec!(),
+        octree: ::raytracer::Octree::new_from_prims(vec!()),
+        background: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
+        skybox: None
+    };
+
+    let shared_scene = Arc::new(test_scene);
+
+    let renderer = Renderer {
+        reflect_depth: 1,
+        refract_depth: 1,
+        shadow_samples: 1,
+        pixel_samples: 1,
+        tasks: 2
+    };
+
+    let image_data = renderer.render(camera, shared_scene);
+
+    for color in image_data.buffer.iter() {
+        assert_eq!(color.r, 255);
+        assert_eq!(color.g, 0);
+        assert_eq!(color.b, 0);
+    }
+}
