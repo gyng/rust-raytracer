@@ -67,7 +67,7 @@ impl Mat4 {
         Mat4 { m: m }
     }
 
-    pub fn get(&self, row: uint, column: uint) -> f64 {
+    pub fn get(&self, row: usize, column: usize) -> f64 {
         self.m[row][column]
     }
 
@@ -285,9 +285,9 @@ impl Mat4 {
                 [0.0, 0.0, 0.0, 0.0]]
         };
 
-        for i in range(0u, 4) {
-            for j in range(0u, 4) {
-                for k in range(0u, 4) {
+        for i in range(0us, 4) {
+            for j in range(0us, 4) {
+                for k in range(0us, 4) {
                     out.m[i][j] += a.m[i][k] * b.m[k][j];
                 }
             }

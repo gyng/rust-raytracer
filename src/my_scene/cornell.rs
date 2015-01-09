@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // 10 primitives, octree is super inefficient for this scene
-pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
+pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: 50.0, y: 25.0, z: 150.0 },
         Vec3 { x: 50.0, y: 50.0, z: 50.0 },

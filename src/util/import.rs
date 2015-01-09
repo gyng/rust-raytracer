@@ -1,10 +1,10 @@
-use std::io::{BufferedReader, File};
-use std::io::fs::PathExtensions;
-use std::str::StrExt;
-use material::materials::CookTorranceMaterial;
-use geometry::{Mesh, Prim};
 use geometry::prims::{Triangle, TriangleVertex};
+use geometry::{Mesh, Prim};
+use material::materials::CookTorranceMaterial;
 use raytracer::compositor::{Surface, ColorRGBA};
+use std::io::fs::lstat;
+use std::io::{BufferedReader, File};
+use std::str::StrExt;
 use vec3::Vec3;
 
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
@@ -19,11 +19,11 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     let mut file = BufferedReader::new(fh);
 
     let start_time = ::time::get_time();
-    let print_every = 2048u;
+    let print_every = 2048us;
     let mut current_line = 0;
     let mut processed_bytes = 0;
 
-    let total_bytes = match path.stat() {
+    let total_bytes = match lstat(&path) {
         Ok(stat) => stat.size,
         Err(e) => panic!("Could not open file {} (file missing?) : {}", filename, e)
     };
@@ -38,35 +38,35 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
         let tokens: Vec<&str> = line[].words().collect();
         if tokens.len() == 0 { continue }
 
-        match tokens[0][] {
+        match tokens[0].as_slice() {
             "v" => {
                 vertices.push(Vec3 {
-                    x: StrExt::parse::<f64>(tokens[1][]).unwrap(),
-                    y: StrExt::parse::<f64>(tokens[2][]).unwrap(),
-                    z: StrExt::parse::<f64>(tokens[3][]).unwrap()
+                    x: StrExt::parse::<f64>(tokens[1].as_slice()).unwrap(),
+                    y: StrExt::parse::<f64>(tokens[2].as_slice()).unwrap(),
+                    z: StrExt::parse::<f64>(tokens[3].as_slice()).unwrap()
                 });
             },
             "vt" => {
                 tex_coords.push(vec![
-                    StrExt::parse::<f64>(tokens[1][]).unwrap(),
-                    StrExt::parse::<f64>(tokens[2][]).unwrap()
+                    StrExt::parse::<f64>(tokens[1].as_slice()).unwrap(),
+                    StrExt::parse::<f64>(tokens[2].as_slice()).unwrap()
                 ]);
             },
             "vn" => {
                 let normal_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
-                    x: StrExt::parse::<f64>(tokens[1][]).unwrap() * normal_scale,
-                    y: StrExt::parse::<f64>(tokens[2][]).unwrap() * normal_scale,
-                    z: StrExt::parse::<f64>(tokens[3][]).unwrap() * normal_scale
+                    x: StrExt::parse::<f64>(tokens[1].as_slice()).unwrap() * normal_scale,
+                    y: StrExt::parse::<f64>(tokens[2].as_slice()).unwrap() * normal_scale,
+                    z: StrExt::parse::<f64>(tokens[3].as_slice()).unwrap() * normal_scale
                 });
             },
             "f" => {
                 // ["f", "1/2/3", "2/2/2", "12//4"] => [[1, 2, 3], [2, 2, 2], [12, -1u, 4]]
-                let pairs: Vec<Vec<uint>> = tokens.tail().iter().map( |token| {
+                let pairs: Vec<Vec<usize>> = tokens.tail().iter().map( |token| {
                     let str_tokens: Vec<&str> = token.as_slice().split('/').collect();
                     str_tokens.iter().map( |str_tok| {
-                        match StrExt::parse::<uint>(*str_tok) {
-                            Some(uint_tok) => uint_tok - 1,
+                        match StrExt::parse::<usize>(*str_tok) {
+                            Some(usize_tok) => usize_tok - 1,
                             None => !0 // No data available/not supplied
                         }
                     }).collect()
@@ -103,12 +103,12 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
         current_line += 1;
         processed_bytes += line.as_bytes().len();
         if current_line % print_every == 0 {
-            ::util::print_progress("Bytes", start_time.clone(), processed_bytes, total_bytes as uint);
+            ::util::print_progress("Bytes", start_time.clone(), processed_bytes, total_bytes as usize);
         }
     }
 
     // Cheat the progress meter
-    ::util::print_progress("Bytes", start_time, total_bytes as uint, total_bytes as uint);
+    ::util::print_progress("Bytes", start_time, total_bytes as usize, total_bytes as usize);
 
     Mesh {
         triangles: triangles
@@ -127,8 +127,8 @@ pub fn from_ppm(filename: &str) -> Surface {
     let mut tokens: Vec<&str> = tex[].words().collect();
 
     tokens.remove(0); // PPM type
-    let width  = StrExt::parse::<uint>(tokens.remove(0)).unwrap();
-    let height = StrExt::parse::<uint>(tokens.remove(0)).unwrap();
+    let width  = StrExt::parse::<usize>(tokens.remove(0)).unwrap();
+    let height = StrExt::parse::<usize>(tokens.remove(0)).unwrap();
     tokens.remove(0); // Max color value
 
     print!("Importing image texture {}", filename);
@@ -136,7 +136,7 @@ pub fn from_ppm(filename: &str) -> Surface {
 
     let mut surface = Surface::new(width, height, ColorRGBA::new_rgb(0, 0, 0));
 
-    let mut i = 0u;
+    let mut i = 0us;
 
     for chunk in tokens[].chunks(3) {
         let x = i % width;

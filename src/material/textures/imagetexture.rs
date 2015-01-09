@@ -32,8 +32,8 @@ impl Texture for ImageTexture {
         let s = u % 1.0 * (self.image.width as f64 - 1.0);
         let t = v % 1.0 * (self.image.height as f64 - 1.0);
 
-        let x = s.floor() as uint;
-        let y = t.floor() as uint;
+        let x = s.floor() as usize;
+        let y = t.floor() as usize;
         let u_ratio = s - x as f64;
         let v_ratio = t - y as f64;
         let u_opposite = 1.0 - u_ratio;

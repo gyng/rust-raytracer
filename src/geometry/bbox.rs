@@ -192,7 +192,7 @@ impl BBox {
     }
 
     /// Returns which axis is the widest. 0: x, 1: y, 2: z
-    pub fn max_extent(&self) -> uint {
+    pub fn max_extent(&self) -> usize {
         let diag = self.max - self.min;
         if diag.x > diag.y && diag.x > diag.z {
             0
@@ -412,9 +412,9 @@ fn it_returns_max_extent() {
         max: Vec3 { x: 1.0, y: 1.0, z: 2.0 }
     };
 
-    assert_eq!(0u, x.max_extent());
-    assert_eq!(1u, y.max_extent());
-    assert_eq!(2u, z.max_extent());
+    assert_eq!(0us, x.max_extent());
+    assert_eq!(1us, y.max_extent());
+    assert_eq!(2us, z.max_extent());
 }
 
 #[test]

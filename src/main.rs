@@ -1,4 +1,5 @@
-#![feature(slicing_syntax)]
+#![feature(box_syntax, slicing_syntax)]
+#![allow(unstable)]
 #![deny(unused_imports)]
 
 extern crate time;
@@ -31,21 +32,21 @@ struct ProgramArgs {
 #[derive(RustcDecodable, RustcEncodable)]
 struct SceneConfig<'a> {
     name: String,
-    size: (int, int),
+    size: (isize, isize),
     fov: f64,
-    reflect_depth: uint,
-    refract_depth: uint,
-    shadow_samples: uint,
-    pixel_samples: uint,
+    reflect_depth: usize,
+    refract_depth: usize,
+    shadow_samples: usize,
+    pixel_samples: usize,
     output_file: String,
     animating: bool,
     fps: f64,
     time_slice: (f64, f64),
-    starting_frame_number: uint
+    starting_frame_number: usize
 }
 
 fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
-    let (program_name, rest) = match args[] {
+    let (program_name, rest) = match args.as_slice() {
         // I wouldn't expect this in the wild
         [] => panic!("Args do not even include a program name"),
         [ref program_name, rest..] => (
@@ -55,9 +56,12 @@ fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
     };
     match rest.len() {
         0 => Err(format!("Usage: {} scene_config.json", program_name)),
-        1 => Ok(ProgramArgs {
-            config_file: rest[0].clone()
-        }),
+        1 => {
+            let filestring: String = rest[0].clone();
+            Ok(ProgramArgs {
+                config_file: filestring
+            })
+        },
         _ => Err(format!("Usage: {} scene_config.json", program_name)),
     }
 }
@@ -70,7 +74,7 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     // Cameras, scenes created in ./my_scene.rs
     // Scenes with an octree supplied (see my_scene.rs) will use it.
     // Lower the render quality (especially shadow_samples) for complex scenes
-    return match scene_name[] {
+    return match scene_name.as_slice() {
         "box" => {
             // Box. Simplest scene with 9 primitives, no octree
             let camera = my_scene::cornell::get_camera(image_width, image_height, fov);
@@ -199,7 +203,7 @@ fn main() {
         }
     };
 
-    let config: SceneConfig = match json::decode(json_data[]) {
+    let config: SceneConfig = match json::decode(json_data.as_slice()) {
         Ok(data) => data,
         Err(err) => {
             let mut stderr = io::stderr();
@@ -208,7 +212,7 @@ fn main() {
                     format!("parse failure, missing field ``{}''\n", field_name)
                 },
                 _ => {
-                    format!("parse failure: {}", err)
+                    format!("parse failure: {:?}", err)
                 }
             };
             assert!(stderr.write(msg.as_bytes()).is_ok());
@@ -259,7 +263,7 @@ fn main() {
         println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
                  std::os::num_cpus(), animator.fps, animator.animate_from, animator.animate_to,
                  animator.starting_frame_number);
-        animator.animate(camera, shared_scene, config.output_file[]);
+        animator.animate(camera, shared_scene, config.output_file.as_slice());
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)",
                  render_time, render_time - scene_time);
@@ -271,12 +275,12 @@ fn main() {
         println!("Render done at {} ({}s)...\nWriting file...",
                  render_time, render_time - scene_time);
 
-        let out_file = format!("{}{}", config.output_file[], ".ppm");
-        util::export::to_ppm(image_data, out_file[]);
+        let out_file = format!("{}{}", config.output_file, ".ppm");
+        util::export::to_ppm(image_data, out_file.as_slice());
         let export_time = ::time::get_time().sec;
 
         println!("Write done: {} ({}s). Written to {}\nTotal: {}s",
                  export_time, export_time - render_time,
-                 config.output_file[], export_time - start_time);
+                 config.output_file, export_time - start_time);
     }
 }

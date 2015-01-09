@@ -26,7 +26,7 @@ fn clamp<T: Ord>(value: T, min_value: T, max_value: T) -> T {
     max(min(value, max_value), min_value)
 }
 
-// Maybe later?: ColorRGBA<f64>.quantize() -> ColorRGBA<uint>
+// Maybe later?: ColorRGBA<f64>.quantize() -> ColorRGBA<usize>
 // How do we implement this more generally so that we may have ColorRGBA<f64>
 impl ColorRGBA<u8> {
     #[inline]
@@ -54,13 +54,13 @@ impl ColorRGBA<u8> {
     }
 
     pub fn new_rgb_clamped(r: f64, g: f64, b: f64) -> ColorRGBA<u8> {
-        let min_color: int = ColorRGBA::min_value() as int;
-        let max_color: int = ColorRGBA::max_value() as int;
+        let min_color: isize = ColorRGBA::min_value() as isize;
+        let max_color: isize = ColorRGBA::max_value() as isize;
 
         ColorRGBA::new_rgb(
-            clamp((r * max_color as f64).round() as int, min_color, max_color) as u8,
-            clamp((g * max_color as f64).round() as int, min_color, max_color) as u8,
-            clamp((b * max_color as f64).round() as int, min_color, max_color) as u8)
+            clamp((r * max_color as f64).round() as isize, min_color, max_color) as u8,
+            clamp((g * max_color as f64).round() as isize, min_color, max_color) as u8,
+            clamp((b * max_color as f64).round() as isize, min_color, max_color) as u8)
     }
 
     // Here until we have vec operations (add, mul) for color

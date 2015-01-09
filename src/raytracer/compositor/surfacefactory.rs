@@ -2,16 +2,16 @@ use raytracer::compositor::{ColorRGBA, Surface};
 
 
 pub struct SurfaceFactory {
-    pub width: uint,
-    pub height: uint,
-    pub x_off: uint,
-    pub y_off: uint,
+    pub width: usize,
+    pub height: usize,
+    pub x_off: usize,
+    pub y_off: usize,
     pub background: ColorRGBA<u8>
 }
 
 
 impl SurfaceFactory {
-    pub fn new(width: uint, height: uint, x_off: uint, y_off: uint,
+    pub fn new(width: usize, height: usize, x_off: usize, y_off: usize,
                background: ColorRGBA<u8>) -> SurfaceFactory {
         SurfaceFactory {
             width: width,

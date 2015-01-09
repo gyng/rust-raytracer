@@ -15,18 +15,18 @@ pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
 #[derive(Clone)]
 pub struct Renderer {
-    pub reflect_depth: uint,  // Maximum reflection recursions.
-    pub refract_depth: uint,  // Maximum refraction recursions. A sphere takes up 2 recursions.
-    pub shadow_samples: uint, // Number of samples for soft shadows and area lights.
-    pub pixel_samples: uint,  // The square of this is the number of samples per pixel.
-    pub tasks: uint           // Minimum number of tasks to spawn.
+    pub reflect_depth: usize,  // Maximum reflection recursions.
+    pub refract_depth: usize,  // Maximum refraction recursions. A sphere takes up 2 recursions.
+    pub shadow_samples: usize, // Number of samples for soft shadows and area lights.
+    pub pixel_samples: usize,  // The square of this is the number of samples per pixel.
+    pub tasks: usize           // Minimum number of tasks to spawn.
 }
 
 impl Renderer {
     pub fn render(&self, camera: Camera, shared_scene: Arc<Scene>) -> Surface {
 
-        let mut surface = Surface::new(camera.image_width as uint,
-                                       camera.image_height as uint,
+        let mut surface = Surface::new(camera.image_width as usize,
+                                       camera.image_height as usize,
                                        ColorRGBA::new_rgb(0, 0, 0));
 
         let pool = TaskPool::new(self.tasks);
@@ -53,7 +53,7 @@ impl Renderer {
 
         for (i, subsurface) in rx.iter().take(jobs).enumerate() {
             surface.merge(subsurface);
-            ::util::print_progress("Tile", start_time.clone(), (i + 1) as uint, jobs);
+            ::util::print_progress("Tile", start_time.clone(), (i + 1) as usize, jobs);
         }
         surface
     }
@@ -68,14 +68,14 @@ impl Renderer {
 
         let mut tile = tile_factory.create();
 
-        let random_data: Vec<u64> = range(0u, 64u).map(|_| {
+        let random_data: Vec<u64> = range(0us, 64us).map(|_| {
             thread_rng().next_u64()
         }).collect();
         let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.as_slice());
 
-        for rel_y in range(0u, tile.height) {
-            let abs_y = (camera.image_height as uint) - (tile.y_off + rel_y) - 1;
-            for rel_x in range(0u, tile.width) {
+        for rel_y in range(0us, tile.height) {
+            let abs_y = (camera.image_height as usize) - (tile.y_off + rel_y) - 1;
+            for rel_x in range(0us, tile.width) {
                 let abs_x = tile.x_off + rel_x;
 
                 // Supersampling, jitter algorithm
@@ -107,8 +107,8 @@ impl Renderer {
         box tile
     }
 
-    fn trace(scene: &Scene, ray: &Ray, shadow_samples: uint,
-             reflect_depth: uint, refract_depth: uint, inside: bool) -> Vec3 {
+    fn trace(scene: &Scene, ray: &Ray, shadow_samples: usize,
+             reflect_depth: usize, refract_depth: usize, inside: bool) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
@@ -169,7 +169,7 @@ impl Renderer {
     }
 
     fn shadow_intensity(scene: &Scene, hit: &Intersection,
-                        light: &Box<Light+Send+Sync>, shadow_samples: uint) -> Vec3 {
+                        light: &Box<Light+Send+Sync>, shadow_samples: usize) -> Vec3 {
 
         if shadow_samples <= 0 { return Vec3::one() }
 

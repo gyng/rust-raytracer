@@ -10,7 +10,7 @@ pub struct Animator {
     pub fps: f64,
     pub animate_from: f64, // Number of frames is rounded down to nearest frame
     pub animate_to: f64,
-    pub starting_frame_number: uint, // For filename
+    pub starting_frame_number: usize, // For filename
     pub renderer: Renderer
 }
 
@@ -21,7 +21,7 @@ impl Animator {
     pub fn animate(&self, camera: Camera, shared_scene: Arc<Scene>, filename: &str) {
         let animate_start = ::time::get_time();
         let length = self.animate_to - self.animate_from;
-        let total_frames = (self.fps * length).floor() as uint;
+        let total_frames = (self.fps * length).floor() as usize;
 
         let sema = Arc::new(Semaphore::new(1));
 
@@ -38,11 +38,11 @@ impl Animator {
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
             Thread::spawn(move || {
-                ::util::export::to_ppm(frame_data, shared_name[]);
+                ::util::export::to_ppm(frame_data, shared_name.as_slice());
                 child_sema.release();
-            }).detach();
+            });
 
-            ::util::print_progress("*** Frame", animate_start.clone(), frame_number + 1u, total_frames);
+            ::util::print_progress("*** Frame", animate_start.clone(), frame_number + 1us, total_frames);
             println!("");
         }
 

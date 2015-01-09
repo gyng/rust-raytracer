@@ -17,7 +17,7 @@ use vec3::Vec3;
 // You can still manually tweak it if you wish (try reducing k_sg for metals)
 
 // 2500 polys, marginal improvement from an octree
-pub fn get_teapot_camera(image_width: int, image_height: int, fov: f64) -> Camera {
+pub fn get_teapot_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: -0.2, y: 1.0, z: 2.0 },
         Vec3 { x: 0.0, y: 0.6, z: 0.0 },

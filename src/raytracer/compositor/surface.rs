@@ -6,10 +6,10 @@ use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
 #[derive(Clone)]
 pub struct Surface {
-    pub width: uint,
-    pub height: uint,
-    pub x_off: uint,
-    pub y_off: uint,
+    pub width: usize,
+    pub height: usize,
+    pub x_off: usize,
+    pub y_off: usize,
     pub background: ColorRGBA<u8>,
     pub buffer: Vec<ColorRGBA<u8>>,
 }
@@ -17,7 +17,7 @@ pub struct Surface {
 
 #[allow(dead_code)]
 impl Surface {
-    pub fn new(width: uint, height: uint, background: ColorRGBA<u8>) -> Surface {
+    pub fn new(width: usize, height: usize, background: ColorRGBA<u8>) -> Surface {
         Surface {
             width: width,
             height: height,
@@ -28,7 +28,7 @@ impl Surface {
         }
     }
 
-    pub fn with_offset(width: uint, height: uint, x_off: uint, y_off: uint,
+    pub fn with_offset(width: usize, height: usize, x_off: usize, y_off: usize,
                        background: ColorRGBA<u8>) -> Surface {
         Surface {
             width: width,
@@ -40,7 +40,7 @@ impl Surface {
         }
     }
 
-    pub fn divide(&self, tile_width: uint, tile_height: uint) -> SubsurfaceIterator {
+    pub fn divide(&self, tile_width: usize, tile_height: usize) -> SubsurfaceIterator {
         SubsurfaceIterator {
             parent_width: self.width,
             parent_height: self.height,
@@ -52,7 +52,7 @@ impl Surface {
         }
     }
 
-    pub fn overrender_size(&self, tile_width: uint, tile_height: uint) -> (uint, uint) {
+    pub fn overrender_size(&self, tile_width: usize, tile_height: usize) -> (usize, usize) {
         let mut width = self.width;
         let width_partial_tile = width % tile_width;
         if width_partial_tile > 0 {
@@ -71,8 +71,8 @@ impl Surface {
     }
 
     pub fn merge(&mut self, tile: Box<Surface>) {
-        let x_len: uint = min(tile.width, self.width - tile.x_off);
-        let y_len: uint = min(tile.height, self.height - tile.y_off);
+        let x_len: usize = min(tile.width, self.width - tile.x_off);
+        let y_len: usize = min(tile.height, self.height - tile.y_off);
 
         for src_y in range(0, y_len) {
             let dst_y = tile.y_off + src_y;
@@ -84,12 +84,12 @@ impl Surface {
     }
 
     #[inline]
-    pub fn pixel_count(&self) -> uint {
+    pub fn pixel_count(&self) -> usize {
         self.buffer.len()
     }
 
     #[inline]
-    fn get_idx(&self, x: uint, y: uint) -> uint {
+    fn get_idx(&self, x: usize, y: usize) -> usize {
         if self.width <= x {
             panic!("`x` out of bounds (0 <= {} < {}", x, self.width);
         }
@@ -100,20 +100,20 @@ impl Surface {
     }
 }
 
-impl Index<(uint, uint)> for Surface {
+impl Index<(usize, usize)> for Surface {
     type Output = ColorRGBA<u8>;
 
-    fn index<'a>(&'a self, index: &(uint, uint)) -> &'a ColorRGBA<u8> {
+    fn index<'a>(&'a self, index: &(usize, usize)) -> &'a ColorRGBA<u8> {
         let (x, y) = *index;
         let idx = self.get_idx(x, y);
         &self.buffer[idx]
     }
 }
 
-impl IndexMut<(uint, uint)> for Surface {
+impl IndexMut<(usize, usize)> for Surface {
     type Output = ColorRGBA<u8>;
 
-    fn index_mut<'a>(&'a mut self, index: &(uint, uint)) -> &'a mut ColorRGBA<u8> {
+    fn index_mut<'a>(&'a mut self, index: &(usize, usize)) -> &'a mut ColorRGBA<u8> {
         let (x, y) = *index;
         let idx = self.get_idx(x, y);
         &mut self.buffer[idx]
@@ -121,12 +121,12 @@ impl IndexMut<(uint, uint)> for Surface {
 }
 
 struct SubsurfaceIterator {
-    x_delta: uint,
-    x_off: uint,
-    y_delta: uint,
-    y_off: uint,
-    parent_width: uint,
-    parent_height: uint,
+    x_delta: usize,
+    x_off: usize,
+    y_delta: usize,
+    y_off: usize,
+    parent_width: usize,
+    parent_height: usize,
     background: ColorRGBA<u8>,
 }
 

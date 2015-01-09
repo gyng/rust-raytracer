@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // ~28000 triangles, complex scene with 2 lights
-pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
+pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: 800.0, y: 30.0, z: 90.0 },
         Vec3 { x: -500.0, y: 1000.0, z: -100.0 },

@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // Fresnel test scene
-pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
+pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     let height = 50.0;
 
     Camera::new(
@@ -26,7 +26,7 @@ pub fn get_camera(image_width: int, image_height: int, fov: f64) -> Camera {
     )
 }
 
-pub fn get_animation_camera(image_width: int, image_height: int, fov: f64) -> Camera {
+pub fn get_animation_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     // State at time t=0
     // A keyframe at time t=0 is automatically created when insert_keyframes is called
     let camera = Camera::new_with_keyframes(

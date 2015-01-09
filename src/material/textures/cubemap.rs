@@ -23,23 +23,23 @@ impl CubeMap {
         unsafe { faces.set_len(6); }
 
         let (tx, rx) = channel();
-        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as int));
+        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as isize));
 
-        for i in range(0u, 6) {
+        for i in range(0us, 6) {
             let task_sema = sema.clone();
             let task_tx = tx.clone();
             let filename = String::from_str(filenames[i].clone());
 
             Thread::spawn(move || {
                 task_sema.acquire();
-                let _ = task_tx.send((i, ImageTexture::load(filename[])));
-            }).detach();
+                let _ = task_tx.send((i, ImageTexture::load(filename.as_slice())));
+            });
         }
 
-        for _ in range(0u, 6) {
+        for _ in range(0us, 6) {
             let (i, tex) = rx.recv().unwrap();
             let p = faces.as_mut_ptr();
-            unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as int), tex); }
+            unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as isize), tex); }
             sema.release();
         }
 

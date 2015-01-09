@@ -8,7 +8,7 @@ use vec3::Vec3;
 pub struct Octree<T> {
     pub prims: Option<Vec<T>>,
     pub bbox: BBox,
-    pub depth: int,
+    pub depth: isize,
     pub children: Vec<Octree<T>>,
     pub data: Vec<OctreeData>,
     pub infinites: Vec<T> // for infinite prims (planes)
@@ -17,7 +17,7 @@ pub struct Octree<T> {
 #[derive(Clone, Copy)]
 struct OctreeData {
     pub bbox: Option<BBox>,
-    pub index: uint
+    pub index: usize
 }
 
 
@@ -33,7 +33,7 @@ impl OctreeData {
 
 impl<T> Octree<T> {
     #[allow(dead_code)]
-    pub fn new(bbox: BBox, depth: int) -> Octree<T> {
+    pub fn new(bbox: BBox, depth: isize) -> Octree<T> {
         let vec_children: Vec<Octree<T>> = Vec::new();
         let vec_data: Vec<OctreeData> = Vec::new();
         let vec_infinite_data: Vec<T> = Vec::new();
@@ -49,9 +49,9 @@ impl<T> Octree<T> {
     }
 
     fn subdivide(&mut self) {
-        for x in range(0i, 2i) {
-            for y in range(0i, 2i) {
-                for z in range(0i, 2i) {
+        for x in range(0is, 2is) {
+            for y in range(0is, 2is) {
+                for z in range(0is, 2is) {
                     let len = self.bbox.len();
 
                     let child_bbox = BBox {
@@ -74,7 +74,7 @@ impl<T> Octree<T> {
     }
 
     #[allow(dead_code)]
-    pub fn insert(&mut self, index: uint, object_bbox: Option<BBox>) -> () {
+    pub fn insert(&mut self, index: usize, object_bbox: Option<BBox>) -> () {
         match object_bbox {
             // Finite object
             Some(object_bbox) => {
@@ -128,7 +128,7 @@ impl Octree<Box<Prim+Send+Sync>> {
         let (finites, infinites): (Vec<Box<Prim+Send+Sync>>, Vec<Box<Prim+Send+Sync>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
-        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as int;
+        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as isize;
 
         println!("Octree maximum depth {}", depth);
         let mut octree = Octree::new(bounds, depth);
