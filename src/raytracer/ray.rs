@@ -70,7 +70,7 @@ impl Ray {
 
 #[test]
 fn it_gets_the_nearest_hit() {
-    let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
+    let lights: Vec<Box<Light+Send+Sync>> = Vec::new();
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let mat = FlatMaterial { color: Vec3::one() };

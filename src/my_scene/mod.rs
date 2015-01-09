@@ -1,3 +1,5 @@
+#![cfg_attr(test, allow(dead_code))]
+
 pub mod bunny;
 pub mod cornell;
 pub mod cow;
