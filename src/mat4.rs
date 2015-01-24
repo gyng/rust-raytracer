@@ -442,7 +442,7 @@ impl Mul for Mat4 {
     }
 }
 
-impl fmt::Show for Mat4 {
+impl fmt::Debug for Mat4 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // 46 spaces in between
         write!(f,

@@ -230,7 +230,7 @@ impl cmp::PartialEq for Vec3 {
     }
 }
 
-impl fmt::Show for Vec3 {
+impl fmt::Debug for Vec3 {
     fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
@@ -247,7 +247,7 @@ macro_rules! vec3 {
 }
 
 #[test]
-fn it_implements_show() {
+fn it_implements_debug() {
     let vec = Vec3 { x: 0.0, y: 1.0, z: 1.3 };
     let formatted_string = format!("{:?}", vec);
     let expected_string = "(0, 1, 1.3)";
