@@ -1,4 +1,4 @@
-use std::io::{File, Truncate, Write};
+use std::old_io::{File, Truncate, Write};
 use raytracer::compositor::{Surface, ColorRGBA};
 
 #[allow(unused_must_use)]
@@ -13,8 +13,8 @@ pub fn to_ppm(surface: Surface, filename: &str) {
         Err(e) => panic!("File error: {}", e),
     };
 
-    f.write(header.as_bytes());
+    f.write_all(header.as_bytes());
     for pixel in surface.buffer.iter() {
-        f.write(format!("{} {} {} ", pixel.r, pixel.g, pixel.b).as_bytes());
+        f.write_all(format!("{} {} {} ", pixel.r, pixel.g, pixel.b).as_bytes());
     }
 }

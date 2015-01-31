@@ -1,5 +1,4 @@
-#![feature(box_syntax, slicing_syntax)]
-#![allow(unstable)]
+#![feature(box_syntax, collections, core, io, os, path, rand, slicing_syntax, std_misc)]
 #![deny(unused_imports)]
 
 extern crate time;
@@ -7,8 +6,8 @@ extern crate "rustc-serialize" as rustc_serialize;
 
 use scene::{Camera, Scene};
 
-use std::io::File;
-use std::io;
+use std::old_io::File;
+use std::old_io;
 use std::os;
 use std::sync::Arc;
 use rustc_serialize::json;
@@ -177,8 +176,8 @@ fn main() {
         Ok(program_args) => program_args,
         Err(mut error_str) => {
             error_str.push_str("\n");
-            let mut stderr = io::stderr();
-            assert!(stderr.write(error_str.as_bytes()).is_ok());
+            let mut stderr = old_io::stderr();
+            assert!(stderr.write_all(error_str.as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -187,8 +186,8 @@ fn main() {
     let mut file_handle = match File::open(&config_path) {
         Ok(file) => file,
         Err(err) => {
-            let mut stderr = io::stderr();
-            assert!(stderr.write(format!("{}\n", err).as_bytes()).is_ok());
+            let mut stderr = old_io::stderr();
+            assert!(stderr.write_all(format!("{}\n", err).as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -196,8 +195,8 @@ fn main() {
     let json_data = match file_handle.read_to_string() {
         Ok(data) => data,
         Err(err) => {
-            let mut stderr = io::stderr();
-            assert!(stderr.write(format!("{}\n", err).as_bytes()).is_ok());
+            let mut stderr = old_io::stderr();
+            assert!(stderr.write_all(format!("{}\n", err).as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -206,7 +205,7 @@ fn main() {
     let config: SceneConfig = match json::decode(json_data.as_slice()) {
         Ok(data) => data,
         Err(err) => {
-            let mut stderr = io::stderr();
+            let mut stderr = old_io::stderr();
             let msg = match err {
                 MissingFieldError(field_name) => {
                     format!("parse failure, missing field ``{}''\n", field_name)
@@ -215,7 +214,7 @@ fn main() {
                     format!("parse failure: {:?}", err)
                 }
             };
-            assert!(stderr.write(msg.as_bytes()).is_ok());
+            assert!(stderr.write_all(msg.as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }
@@ -227,9 +226,9 @@ fn main() {
     let (camera, scene) = match scenepair {
         Some(pair) => pair,
         None => {
-            let mut stderr = io::stderr();
+            let mut stderr = old_io::stderr();
             let msg = format!("unknown scene ``{}''\n", config.name);
-            assert!(stderr.write(msg.as_bytes()).is_ok());
+            assert!(stderr.write_all(msg.as_bytes()).is_ok());
             os::set_exit_status(1);
             return
         }

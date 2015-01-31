@@ -2,8 +2,8 @@ use geometry::prims::{Triangle, TriangleVertex};
 use geometry::{Mesh, Prim};
 use material::materials::CookTorranceMaterial;
 use raytracer::compositor::{Surface, ColorRGBA};
-use std::io::fs::lstat;
-use std::io::{BufferedReader, File};
+use std::old_io::fs::lstat;
+use std::old_io::{BufferedReader, File};
 use std::str::StrExt;
 use vec3::Vec3;
 
