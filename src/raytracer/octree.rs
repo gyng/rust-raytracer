@@ -185,7 +185,7 @@ impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
             return self.infinites.next();
         }
         loop {
-            let (new_cur_iter, val) = match self.cur_iter {
+            let (new_cur_iter, val) = match self.cur_iter.take() {
                 Some(mut cur_iter) => match cur_iter.next() {
                     Some(val) => (Some(cur_iter), Some(val)),
                     None => (None, None)

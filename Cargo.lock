@@ -2,7 +2,7 @@
 name = "rust-raytracer"
 version = "0.1.0"
 dependencies = [
- "rustc-serialize 0.2.10 (git+http://github.com/rust-lang/rustc-serialize)",
+ "rustc-serialize 0.2.11 (git+http://github.com/rust-lang/rustc-serialize)",
  "time 0.1.15 (git+http://github.com/rust-lang/time)",
 ]
 
@@ -18,13 +18,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.10"
-source = "git+http://github.com/rust-lang/rustc-serialize#c9972c4b163367fa02e74e20854683e14fb336d7"
+version = "0.2.11"
+source = "git+http://github.com/rust-lang/rustc-serialize#a281f34a5f231b1bb6ea95944c60370d5bfafbe8"
 
 [[package]]
 name = "time"
 version = "0.1.15"
-source = "git+http://github.com/rust-lang/time#e216d0de7377a1ae5c8617f6e1a9f60dc61d7ec7"
+source = "git+http://github.com/rust-lang/time#432268ef21eeb34c44a97f9294f8e2d9c94c795b"
 dependencies = [
  "gcc 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
