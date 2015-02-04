@@ -65,7 +65,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                 let pairs: Vec<Vec<usize>> = tokens.tail().iter().map( |token| {
                     let str_tokens: Vec<&str> = token.as_slice().split('/').collect();
                     str_tokens.iter().map( |str_tok| {
-                        match StrExt::parse::<usize>(*str_tok) {
+                        match StrExt::parse::<usize>(*str_tok).ok() {
                             Some(usize_tok) => usize_tok - 1,
                             None => !0 // No data available/not supplied
                         }
