@@ -1,4 +1,4 @@
-use std::rand::{thread_rng, Rng};
+use rand::{thread_rng, Rng};
 use light::light::Light;
 use vec3::Vec3;
 

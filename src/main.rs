@@ -1,14 +1,17 @@
-#![feature(box_syntax, collections, core, io, os, path, rand, slicing_syntax, std_misc)]
+#![feature(box_syntax, collections, core, env, io, os, path, slicing_syntax, std_misc)]
 #![deny(unused_imports)]
 
-extern crate time;
+extern crate rand;
 extern crate "rustc-serialize" as rustc_serialize;
+extern crate time;
+
 
 use scene::{Camera, Scene};
 
 use std::old_io::File;
 use std::old_io;
 use std::os;
+use std::env;
 use std::sync::Arc;
 use rustc_serialize::json;
 use rustc_serialize::json::DecoderError::MissingFieldError;
@@ -178,7 +181,7 @@ fn main() {
             error_str.push_str("\n");
             let mut stderr = old_io::stderr();
             assert!(stderr.write_all(error_str.as_bytes()).is_ok());
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return
         }
     };
@@ -188,7 +191,7 @@ fn main() {
         Err(err) => {
             let mut stderr = old_io::stderr();
             assert!(stderr.write_all(format!("{}\n", err).as_bytes()).is_ok());
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return
         }
     };
@@ -197,7 +200,7 @@ fn main() {
         Err(err) => {
             let mut stderr = old_io::stderr();
             assert!(stderr.write_all(format!("{}\n", err).as_bytes()).is_ok());
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return
         }
     };
@@ -215,7 +218,7 @@ fn main() {
                 }
             };
             assert!(stderr.write_all(msg.as_bytes()).is_ok());
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return
         }
     };
@@ -229,7 +232,7 @@ fn main() {
             let mut stderr = old_io::stderr();
             let msg = format!("unknown scene ``{}''\n", config.name);
             assert!(stderr.write_all(msg.as_bytes()).is_ok());
-            os::set_exit_status(1);
+            env::set_exit_status(1);
             return
         }
     };
