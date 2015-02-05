@@ -5,11 +5,11 @@ use scene::{Camera, Scene};
 use std::iter::range;
 use std::num::Float;
 use std::ops::Deref;
-use std::rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 use std::sync::TaskPool;
 use vec3::Vec3;
+use rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
