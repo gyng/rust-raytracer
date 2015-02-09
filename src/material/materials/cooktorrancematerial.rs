@@ -1,6 +1,7 @@
 use std::num::Float;
 use std::f64::consts::PI;
 use material::{Material, Texture};
+use raytracer::compositor::ColorRGBA;
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -26,8 +27,8 @@ impl Material for CookTorranceMaterial {
         let ambient  = self.ambient.scale(self.k_a);
         let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l)) * match self.diffuse_texture {
             Some(ref x) => x.color(u, v),
-            None => Vec3::one()
-        };
+            None => ColorRGBA::white()
+        }.to_vec3();
 
         // Specular calculations
         let h = (l + i).unit();

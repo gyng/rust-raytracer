@@ -1,16 +1,17 @@
 use std::num::Float;
-use vec3::Vec3;
 use material::Texture;
+use raytracer::compositor::ColorRGBA;
+
 
 #[derive(Clone)]
 pub struct CheckerTexture {
-    pub color1: Vec3,
-    pub color2: Vec3,
+    pub color1: ColorRGBA<f64>,
+    pub color2: ColorRGBA<f64>,
     pub scale: f64 // Controls how large the squares are.
 }
 
 impl Texture for CheckerTexture {
-    fn color(&self, u: f64, v: f64) -> Vec3 {
+    fn color(&self, u: f64, v: f64) -> ColorRGBA<f64> {
         let s = (u % self.scale).abs();
         let t = (v % self.scale).abs();
         let half = self.scale / 2.0;
@@ -35,8 +36,8 @@ impl CheckerTexture {
     #[allow(dead_code)]
     pub fn black_and_white(scale: f64) -> CheckerTexture {
         CheckerTexture {
-            color1: Vec3::zero(),
-            color2: Vec3::one(),
+            color1: ColorRGBA::<f64>::black(),
+            color2: ColorRGBA::<f64>::white(),
             scale: scale
         }
     }
