@@ -111,8 +111,6 @@ impl Index<(usize, usize)> for Surface {
 }
 
 impl IndexMut<(usize, usize)> for Surface {
-    type Output = ColorRGBA<u8>;
-
     fn index_mut<'a>(&'a mut self, index: &(usize, usize)) -> &'a mut ColorRGBA<u8> {
         let (x, y) = *index;
         let idx = self.get_idx(x, y);

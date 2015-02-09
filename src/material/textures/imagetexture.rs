@@ -39,10 +39,15 @@ impl Texture for ImageTexture {
         let u_opposite = 1.0 - u_ratio;
         let v_opposite = 1.0 - v_ratio;
 
-        (self.image[(x, y    )].as_vec3().scale(u_opposite)
-            + self.image[(x + 1, y    )].as_vec3().scale(u_ratio)).scale(v_opposite) +
-        (self.image[(x, y + 1)].as_vec3().scale(u_opposite)
-            + self.image[(x + 1, y + 1)].as_vec3().scale(u_ratio)).scale(v_ratio)
+        (
+            (
+                  self.image[(x    , y    )].channel_f64() * u_opposite
+                + self.image[(x + 1, y    )].channel_f64() * u_ratio
+            ) * v_opposite + (
+                  self.image[(x    , y + 1)].channel_f64() * u_opposite
+                + self.image[(x + 1, y + 1)].channel_f64() * u_ratio
+            ) * v_ratio
+        ).to_vec3()
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Sync> {
@@ -55,7 +60,7 @@ impl Texture for ImageTexture {
 
 #[test]
 fn it_bilinearly_filters() {
-    let background: ColorRGBA<u8> = ColorRGBA::new_rgb(0, 0, 0);
+    let background = ColorRGBA::new_rgb(0, 0, 0);
     let mut surface = Surface::new(2, 2, background);
 
     surface[(0, 0)] = ColorRGBA::new_rgb(255, 0, 0);

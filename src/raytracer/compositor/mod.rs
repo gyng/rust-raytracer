@@ -1,4 +1,4 @@
-pub use self::colorrgba::ColorRGBA;
+pub use self::colorrgba::{Channel, ColorRGBA};
 pub use self::surface::Surface;
 pub use self::surfacefactory::SurfaceFactory;
 pub use self::surfaceiterator::SurfaceIterator;
