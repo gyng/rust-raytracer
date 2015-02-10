@@ -6,45 +6,40 @@ use raytracer::Ray;
 use vec3::Vec3;
 
 pub struct Octree<T> {
-    pub prims: Option<Vec<T>>,
-    pub bbox: BBox,
-    pub depth: isize,
-    pub children: Vec<Octree<T>>,
-    pub data: Vec<OctreeData>,
-    pub infinites: Vec<T> // for infinite prims (planes)
+    prims: Vec<T>,
+    infinites: Vec<T>, // for infinite prims (planes)
+    root: OctreeNode<T>,
+}
+
+pub struct OctreeNode<T> {
+    bbox: BBox,
+    depth: i32,
+    children: Vec<OctreeNode<T>>,
+    leaf_data: Vec<OctreeData>,
 }
 
 #[derive(Clone, Copy)]
 struct OctreeData {
-    pub bbox: Option<BBox>,
+    pub bbox: BBox,
     pub index: usize
 }
 
 
 impl OctreeData {
     pub fn intersects(&self, ray: &Ray) -> bool {
-        match self.bbox {
-            Some(bbox) => bbox.intersects(ray),
-            None => true
-        }
+        self.bbox.intersects(ray)
     }
 }
 
 
-impl<T> Octree<T> {
+impl<T> OctreeNode<T> {
     #[allow(dead_code)]
-    pub fn new(bbox: BBox, depth: isize) -> Octree<T> {
-        let vec_children: Vec<Octree<T>> = Vec::new();
-        let vec_data: Vec<OctreeData> = Vec::new();
-        let vec_infinite_data: Vec<T> = Vec::new();
-
-        Octree {
-            prims: None,
+    pub fn new(bbox: BBox, depth: i32) -> OctreeNode<T> {
+        OctreeNode {
             bbox: bbox,
             depth: depth,
-            children: vec_children,
-            data: vec_data,
-            infinites: vec_infinite_data
+            children: Vec::new(),
+            leaf_data: Vec::new(),
         }
     }
 
@@ -67,48 +62,39 @@ impl<T> Octree<T> {
                         }
                     };
 
-                    self.children.push(Octree::new(child_bbox, self.depth - 1));
+                    self.children.push(OctreeNode::new(child_bbox, self.depth - 1));
                 }
             }
         }
     }
 
     #[allow(dead_code)]
-    pub fn insert(&mut self, index: usize, object_bbox: Option<BBox>) -> () {
-        match object_bbox {
-            // Finite object
-            Some(object_bbox) => {
-                // Max depth
-                if self.depth <= 0 {
-                    self.data.push(OctreeData { index: index, bbox: Some(object_bbox) });
-                    return;
-                }
+    pub fn insert(&mut self, index: usize, object_bbox: BBox) -> () {
+        // Max depth
+        if self.depth <= 0 {
+            self.leaf_data.push(OctreeData { index: index, bbox: object_bbox });
+            return;
+        }
 
-                // Empty leaf node
-                if self.is_leaf() && self.data.len() == 0 {
-                    self.data.push(OctreeData { index: index, bbox: Some(object_bbox) });
-                    return;
-                }
+        // Empty leaf node
+        if self.is_leaf() && self.leaf_data.len() == 0 {
+            self.leaf_data.push(OctreeData { index: index, bbox: object_bbox });
+            return;
+        }
 
-                // Occupied leaf node and not max depth: subdivide node
-                if self.is_leaf() && self.data.len() == 1 {
-                    self.subdivide();
-                    let old = self.data.remove(0);
-                    // Reinsert old node and then fall through to insert current object
-                    self.insert(old.index, old.bbox);
-                }
+        // Occupied leaf node and not max depth: subdivide node
+        if self.is_leaf() && self.leaf_data.len() == 1 {
+            self.subdivide();
+            let old = self.leaf_data.remove(0);
+            // Reinsert old node and then fall through to insert current object
+            self.insert(old.index, old.bbox);
+        }
 
-                // Interior node (has children)
-                for child in self.children.iter_mut() {
-                    if child.bbox.overlaps(&object_bbox) {
-                        child.insert(index, Some(object_bbox));
-                    }
-                }
+        // Interior node (has children)
+        for child in self.children.iter_mut() {
+            if child.bbox.overlaps(&object_bbox) {
+                child.insert(index, object_bbox);
             }
-
-            // Infinite object without bounds, this is added to
-            // all get_intersection_indices calls
-            None => panic!("Don't push infinites this way")
         }
     }
 
@@ -128,18 +114,19 @@ impl Octree<Box<Prim+Send+Sync>> {
         let (finites, infinites): (Vec<Box<Prim+Send+Sync>>, Vec<Box<Prim+Send+Sync>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
-        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as isize;
+        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as i32;
 
         println!("Octree maximum depth {}", depth);
-        let mut octree = Octree::new(bounds, depth);
-
+        let mut root_node = OctreeNode::new(bounds, depth);
         for (i, prim) in finites.iter().enumerate() {
-            octree.insert(i, prim.bounding());
+            root_node.insert(i, prim.bounding().unwrap());
         }
-        octree.prims = Some(finites);
-        octree.infinites = infinites;
 
-        octree
+        Octree {
+            prims: finites,
+            infinites: infinites,
+            root: root_node,
+        }
     }
 
     pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
@@ -149,28 +136,23 @@ impl Octree<Box<Prim+Send+Sync>> {
 
 
 struct OctreeIterator<'a, T:'a> {
-    prims: &'a Vec<T>,
-    stack: Vec<&'a Octree<T>>,
+    prims: &'a [T],
+    stack: Vec<&'a OctreeNode<T>>,
     cur_iter: Option<Iter<'a, OctreeData>>,
     ray: &'a Ray,
     infinites: Iter<'a, T>,
     just_infinites: bool
-
 }
 
 
 impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    fn new<'b>(root: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
-        let prims = match root.prims {
-            Some(ref prims) => prims,
-            None => panic!("OctreeIterator must be constructed from an Octree root")
-        };
-        OctreeIterator {
-            prims: prims,
-            stack: vec![root],
+    fn new<'b>(octree: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
+            OctreeIterator {
+            prims: &octree.prims[],
+            stack: vec![&octree.root],
             cur_iter: None,
             ray: ray,
-            infinites: root.infinites.iter(),
+            infinites: octree.infinites.iter(),
             just_infinites: false
         }
     }
@@ -197,7 +179,7 @@ impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
                                 self.stack.push(child);
                             }
                         }
-                        (Some(node.data.iter()), None)
+                        (Some(node.leaf_data.iter()), None)
                     },
                     None => break  // Empty stack and no iterator
                 }
