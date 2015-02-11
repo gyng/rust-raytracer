@@ -70,7 +70,7 @@ impl Surface {
         (width, height)
     }
 
-    pub fn merge(&mut self, tile: Box<Surface>) {
+    pub fn merge(&mut self, tile: &Surface) {
         let x_len: usize = min(tile.width, self.width - tile.x_off);
         let y_len: usize = min(tile.height, self.height - tile.y_off);
 
@@ -78,7 +78,7 @@ impl Surface {
             let dst_y = tile.y_off + src_y;
             for src_x in range(0, x_len) {
                 let dst_x = tile.x_off + src_x;
-                self[(dst_x, dst_y)] = (&*tile)[(src_x, src_y)]
+                self[(dst_x, dst_y)] = tile[(src_x, src_y)]
             }
         }
     }
@@ -210,7 +210,7 @@ fn test_paint_it_red() {
                 assert_eq!(tile[(x, y)].b, 0);
             }
         }
-        surf.merge(box tile);
+        surf.merge(&tile);
     }
 
     for y in range(0, surf.height) {
