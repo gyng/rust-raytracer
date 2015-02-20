@@ -47,8 +47,9 @@ struct SceneConfig<'a> {
     starting_frame_number: usize
 }
 
-fn parse_args(args: Vec<String>) -> Result<ProgramArgs, String>  {
-    let (program_name, rest) = match args.as_slice() {
+fn parse_args(args: env::Args) -> Result<ProgramArgs, String> {
+    let argl = args.collect::<Vec<String>>();
+    let (program_name, rest) = match argl.as_slice() {
         // I wouldn't expect this in the wild
         [] => panic!("Args do not even include a program name"),
         [ref program_name, rest..] => (
@@ -175,7 +176,7 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
 fn main() {
     let start_time = ::time::get_time().sec;
 
-    let program_args = match parse_args(os::args()) {
+    let program_args = match parse_args(env::args()) {
         Ok(program_args) => program_args,
         Err(mut error_str) => {
             error_str.push_str("\n");
@@ -248,7 +249,7 @@ fn main() {
         shadow_samples: config.shadow_samples,
         pixel_samples: config.pixel_samples,
         // Number of tasks to spawn. Will use up max available cores.
-        tasks: std::os::num_cpus()
+        tasks: os::num_cpus()
     };
 
     if config.animating {
@@ -263,7 +264,7 @@ fn main() {
         };
 
         println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
-                 std::os::num_cpus(), animator.fps, animator.animate_from, animator.animate_to,
+                 os::num_cpus(), animator.fps, animator.animate_from, animator.animate_to,
                  animator.starting_frame_number);
         animator.animate(camera, shared_scene, config.output_file.as_slice());
         let render_time = ::time::get_time().sec;
@@ -271,7 +272,7 @@ fn main() {
                  render_time, render_time - scene_time);
     } else {
         // Still frame
-        println!("Rendering with {} tasks...", std::os::num_cpus());
+        println!("Rendering with {} tasks...", os::num_cpus());
         let image_data = renderer.render(camera, shared_scene);
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)...\nWriting file...",
