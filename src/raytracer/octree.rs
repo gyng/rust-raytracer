@@ -1,9 +1,12 @@
 use std::num::Float;
 use std::slice::Iter;
 use geometry::bbox::get_bounds_from_objects;
-use geometry::{BBox, Prim};
+use geometry::{BBox, Prim, };
 use raytracer::Ray;
 use vec3::Vec3;
+
+pub type PrimBox<'a> = Box<Prim+Send+Sync+'a>;
+
 
 pub struct Octree<T> {
     prims: Vec<T>,
@@ -107,11 +110,11 @@ impl<T> OctreeNode<T> {
 //             that returns Option<BBox>.  Some if finite, None if infinite.
 //             Then we can use impl<T: Bounded3D> Octree<Box<T>>, probably!
 
-impl Octree<Box<Prim+Send+Sync>> {
+impl Octree<PrimBox<'static>> {
     #[allow(dead_code)]
-    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Sync>>) -> Octree<Box<Prim+Send+Sync>> {
+    pub fn new_from_prims(prims: Vec<PrimBox<'static>>) -> Octree<PrimBox<'static>> {
         let bounds = get_bounds_from_objects(&prims);
-        let (finites, infinites): (Vec<Box<Prim+Send+Sync>>, Vec<Box<Prim+Send+Sync>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
+        let (finites, infinites): (Vec<PrimBox<'static>>, Vec<PrimBox<'static>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
         let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as i32;
@@ -129,13 +132,13 @@ impl Octree<Box<Prim+Send+Sync>> {
         }
     }
 
-    pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
+    pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, PrimBox<'static>> {
         OctreeIterator::new(self, ray)
     }
 }
 
 
-struct OctreeIterator<'a, T:'a> {
+struct OctreeIterator<'a, T: 'a> {
     prims: &'a [T],
     stack: Vec<&'a OctreeNode<T>>,
     cur_iter: Option<Iter<'a, OctreeData>>,
@@ -145,8 +148,8 @@ struct OctreeIterator<'a, T:'a> {
 }
 
 
-impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    fn new<'b>(octree: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
+impl<'a, T> OctreeIterator<'a, T> {
+    fn new(octree: &'a Octree<T>, ray: &'a Ray) -> OctreeIterator<'a, T> {
             OctreeIterator {
             prims: &octree.prims[],
             stack: vec![&octree.root],
@@ -159,10 +162,10 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
 }
 
 
-impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    type Item = &'a Box<Prim+Send+Sync>;
+impl<'a> Iterator for OctreeIterator<'a, PrimBox<'static>> {
+    type Item = &'a PrimBox<'static>;
 
-    fn next(&mut self) -> Option<&'a Box<Prim+Send+Sync>> {
+    fn next(&mut self) -> Option<&'a PrimBox<'static>> {
         if self.just_infinites {
             return self.infinites.next();
         }
@@ -175,7 +178,7 @@ impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
                 None => match self.stack.pop() {
                     Some(node) => {
                         for child in node.children.iter() {
-                            if child.bbox.intersects(self.ray) {
+                            if child.bbox.intersects(&self.ray) {
                                 self.stack.push(child);
                             }
                         }
@@ -187,7 +190,7 @@ impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
             self.cur_iter = new_cur_iter;
             match val {
                 Some(val) => {
-                    if val.intersects(self.ray) {
+                    if val.intersects(&self.ray) {
                         return Some(&self.prims[val.index]);
                     }
                 },
