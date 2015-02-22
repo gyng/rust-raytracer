@@ -8,13 +8,13 @@ use vec3::Vec3;
 pub struct Octree<T> {
     prims: Vec<T>,
     infinites: Vec<T>, // for infinite prims (planes)
-    root: OctreeNode<T>,
+    root: OctreeNode,
 }
 
-pub struct OctreeNode<T> {
+pub struct OctreeNode {
     bbox: BBox,
     depth: i32,
-    children: Vec<OctreeNode<T>>,
+    children: Vec<OctreeNode>,
     leaf_data: Vec<OctreeData>,
 }
 
@@ -32,9 +32,9 @@ impl OctreeData {
 }
 
 
-impl<T> OctreeNode<T> {
+impl OctreeNode {
     #[allow(dead_code)]
-    pub fn new(bbox: BBox, depth: i32) -> OctreeNode<T> {
+    pub fn new(bbox: BBox, depth: i32) -> OctreeNode {
         OctreeNode {
             bbox: bbox,
             depth: depth,
@@ -44,9 +44,9 @@ impl<T> OctreeNode<T> {
     }
 
     fn subdivide(&mut self) {
-        for x in range(0is, 2is) {
-            for y in range(0is, 2is) {
-                for z in range(0is, 2is) {
+        for x in 0u32..2 {
+            for y in 0u32..2 {
+                for z in 0u32..2 {
                     let len = self.bbox.len();
 
                     let child_bbox = BBox {
@@ -137,7 +137,7 @@ impl Octree<Box<Prim+Send+Sync>> {
 
 struct OctreeIterator<'a, T:'a> {
     prims: &'a [T],
-    stack: Vec<&'a OctreeNode<T>>,
+    stack: Vec<&'a OctreeNode>,
     cur_iter: Option<Iter<'a, OctreeData>>,
     ray: &'a Ray,
     infinites: Iter<'a, T>,
@@ -148,7 +148,7 @@ struct OctreeIterator<'a, T:'a> {
 impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
     fn new<'b>(octree: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
             OctreeIterator {
-            prims: &octree.prims[],
+            prims: &octree.prims[..],
             stack: vec![&octree.root],
             cur_iter: None,
             ray: ray,

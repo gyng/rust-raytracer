@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // 300 polys, octree is slightly slower than no octree
-pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: 0.0, y: -150.0, z: 30.0 },
         Vec3 { x: 0.0, y: 60.0, z: 50.0 },

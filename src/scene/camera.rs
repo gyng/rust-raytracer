@@ -9,8 +9,8 @@ pub struct Camera {
     pub look_at: Vec3,
     pub up: Vec3,
     pub fov_deg: f64,
-    pub image_width: isize,
-    pub image_height: isize,
+    pub image_width: u32,
+    pub image_height: u32,
 
     pub eye: Vec3,
     pub right: Vec3,
@@ -24,7 +24,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(position: Vec3, look_at: Vec3, up: Vec3, fov_deg: f64,
-               image_width: isize, image_height: isize)
+               image_width: u32, image_height: u32)
                -> Camera {
 
         let mut camera = Camera {
@@ -51,7 +51,7 @@ impl Camera {
 
     #[allow(dead_code)]
     pub fn new_with_keyframes(position: Vec3, look_at: Vec3, up: Vec3, fov_deg: f64,
-                              image_width: isize, image_height: isize, keyframes: Vec<CameraKeyframe>)
+                              image_width: u32, image_height: u32, keyframes: Vec<CameraKeyframe>)
                               -> Camera {
 
         let mut camera = Camera::new(position, look_at, up, fov_deg, image_width, image_height);

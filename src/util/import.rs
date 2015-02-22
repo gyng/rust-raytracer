@@ -19,7 +19,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     let mut file = BufferedReader::new(fh);
 
     let start_time = ::time::get_time();
-    let print_every = 2048us;
+    let print_every = 2048u32;
     let mut current_line = 0;
     let mut processed_bytes = 0;
 
@@ -35,7 +35,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 
     for line_iter in file.lines() {
         let line = line_iter.unwrap();
-        let tokens: Vec<&str> = line[].words().collect();
+        let tokens: Vec<&str> = line[..].words().collect();
         if tokens.len() == 0 { continue }
 
         match tokens[0].as_slice() {
@@ -124,7 +124,7 @@ pub fn from_ppm(filename: &str) -> Surface {
         Ok(f) => f,
         Err(e) => panic!("Could not open file {} (file missing?): {}", filename, e)
     };
-    let mut tokens: Vec<&str> = tex[].words().collect();
+    let mut tokens: Vec<&str> = tex[..].words().collect();
 
     tokens.remove(0); // PPM type
     let width  = StrExt::parse::<usize>(tokens.remove(0)).unwrap();
@@ -136,9 +136,9 @@ pub fn from_ppm(filename: &str) -> Surface {
 
     let mut surface = Surface::new(width, height, ColorRGBA::new_rgb(0, 0, 0));
 
-    let mut i = 0us;
+    let mut i = 0usize;
 
-    for chunk in tokens[].chunks(3) {
+    for chunk in tokens[..].chunks(3) {
         let x = i % width;
         let y = i / width;
         i += 1;

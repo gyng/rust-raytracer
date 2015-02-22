@@ -285,9 +285,9 @@ impl Mat4 {
                 [0.0, 0.0, 0.0, 0.0]]
         };
 
-        for i in range(0us, 4) {
-            for j in range(0us, 4) {
-                for k in range(0us, 4) {
+        for i in 0usize..4 {
+            for j in 0usize..4 {
+                for k in 0usize..4 {
                     out.m[i][j] += a.m[i][k] * b.m[k][j];
                 }
             }

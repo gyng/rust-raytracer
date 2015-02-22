@@ -2,7 +2,7 @@
 
 use geometry::Prim;
 use raytracer::Ray;
-use std::f64::{MAX_VALUE, MIN_VALUE};
+use std::f64;
 use std::num::Float;
 use vec3::Vec3;
 
@@ -65,8 +65,8 @@ pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
 /// Given a vector of prims, compute and return a new BBox that encompasses
 /// all finite prims (ie. not including planes) in that vector.
 pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Sync>>) -> BBox {
-    let mut max = Vec3 { x: MIN_VALUE, y: MIN_VALUE, z: MIN_VALUE };
-    let mut min = Vec3 { x: MAX_VALUE, y: MAX_VALUE, z: MAX_VALUE };
+    let mut max = Vec3 { x: f64::MIN, y: f64::MIN, z: f64::MIN };
+    let mut min = Vec3 { x: f64::MAX, y: f64::MAX, z: f64::MAX };
 
     for prim in prims.iter() {
         match prim.bounding() {
@@ -192,7 +192,7 @@ impl BBox {
     }
 
     /// Returns which axis is the widest. 0: x, 1: y, 2: z
-    pub fn max_extent(&self) -> usize {
+    pub fn max_extent(&self) -> u8 {
         let diag = self.max - self.min;
         if diag.x > diag.y && diag.x > diag.z {
             0
@@ -412,9 +412,9 @@ fn it_returns_max_extent() {
         max: Vec3 { x: 1.0, y: 1.0, z: 2.0 }
     };
 
-    assert_eq!(0us, x.max_extent());
-    assert_eq!(1us, y.max_extent());
-    assert_eq!(2us, z.max_extent());
+    assert_eq!(0u8, x.max_extent());
+    assert_eq!(1u8, y.max_extent());
+    assert_eq!(2u8, z.max_extent());
 }
 
 #[test]

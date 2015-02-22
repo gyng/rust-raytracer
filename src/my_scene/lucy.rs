@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // 50000 polys, model not included!
-pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: -1500.0, y: 300.0, z: 600.0 },
         Vec3 { x: 0.0, y: 400.0, z: -200.0 },

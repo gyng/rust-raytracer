@@ -12,7 +12,7 @@ use raytracer::animator::CameraKeyframe;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
-pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: 100.0, y: 60.0, z: -150.0 },
         Vec3 { x: 0.0, y: 50.0, z: 0.0 },

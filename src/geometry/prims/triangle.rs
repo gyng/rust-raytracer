@@ -160,7 +160,7 @@ fn it_intersects_only_in_tmin_tmax() {
     };
 
     // Tests tmin
-    let mut intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
+    let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
     let mut non_intersection = triangle.intersects(&intersecting_ray, 1000.0, 10000.0);
     assert!(non_intersection.is_none());
 

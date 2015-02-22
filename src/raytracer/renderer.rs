@@ -15,11 +15,11 @@ pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
 #[derive(Clone)]
 pub struct Renderer {
-    pub reflect_depth: usize,  // Maximum reflection recursions.
-    pub refract_depth: usize,  // Maximum refraction recursions. A sphere takes up 2 recursions.
-    pub shadow_samples: usize, // Number of samples for soft shadows and area lights.
-    pub pixel_samples: usize,  // The square of this is the number of samples per pixel.
-    pub tasks: usize           // Minimum number of tasks to spawn.
+    pub reflect_depth: u32,  // Maximum reflection recursions.
+    pub refract_depth: u32,  // Maximum refraction recursions. A sphere takes up 2 recursions.
+    pub shadow_samples: u32, // Number of samples for soft shadows and area lights.
+    pub pixel_samples: u32,  // The square of this is the number of samples per pixel.
+    pub tasks: usize         // Minimum number of tasks to spawn.
 }
 
 impl Renderer {
@@ -68,22 +68,22 @@ impl Renderer {
 
         let mut tile = tile_factory.create();
 
-        let random_data: Vec<u64> = range(0us, 64us).map(|_| {
+        let random_data: Vec<u64> = (0u32..64).map(|_| {
             thread_rng().next_u64()
         }).collect();
         let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.as_slice());
 
-        for rel_y in range(0us, tile.height) {
-            let abs_y = (camera.image_height as usize) - (tile.y_off + rel_y) - 1;
-            for rel_x in range(0us, tile.width) {
+        for rel_y in 0usize..tile.height {
+            let abs_y = camera.image_height as usize - (tile.y_off + rel_y) - 1;
+            for rel_x in 0usize..tile.width {
                 let abs_x = tile.x_off + rel_x;
 
                 // Supersampling, jitter algorithm
                 let pixel_width = 1.0 / pixel_samples as f64;
                 let mut color = Vec3::zero();
 
-                for y_subpixel in range(0, pixel_samples) {
-                    for x_subpixel in range(0, pixel_samples) {
+                for y_subpixel in 0u32..pixel_samples {
+                    for x_subpixel in 0u32..pixel_samples {
                         // Don't jitter if not antialiasing
                         let (j_x, j_y) = if pixel_samples > 1 {
                             (x_subpixel as f64 * pixel_width + rng.gen::<f64>() * pixel_width,
@@ -107,8 +107,8 @@ impl Renderer {
         box tile
     }
 
-    fn trace(scene: &Scene, ray: &Ray, shadow_samples: usize,
-             reflect_depth: usize, refract_depth: usize, inside: bool) -> Vec3 {
+    fn trace(scene: &Scene, ray: &Ray, shadow_samples: u32,
+             reflect_depth: u32, refract_depth: u32, inside: bool) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
 
@@ -169,7 +169,7 @@ impl Renderer {
     }
 
     fn shadow_intensity(scene: &Scene, hit: &Intersection,
-                        light: &Box<Light+Send+Sync>, shadow_samples: usize) -> Vec3 {
+                        light: &Box<Light+Send+Sync>, shadow_samples: u32) -> Vec3 {
 
         if shadow_samples <= 0 { return Vec3::one() }
 

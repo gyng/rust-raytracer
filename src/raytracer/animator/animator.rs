@@ -3,14 +3,14 @@ use raytracer::Renderer;
 use scene::{Camera, Scene};
 use std::num::Float;
 use std::sync::{Arc, Semaphore};
-use std::thread::Thread;
+use std::thread;
 use vec3::Vec3;
 
 pub struct Animator {
     pub fps: f64,
     pub animate_from: f64, // Number of frames is rounded down to nearest frame
     pub animate_to: f64,
-    pub starting_frame_number: usize, // For filename
+    pub starting_frame_number: u32, // For filename
     pub renderer: Renderer
 }
 
@@ -21,11 +21,11 @@ impl Animator {
     pub fn animate(&self, camera: Camera, shared_scene: Arc<Scene>, filename: &str) {
         let animate_start = ::time::get_time();
         let length = self.animate_to - self.animate_from;
-        let total_frames = (self.fps * length).floor() as usize;
+        let total_frames = (self.fps * length).floor() as u32;
 
         let sema = Arc::new(Semaphore::new(1));
 
-        for frame_number in range(0, total_frames) {
+        for frame_number in 0..total_frames {
             let time = self.animate_from + frame_number as f64 / self.fps;
             let lerped_camera = Animator::lerp_camera(&camera, time);
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
@@ -37,12 +37,12 @@ impl Animator {
             sema.acquire();
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
-            Thread::spawn(move || {
+            thread::spawn(move || {
                 ::util::export::to_ppm(frame_data, shared_name.as_slice());
                 child_sema.release();
             });
 
-            ::util::print_progress("*** Frame", animate_start.clone(), frame_number + 1us, total_frames);
+            ::util::print_progress("*** Frame", animate_start.clone(), frame_number as usize + 1usize, total_frames as usize);
             println!("");
         }
 

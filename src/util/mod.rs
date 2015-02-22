@@ -29,7 +29,7 @@ fn make_progress_bar(ratio: f64, length: usize) -> String {
     let filled = (ratio * length as f64).round() as usize;
     let mut bar: String = repeat('|').take(filled).collect();
 
-    for _ in range(0, length - filled) {
+    for _ in 0..(length - filled) {
         bar.push('-');
     }
 

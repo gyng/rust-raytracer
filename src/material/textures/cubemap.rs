@@ -2,7 +2,7 @@ use material::textures::ImageTexture;
 use std::num::Float;
 use std::sync::mpsc::channel;
 use std::sync::{Semaphore, Arc};
-use std::thread::Thread;
+use std::thread;
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -25,18 +25,18 @@ impl CubeMap {
         let (tx, rx) = channel();
         let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as isize));
 
-        for i in range(0us, 6) {
+        for i in 0usize..6 {
             let task_sema = sema.clone();
             let task_tx = tx.clone();
             let filename = String::from_str(filenames[i].clone());
 
-            Thread::spawn(move || {
+            thread::spawn(move || {
                 task_sema.acquire();
                 let _ = task_tx.send((i, ImageTexture::load(filename.as_slice())));
             });
         }
 
-        for _ in range(0us, 6) {
+        for _ in 0usize..6 {
             let (i, tex) = rx.recv().unwrap();
             let p = faces.as_mut_ptr();
             unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as isize), tex); }

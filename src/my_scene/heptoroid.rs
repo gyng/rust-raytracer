@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // 114688 tris, 57302 verts
-pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: 7.0, y: 2.0, z: -6.0 },
         Vec3 { x: 0.0, y: 0.0, z: 0.0 },

@@ -13,7 +13,7 @@ use scene::{Camera, Scene};
 use vec3::Vec3;
 
 // ~70K triangles, no textures yet
-pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new(
         Vec3 { x: -16.0, y: -14.5, z: -2.0 },
         Vec3 { x: 8.0, y: -3.0, z: 2.0 },
@@ -24,7 +24,7 @@ pub fn get_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
     )
 }
 // 7s target length
-pub fn get_animation_camera(image_width: isize, image_height: isize, fov: f64) -> Camera {
+pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     Camera::new_with_keyframes(
         Vec3 { x: -16.0, y: -14.5, z: -2.0 },
         Vec3 { x: 8.0, y: -3.0, z: 2.0 },

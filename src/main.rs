@@ -1,4 +1,4 @@
-#![feature(box_syntax, collections, core, env, io, os, path, slicing_syntax, std_misc)]
+#![feature(box_syntax, collections, core, env, old_io, old_path, os, std_misc, str_words)]
 #![deny(unused_imports)]
 
 extern crate rand;
@@ -32,19 +32,19 @@ struct ProgramArgs {
 }
 
 #[derive(RustcDecodable, RustcEncodable)]
-struct SceneConfig<'a> {
+struct SceneConfig {
     name: String,
-    size: (isize, isize),
+    size: (u32, u32),
     fov: f64,
-    reflect_depth: usize,
-    refract_depth: usize,
-    shadow_samples: usize,
-    pixel_samples: usize,
+    reflect_depth: u32,
+    refract_depth: u32,
+    shadow_samples: u32,
+    pixel_samples: u32,
     output_file: String,
     animating: bool,
     fps: f64,
     time_slice: (f64, f64),
-    starting_frame_number: usize
+    starting_frame_number: u32
 }
 
 fn parse_args(args: env::Args) -> Result<ProgramArgs, String> {
