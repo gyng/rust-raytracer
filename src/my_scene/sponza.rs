@@ -9,6 +9,7 @@ use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
 use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
+use raytracer::compositor::ColorRGBA;
 use scene::{Camera, Scene};
 use vec3::Vec3;
 
@@ -29,7 +30,7 @@ pub fn get_scene() -> Scene {
     lights.push(box SphereLight { position: Vec3 { x: 0.0, y: 3000.0, z: 1000.0 }, color: Vec3 { x: 1.0, y: 0.8, z: 0.4 }, radius: 50.0 });
     lights.push(box SphereLight { position: Vec3 { x: 300.0, y: 300.0, z: 60.0 }, color: Vec3 { x: 0.38, y: 0.32, z: 0.28 }, radius: 20.0 });
 
-    let checker: Box<Texture+Send+Sync> = box CheckerTexture { color1: Vec3::one(), color2: Vec3 { x: 0.15, y: 0.11, z: 0.1 }, scale: 32.0 };
+    let checker: Box<Texture+Send+Sync> = box CheckerTexture { color1: ColorRGBA::white(), color2: ColorRGBA::new_rgb(0.15, 0.11, 0.1), scale: 32.0 };
 
     let stone     = CookTorranceMaterial { k_a: 0.1,  k_d: 0.8, k_s: 0.2, k_sg: 0.2,  k_tg: 0.0, gauss_constant: 50.0, roughness: 1.0, ior: 1.5, ambient: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, diffuse: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
     let ground    = CookTorranceMaterial { k_a: 0.03, k_d: 0.9, k_s: 0.3, k_sg: 0.5,  k_tg: 0.0, gauss_constant: 25.0, roughness: 0.1, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.38, y: 0.38, z: 0.5 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone()) };

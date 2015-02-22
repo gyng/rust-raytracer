@@ -74,6 +74,14 @@ impl ColorRGBA<u8> {
             clamp((g * max_color as f64).round() as i32, min_color as i32, max_color as i32) as u8,
             clamp((b * max_color as f64).round() as i32, min_color as i32, max_color as i32) as u8)
     }
+
+    pub fn from_packed_rgba(color: u32) -> ColorRGBA<u8> {
+        let r = ((color >> 24) & 0xFF) as u8;
+        let g = ((color >> 16) & 0xFF) as u8;
+        let b = ((color >>  8) & 0xFF) as u8;
+        let a = ((color >>  0) & 0xFF) as u8;
+        ColorRGBA { r: r, g: g, b: b, a: a }
+    }
 }
 
 // Maybe later?: ColorRGBA<f64>.quantize() -> ColorRGBA<uint>
@@ -90,11 +98,18 @@ impl<T: Channel> ColorRGBA<T> {
 
     #[allow(dead_code)]
     pub fn black() -> ColorRGBA<T> {
-        ColorRGBA::new_rgba(
-            Channel::min_value(),
+        ColorRGBA::new_rgb(
             Channel::min_value(),
             Channel::min_value(),
             Channel::min_value())
+    }
+
+    #[allow(dead_code)]
+    pub fn white() -> ColorRGBA<T> {
+        ColorRGBA::new_rgb(
+            Channel::max_value(),
+            Channel::max_value(),
+            Channel::max_value())
     }
 
     pub fn channel_f64(&self) -> ColorRGBA<f64> {

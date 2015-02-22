@@ -1,10 +1,7 @@
 use std::num::Float;
 use vec3::Vec3;
 use material::Texture;
-use raytracer::compositor::Surface;
-
-#[cfg(test)]
-use raytracer::compositor::ColorRGBA;
+use raytracer::compositor::{Surface, ColorRGBA};
 
 /// Maps the supplied (u, v) coordinate to the image (s, t).
 #[derive(Clone)]
@@ -22,12 +19,12 @@ impl ImageTexture {
     // ImageTextures as a more generic Texture (vec of objects with the Texture trait).
     // An ImageTexture-specific function needs to exist to be called.
     pub fn sample(&self, u: f64, v: f64) -> Vec3 {
-        self.color(u, v)
+        self.color(u, v).to_vec3()
     }
 }
 
 impl Texture for ImageTexture {
-    fn color(&self, u: f64, v: f64) -> Vec3 {
+    fn color(&self, u: f64, v: f64) -> ColorRGBA<f64> {
         // Avoid out-of-bounds during bilinear filtering
         let s = u % 1.0 * (self.image.width as f64 - 1.0);
         let t = v % 1.0 * (self.image.height as f64 - 1.0);
@@ -47,7 +44,7 @@ impl Texture for ImageTexture {
                   self.image[(x    , y + 1)].channel_f64() * u_opposite
                 + self.image[(x + 1, y + 1)].channel_f64() * u_ratio
             ) * v_ratio
-        ).to_vec3()
+        )
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Sync> {
@@ -71,12 +68,12 @@ fn it_bilinearly_filters() {
     let texture = ImageTexture { image: surface };
 
     let left = texture.color(0.0, 0.5);
-    assert_eq!(left.x, 0.5);
-    assert_eq!(left.y, 0.5);
-    assert_eq!(left.z, 0.0);
+    assert_eq!(left.r, 0.5);
+    assert_eq!(left.g, 0.5);
+    assert_eq!(left.b, 0.0);
 
     let center = texture.color(0.5, 0.5);
-    assert_eq!(center.x, 0.25);
-    assert_eq!(center.y, 0.25);
-    assert_eq!(center.z, 0.25);
+    assert_eq!(center.r, 0.25);
+    assert_eq!(center.g, 0.25);
+    assert_eq!(center.b, 0.25);
 }

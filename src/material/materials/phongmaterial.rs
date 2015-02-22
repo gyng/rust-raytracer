@@ -1,5 +1,6 @@
 use std::num::Float;
 use material::{Material, Texture};
+use raytracer::compositor::ColorRGBA;
 use vec3::Vec3;
 
 #[allow(dead_code)]
@@ -27,8 +28,8 @@ impl Material for PhongMaterial {
         let ambient  = self.ambient.scale(self.k_a);
         let diffuse  = self.diffuse.scale(self.k_d).scale(n.dot(&l)) * match self.diffuse_texture {
             Some(ref x) => x.color(u, v),
-            None => Vec3::one()
-        };
+            None => ColorRGBA::white()
+        }.to_vec3();
         let specular = self.specular.scale(self.k_s).scale(n.dot(&h).powf(self.shininess));
 
         ambient + diffuse + specular

@@ -48,18 +48,19 @@ impl Renderer {
                     scene_local.deref(), subsurface_factory));
             });
         }
+        drop(tx);
 
         let start_time = ::time::get_time();
 
-        for (i, subsurface) in rx.iter().take(jobs).enumerate() {
-            surface.merge(subsurface);
+        for (i, subsurface) in rx.iter().enumerate() {
+            surface.merge(&subsurface);
             ::util::print_progress("Tile", start_time.clone(), (i + 1) as usize, jobs);
         }
         surface
     }
 
     fn render_tile(&self, camera: Camera, scene: &Scene,
-                   tile_factory: SurfaceFactory) -> Box<Surface> {
+                   tile_factory: SurfaceFactory) -> Surface {
 
         let shadow_samples = self.shadow_samples;
         let pixel_samples = self.pixel_samples;
@@ -104,7 +105,7 @@ impl Renderer {
             }
         }
 
-        box tile
+        tile
     }
 
     fn trace(scene: &Scene, ray: &Ray, shadow_samples: u32,
