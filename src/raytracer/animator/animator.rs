@@ -72,7 +72,12 @@ impl Animator {
         }
 
         let keyframe_length = second.time - first.time;
-        let alpha = (time - first.time) / keyframe_length;
+
+        let alpha = if keyframe_length == 0.0 {
+            0.0
+        } else {
+            (time - first.time) / keyframe_length
+        };
 
         (first.clone(), second.clone(), alpha)
     }
@@ -101,4 +106,43 @@ impl Animator {
         lerped_camera.keyframes = camera.keyframes.clone();
         lerped_camera
     }
+}
+
+#[test]
+fn test_lerp_camera_position() {
+    // Camera rotates 180 degrees
+    let camera = Camera::new_with_keyframes(
+        Vec3 { x: -1.0, y: -1.0, z: -1.0 },
+        Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+        Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+        45.0,
+        10,
+        10,
+        vec![
+            CameraKeyframe {
+                time: 5.0,
+                position: Vec3 { x: 0.0, y: 0.0, z: 0.0 },
+                look_at: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 }
+            },
+            CameraKeyframe {
+                time: 10.0,
+                position: Vec3 { x: 10.0, y: 0.0, z: 0.0 },
+                look_at: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 }
+            },
+        ]
+    );
+
+    let expected_position_0 = Vec3 { x: -1.0, y: -1.0, z: -1.0 };
+    assert_eq!(Animator::lerp_camera(&camera, 0.0).position, expected_position_0);
+
+    let expected_position_5 = Vec3 { x: 0.0, y: 0.0, z: 0.0 };
+    assert_eq!(Animator::lerp_camera(&camera, 5.0).position, expected_position_5);
+
+    let expected_position_7_5 = Vec3 { x: 5.0, y: 0.0, z: 0.0 };
+    assert_eq!(Animator::lerp_camera(&camera, 7.5).position, expected_position_7_5);
+
+    let expected_position_10 = Vec3 { x: 10.0, y: 0.0, z: 0.0 };
+    assert_eq!(Animator::lerp_camera(&camera, 10.0).position, expected_position_10);
 }
