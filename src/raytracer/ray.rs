@@ -77,21 +77,21 @@ fn it_gets_the_nearest_hit() {
     let sphere_top = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
-        material: box mat.clone()
+        material: Box::new(mat.clone()),
     };
     let sphere_mid = Sphere {
         center: Vec3 { x: -1.0, y: 0.0, z: 0.0 },
         radius: 1.0,
-        material: box mat.clone()
+        material: Box::new(mat.clone()),
     };
     let sphere_bot = Sphere {
         center: Vec3 { x: -2.0, y: 0.0, z: 0.0 },
         radius: 1.0,
-        material: box mat.clone()
+        material: Box::new(mat.clone()),
     };
-    prims.push(box sphere_top);
-    prims.push(box sphere_mid);
-    prims.push(box sphere_bot);
+    prims.push(Box::new(sphere_top));
+    prims.push(Box::new(sphere_mid));
+    prims.push(Box::new(sphere_bot));
 
     println!("Generating octree...");
     let octree = Octree::new_from_prims(prims);

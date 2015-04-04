@@ -11,7 +11,7 @@ use vec3::Vec3;
 
 /// Stored in row-major, M_(i, j) = i-th row and j-th column
 /// 0-indexed
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 pub struct Mat4 {
     pub m: [[f64; 4]; 4]
 }

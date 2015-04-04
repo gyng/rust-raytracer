@@ -12,10 +12,10 @@ pub trait Channel: ToPrimitive {
 
 impl Channel for u8 {
     #[inline]
-    fn min_value() -> u8 { Int::min_value() }
+    fn min_value() -> u8 { u8::min_value() }
 
     #[inline]
-    fn max_value() -> u8 { Int::max_value() }
+    fn max_value() -> u8 { u8::max_value() }
 
     #[inline]
     fn add(a: u8, b: u8) -> u8 { a.saturating_add(b) }

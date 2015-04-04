@@ -2,14 +2,13 @@ use light::Light;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use scene::{Camera, Scene};
-use std::iter::range;
 use std::num::Float;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::mpsc::channel;
-use std::sync::TaskPool;
 use vec3::Vec3;
-use rand::{thread_rng, Rng, SeedableRng, Isaac64Rng};
+use rand::{thread_rng, Rng, Isaac64Rng};
+use threadpool::ThreadPool;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
@@ -29,7 +28,7 @@ impl Renderer {
                                        camera.image_height as usize,
                                        ColorRGBA::new_rgb(0, 0, 0));
 
-        let pool = TaskPool::new(self.tasks);
+        let pool = ThreadPool::new(self.tasks);
 
         let (tx, rx) = channel();
 
@@ -69,10 +68,7 @@ impl Renderer {
 
         let mut tile = tile_factory.create();
 
-        let random_data: Vec<u64> = (0u32..64).map(|_| {
-            thread_rng().next_u64()
-        }).collect();
-        let mut rng: Isaac64Rng = SeedableRng::from_seed(random_data.as_slice());
+        let mut rng: Isaac64Rng = thread_rng().gen();
 
         for rel_y in 0usize..tile.height {
             let abs_y = camera.image_height as usize - (tile.y_off + rel_y) - 1;
@@ -179,7 +175,7 @@ impl Renderer {
         let mut shadow = Vec3::zero();
 
         // Take average shadow color after jittering/sampling light position
-        for _ in range(0, shadow_sample_tries) {
+        for _ in 0..shadow_sample_tries {
             // L has to be a unit vector for t_max 1:1 correspondence to
             // distance to light to work. Shadow feelers only search up
             // until light source.

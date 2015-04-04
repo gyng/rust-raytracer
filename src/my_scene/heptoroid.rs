@@ -26,7 +26,7 @@ pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
 
 pub fn get_scene(material_option: &str) -> Scene {
     let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
-    lights.push(box SphereLight { position: Vec3 { x: 2.0, y: 3.0, z: -2.0 }, color: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, radius: 1.0 });
+    lights.push(Box::new(SphereLight { position: Vec3 { x: 2.0, y: 3.0, z: -2.0 }, color: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, radius: 1.0 }));
 
     // Defaults to white
     let heptoroid_material = match material_option {

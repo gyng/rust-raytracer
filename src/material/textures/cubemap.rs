@@ -23,12 +23,12 @@ impl CubeMap {
         unsafe { faces.set_len(6); }
 
         let (tx, rx) = channel();
-        let sema = Arc::new(Semaphore::new(::std::os::num_cpus() as isize));
+        let sema = Arc::new(Semaphore::new(::num_cpus::get() as isize));
 
         for i in 0usize..6 {
             let task_sema = sema.clone();
             let task_tx = tx.clone();
-            let filename = String::from_str(filenames[i].clone());
+            let filename = filenames[i].clone().to_string();
 
             thread::spawn(move || {
                 task_sema.acquire();
