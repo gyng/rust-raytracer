@@ -7,5 +7,5 @@ pub struct Intersection<'a> {
     pub u: f64,
     pub v: f64,
     pub position: Vec3,
-    pub material: &'a Box<Material+'a>
+    pub material: &'a Box<Material + Send + Sync + 'a>
 }

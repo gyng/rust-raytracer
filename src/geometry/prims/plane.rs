@@ -73,7 +73,7 @@ impl Prim for Plane {
 
 #[test]
 fn it_intersects() {
-    let plane = Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box FlatMaterial { color: Vec3::one() } };
+    let plane = Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: Box::new(FlatMaterial { color: Vec3::one() }) };
 
     // Tests actual intersection
     let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 1.0, z: 0.0 }, Vec3 { x: 0.0, y: -1.0, z: 0.0 });
@@ -98,7 +98,7 @@ fn it_intersects() {
 
 #[test]
 fn it_intersects_only_in_tmin_tmax() {
-    let plane = Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: box FlatMaterial { color: Vec3::one() } };
+    let plane = Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: Box::new(FlatMaterial { color: Vec3::one() }) };
 
     // Tests tmin
     let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 1.0, z: 0.0 }, Vec3 { x: 0.0, y: -1.0, z: 0.0 });

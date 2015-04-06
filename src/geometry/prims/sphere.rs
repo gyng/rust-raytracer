@@ -90,7 +90,7 @@ fn it_intersects() {
     let sphere = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
-        material: box FlatMaterial { color: Vec3::one() }
+        material: Box::new(FlatMaterial { color: Vec3::one() })
     };
 
     // Tests actual intersection
@@ -123,7 +123,7 @@ fn it_intersects_only_in_tmin_tmax() {
     let sphere = Sphere {
         center: Vec3::zero(),
         radius: 1.0,
-        material: box FlatMaterial { color: Vec3::one() }
+        material: Box::new(FlatMaterial { color: Vec3::one() })
     };
 
     // Tests tmin

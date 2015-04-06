@@ -1,5 +1,6 @@
 use std::iter::repeat;
 use std::num::Float;
+use std::io::Write;
 
 pub mod export;
 pub mod import;
@@ -21,7 +22,7 @@ pub fn print_progress(noun: &str, start_time: ::time::Timespec, done: usize, tot
       println!(" (took {:.2} min)     ", (current_time - start_time.sec) as f64 / 60.0);
     } else {
       print!(" ETA {} min           ", ::std::f64::to_str_exact(remaining_time / 60.0, 2));
-      ::std::old_io::stdio::flush();
+      ::std::io::stdout().flush();
     }
 }
 

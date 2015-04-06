@@ -1,4 +1,5 @@
-use std::old_io::{File, Truncate, Write};
+use std::fs::File;
+use std::io::Write;
 use raytracer::compositor::{Surface, Channel};
 
 #[allow(unused_must_use)]
@@ -8,8 +9,7 @@ pub fn to_ppm(surface: Surface, filename: &str) {
         "P3 {} {} {}\n", surface.width, surface.height,
         channel_max);
 
-    let path = Path::new(filename);
-    let mut f = match File::open_mode(&path, Truncate, Write) {
+    let mut f = match File::create(filename) {
         Ok(f)  => f,
         Err(e) => panic!("File error: {}", e),
     };

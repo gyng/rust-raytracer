@@ -74,9 +74,9 @@ impl Surface {
         let x_len: usize = min(tile.width, self.width - tile.x_off);
         let y_len: usize = min(tile.height, self.height - tile.y_off);
 
-        for src_y in range(0, y_len) {
+        for src_y in 0..y_len {
             let dst_y = tile.y_off + src_y;
-            for src_x in range(0, x_len) {
+            for src_x in 0..x_len {
                 let dst_x = tile.x_off + src_x;
                 self[(dst_x, dst_y)] = tile[(src_x, src_y)]
             }
@@ -103,16 +103,16 @@ impl Surface {
 impl Index<(usize, usize)> for Surface {
     type Output = ColorRGBA<u8>;
 
-    fn index<'a>(&'a self, index: &(usize, usize)) -> &'a ColorRGBA<u8> {
-        let (x, y) = *index;
+    fn index<'a>(&'a self, index: (usize, usize)) -> &'a ColorRGBA<u8> {
+        let (x, y) = index;
         let idx = self.get_idx(x, y);
         &self.buffer[idx]
     }
 }
 
 impl IndexMut<(usize, usize)> for Surface {
-    fn index_mut<'a>(&'a mut self, index: &(usize, usize)) -> &'a mut ColorRGBA<u8> {
-        let (x, y) = *index;
+    fn index_mut<'a>(&'a mut self, index: (usize, usize)) -> &'a mut ColorRGBA<u8> {
+        let (x, y) = index;
         let idx = self.get_idx(x, y);
         &mut self.buffer[idx]
     }
@@ -198,13 +198,13 @@ fn test_paint_it_red() {
 
     for tile_factory in surf.divide(width_tile, height_tile) {
         let mut tile = tile_factory.create();
-        for y in range(0, tile.height) {
-            for x in range(0, tile.width) {
+        for y in 0..tile.height {
+            for x in 0..tile.width {
                 tile[(x, y)] = ColorRGBA::new_rgb(255, 0, 0);
             }
         }
-        for y in range(0, tile.height) {
-            for x in range(0, tile.width) {
+        for y in 0..tile.height {
+            for x in 0..tile.width {
                 assert_eq!(tile[(x, y)].r, 255);
                 assert_eq!(tile[(x, y)].g, 0);
                 assert_eq!(tile[(x, y)].b, 0);
@@ -213,8 +213,8 @@ fn test_paint_it_red() {
         surf.merge(&tile);
     }
 
-    for y in range(0, surf.height) {
-        for x in range(0, surf.width) {
+    for y in 0..surf.height {
+        for x in 0..surf.width {
             let color = surf[(x, y)];
             if color.r != 255 {
                 panic!("wrong pixel at {}x{}", x, y);

@@ -14,6 +14,6 @@ impl Texture for UVTexture {
     }
 
     fn clone_self(&self) -> Box<Texture+Send+Sync> {
-        box UVTexture as Box<Texture+Send+Sync>
+        Box::new(UVTexture) as Box<Texture+Send+Sync>
     }
 }

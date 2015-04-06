@@ -120,7 +120,7 @@ fn it_intersects_and_interpolates() {
         v0: TriangleVertex {pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, u: 0.0, v: 0.0 },
         v1: TriangleVertex {pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, u: 1.0, v: 0.0 },
         v2: TriangleVertex {pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, u: 0.0, v: 1.0 },
-        material: box FlatMaterial { color: Vec3::one() }
+        material: Box::new(FlatMaterial { color: Vec3::one() })
     };
 
     // Tests actual intersection
@@ -156,7 +156,7 @@ fn it_intersects_only_in_tmin_tmax() {
         v0: TriangleVertex { pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 0.0, v: 0.0 },
         v1: TriangleVertex { pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 1.0, v: 0.0 },
         v2: TriangleVertex { pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3::one(),  u: 0.0, v: 1.0 },
-        material: box FlatMaterial {color: Vec3::one()}
+        material: Box::new(FlatMaterial {color: Vec3::one()})
     };
 
     // Tests tmin
