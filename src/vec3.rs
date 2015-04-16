@@ -1,6 +1,5 @@
 use std::cmp;
 use std::fmt;
-use std::num::Float;
 use std::ops::{Add, Mul, Div, Neg, Sub};
 
 #[derive(Clone, Copy)]
@@ -251,7 +250,7 @@ fn it_implements_debug() {
     let vec = Vec3 { x: 0.0, y: 1.0, z: 1.3 };
     let formatted_string = format!("{:?}", vec);
     let expected_string = "(0, 1, 1.3)";
-    assert_eq!(formatted_string.as_slice(), expected_string);
+    assert_eq!(&formatted_string, expected_string);
 }
 
 #[test]

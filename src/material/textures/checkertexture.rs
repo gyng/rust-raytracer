@@ -1,4 +1,3 @@
-use std::num::Float;
 use material::Texture;
 use raytracer::compositor::ColorRGBA;
 

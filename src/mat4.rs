@@ -5,7 +5,6 @@ use raytracer::Ray;
 use std::cmp;
 use std::f64::consts::PI;
 use std::fmt;
-use std::num::Float;
 use std::ops::{Add, Mul, Sub};
 use vec3::Vec3;
 

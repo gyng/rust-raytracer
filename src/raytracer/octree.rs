@@ -1,4 +1,3 @@
-use std::num::Float;
 use std::slice::Iter;
 use geometry::bbox::get_bounds_from_objects;
 use geometry::{BBox, Prim};

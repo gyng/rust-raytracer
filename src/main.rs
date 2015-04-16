@@ -71,7 +71,7 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
     // Cameras, scenes created in ./my_scene.rs
     // Scenes with an octree supplied (see my_scene.rs) will use it.
     // Lower the render quality (especially shadow_samples) for complex scenes
-    return match scene_name.as_slice() {
+    return match scene_name.as_ref() {
         "box" => {
             // Box. Simplest scene with 9 primitives, no octree
             let camera = my_scene::cornell::get_camera(image_width, image_height, fov);
@@ -194,7 +194,7 @@ fn main() {
         return
     }
 
-    let config: SceneConfig = match json::decode(json_data.as_slice()) {
+    let config: SceneConfig = match json::decode(&json_data) {
         Ok(data) => data,
         Err(err) => {
             let msg = match err {
@@ -251,7 +251,7 @@ fn main() {
         println!("Animating - tasks: {}, FPS: {}, start: {}s, end:{}s, starting frame: {}",
                  ::num_cpus::get(), animator.fps, animator.animate_from, animator.animate_to,
                  animator.starting_frame_number);
-        animator.animate(camera, shared_scene, config.output_file.as_slice());
+        animator.animate(camera, shared_scene, &config.output_file);
         let render_time = ::time::get_time().sec;
         println!("Render done at {} ({}s)",
                  render_time, render_time - scene_time);
@@ -264,7 +264,7 @@ fn main() {
                  render_time, render_time - scene_time);
 
         let out_file = format!("{}{}", config.output_file, ".ppm");
-        util::export::to_ppm(image_data, out_file.as_slice());
+        util::export::to_ppm(image_data, &out_file);
         let export_time = ::time::get_time().sec;
 
         println!("Write done: {} ({}s). Written to {}\nTotal: {}s",

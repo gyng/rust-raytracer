@@ -2,7 +2,6 @@ use light::Light;
 use raytracer::compositor::{ColorRGBA, Surface, SurfaceFactory};
 use raytracer::{Intersection, Ray};
 use scene::{Camera, Scene};
-use std::num::Float;
 use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::mpsc::channel;

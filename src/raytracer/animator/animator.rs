@@ -1,7 +1,6 @@
 use raytracer::animator::CameraKeyframe;
 use raytracer::Renderer;
 use scene::{Camera, Scene};
-use std::num::Float;
 use std::sync::{Arc, Semaphore};
 use std::thread;
 use vec3::Vec3;
@@ -38,7 +37,7 @@ impl Animator {
 
             // Continue animating next frame as writing rendered frame to disk (slow) occurs
             thread::spawn(move || {
-                ::util::export::to_ppm(frame_data, shared_name.as_slice());
+                ::util::export::to_ppm(frame_data, &shared_name);
                 child_sema.release();
             });
 
