@@ -1,4 +1,3 @@
-use std::num::Float;
 use raytracer::Ray;
 use raytracer::animator::CameraKeyframe;
 use vec3::Vec3;

@@ -1,5 +1,4 @@
 use material::textures::ImageTexture;
-use std::num::Float;
 use std::sync::mpsc::channel;
 use std::sync::{Semaphore, Arc};
 use std::thread;
@@ -32,7 +31,7 @@ impl CubeMap {
 
             thread::spawn(move || {
                 task_sema.acquire();
-                let _ = task_tx.send((i, ImageTexture::load(filename.as_slice())));
+                let _ = task_tx.send((i, ImageTexture::load(&filename)));
             });
         }
 

@@ -1,5 +1,4 @@
 use std::iter::repeat;
-use std::num::Float;
 use std::io::Write;
 
 pub mod export;

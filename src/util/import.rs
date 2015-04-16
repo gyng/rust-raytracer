@@ -14,9 +14,9 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                 -> Mesh {
 
     let file = File::open(&filename).ok().expect("Couldn't open file");
-    let total_bytes = file.metadata().ok().expect("Coultn't load metadata").len();
+    let total_bytes = file.metadata().ok().expect("Couldn't load metadata").len();
 
-    let mut file = BufReader::new(file);
+    let file = BufReader::new(file);
 
     let start_time = ::time::get_time();
     let print_every = 2048u32;
@@ -33,7 +33,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
         let tokens: Vec<&str> = line[..].words().collect();
         if tokens.len() == 0 { continue }
 
-        match tokens[0].as_slice() {
+        match tokens[0] {
             "v" => {
                 vertices.push(Vec3 {
                     x: tokens[1].parse().unwrap(),
@@ -58,7 +58,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
             "f" => {
                 // ["f", "1/2/3", "2/2/2", "12//4"] => [[1, 2, 3], [2, 2, 2], [12, -1u, 4]]
                 let pairs: Vec<Vec<usize>> = tokens.tail().iter().map( |token| {
-                    let str_tokens: Vec<&str> = token.as_slice().split('/').collect();
+                    let str_tokens: Vec<&str> = token.split('/').collect();
                     str_tokens.iter().map( |str_tok| {
                         match str_tok.parse::<usize>().ok() {
                             Some(usize_tok) => usize_tok - 1,

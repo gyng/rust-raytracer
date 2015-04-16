@@ -1,4 +1,3 @@
-use std::num::Float;
 use geometry::bbox::BBox;
 use geometry::prim::Prim;
 use material::Material;
