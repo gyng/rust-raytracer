@@ -30,7 +30,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 
     for line_iter in file.lines() {
         let line = line_iter.unwrap();
-        let tokens: Vec<&str> = line[..].words().collect();
+        let tokens: Vec<&str> = line[..].split_whitespace().collect();
         if tokens.len() == 0 { continue }
 
         match tokens[0] {
@@ -119,7 +119,7 @@ pub fn from_ppm(filename: &str) -> Surface {
     if let Err(e) = file.read_to_string(&mut tex) {
         panic!("Could not open file {} (file missing?): {}", filename, e)
     }
-    let mut tokens: Vec<&str> = tex[..].words().collect();
+    let mut tokens: Vec<&str> = tex[..].split_whitespace().collect();
 
     tokens.remove(0); // PPM type
     let width  = tokens.remove(0).parse().unwrap();

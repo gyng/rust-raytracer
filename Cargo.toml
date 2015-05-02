@@ -7,8 +7,9 @@ authors = [
 ]
 
 [dependencies]
-time = "*"
-rustc-serialize = "*"
-rand = "*"
+num = "*"
 num_cpus = "*"
+rand = "*"
+rustc-serialize = "*"
 threadpool = "*"
+time = "*"

@@ -1,4 +1,4 @@
-use std::num::{Int, Float, ToPrimitive};
+use num::{Float, ToPrimitive};
 use std::cmp::{min, max, Ord};
 use std::ops::{Add, Mul, Sub};
 use vec3::Vec3;

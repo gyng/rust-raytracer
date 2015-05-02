@@ -1,11 +1,12 @@
-#![feature(collections, convert, core, exit_status, std_misc, str_words)]
+#![feature(collections, convert, core, exit_status, std_misc)]
 #![deny(unused_imports)]
 
+extern crate num;
+extern crate num_cpus;
 extern crate rand;
 extern crate rustc_serialize;
-extern crate time;
-extern crate num_cpus;
 extern crate threadpool;
+extern crate time;
 
 use scene::{Camera, Scene};
 
@@ -172,7 +173,7 @@ fn main() {
 
     let program_args = match parse_args(env::args()) {
         Ok(program_args) => program_args,
-        Err(mut error_str) => {
+        Err(error_str) => {
             write!(&mut io::stderr(), "{}\n", error_str);
             env::set_exit_status(1);
             return
