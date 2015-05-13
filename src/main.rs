@@ -174,7 +174,7 @@ fn main() {
     let program_args = match parse_args(env::args()) {
         Ok(program_args) => program_args,
         Err(error_str) => {
-            write!(&mut io::stderr(), "{}\n", error_str);
+            write!(&mut io::stderr(), "{}\n", error_str).unwrap();
             env::set_exit_status(1);
             return
         }
@@ -182,7 +182,7 @@ fn main() {
     let mut file_handle = match File::open(&program_args.config_file) {
         Ok(file) => file,
         Err(err) => {
-            write!(&mut io::stderr(), "{}\n", err);
+            write!(&mut io::stderr(), "{}\n", err).unwrap();
             env::set_exit_status(1);
             return
         }
@@ -190,7 +190,7 @@ fn main() {
 
     let mut json_data = String::new();
     if let Err(ref err) = file_handle.read_to_string(&mut json_data) {
-        write!(&mut io::stderr(), "{}\n", err);
+        write!(&mut io::stderr(), "{}\n", err).unwrap();
         env::set_exit_status(1);
         return
     }
@@ -206,7 +206,7 @@ fn main() {
                     format!("parse failure: {:?}", err)
                 }
             };
-            write!(&mut io::stderr(), "{}\n", msg);
+            write!(&mut io::stderr(), "{}\n", msg).unwrap();
             env::set_exit_status(1);
             return
         }
@@ -218,7 +218,7 @@ fn main() {
     let (camera, scene) = match scenepair {
         Some(pair) => pair,
         None => {
-            write!(&mut io::stderr(), "unknown scene ``{}''\n", config.name);
+            write!(&mut io::stderr(), "unknown scene ``{}''\n", config.name).unwrap();
             env::set_exit_status(1);
             return
         }
