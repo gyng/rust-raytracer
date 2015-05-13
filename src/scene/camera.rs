@@ -77,7 +77,8 @@ impl Camera {
             up: self.up
         };
 
-        let keyframes = vec![t0_keyframe] + additional_keyframes.as_slice();
+        let mut keyframes = vec![t0_keyframe];
+        keyframes.push_all(additional_keyframes.as_slice());
 
         self.keyframes = Some(keyframes);
     }
