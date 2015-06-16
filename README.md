@@ -4,7 +4,7 @@ rust-raytracer
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
-A raytracer in Rust.
+A raytracer in Rust. [Does not compile on Rust stable, only on nightly](https://github.com/gyng/rust-raytracer/issues/34#issuecomment-112358227).
 
 [Gallery](http://gyng.github.io/rust-raytracer-gallery/) <br>
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
