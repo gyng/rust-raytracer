@@ -94,12 +94,12 @@ pub fn get_scene() -> Scene {
         background: Vec3 { x: 0.3, y: 0.5, z: 0.8 },
         octree: octree,
         skybox: Some(CubeMap::load(
-            "./docs/assets/textures/skyboxes/storm_y_up/left.ppm",
-            "./docs/assets/textures/skyboxes/storm_y_up/right.ppm",
-            "./docs/assets/textures/skyboxes/storm_y_up/down.ppm",
-            "./docs/assets/textures/skyboxes/storm_y_up/up.ppm",
-            "./docs/assets/textures/skyboxes/storm_y_up/front.ppm",
-            "./docs/assets/textures/skyboxes/storm_y_up/back.ppm"
+            "./docs/assets/textures/skyboxes/storm_y_up/left.png",
+            "./docs/assets/textures/skyboxes/storm_y_up/right.png",
+            "./docs/assets/textures/skyboxes/storm_y_up/down.png",
+            "./docs/assets/textures/skyboxes/storm_y_up/up.png",
+            "./docs/assets/textures/skyboxes/storm_y_up/front.png",
+            "./docs/assets/textures/skyboxes/storm_y_up/back.png"
         ))
     }
 }

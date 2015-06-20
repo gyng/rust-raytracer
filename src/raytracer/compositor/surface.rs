@@ -4,6 +4,16 @@ use std::ops::{Index, IndexMut};
 
 use raytracer::compositor::{ColorRGBA, SurfaceFactory};
 
+pub struct IterPixelMut<'a, T: 'a>(::std::slice::IterMut<'a, ColorRGBA<T>>);
+
+impl<'a, T> Iterator for IterPixelMut<'a, T> where T: 'a {
+    type Item = &'a mut ColorRGBA<T>;
+
+    fn next(&mut self) -> Option<&'a mut ColorRGBA<T>> {
+        self.0.next()
+    }
+}
+
 #[derive(Clone)]
 pub struct Surface {
     pub width: usize,
@@ -97,6 +107,10 @@ impl Surface {
             panic!("`y` out of bounds (0 <= {} < {}", y, self.height);
         }
         self.width * y + x
+    }
+
+    pub fn iter_pixels_mut<'a>(&'a mut self) -> IterPixelMut<'a, u8> {
+        IterPixelMut(self.buffer.iter_mut())
     }
 }
 

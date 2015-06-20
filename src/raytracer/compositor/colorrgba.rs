@@ -80,6 +80,11 @@ impl ColorRGBA<u8> {
 // How do we implement this more generally so that we may have ColorRGBA<f64>
 impl<T: Channel> ColorRGBA<T> {
     #[allow(dead_code)]
+    pub fn new_rgba(r: T, g: T, b: T, a: T) -> ColorRGBA<T> {
+        ColorRGBA { r: r, g: g, b: b, a: a }
+    }
+
+    #[allow(dead_code)]
     pub fn new_rgb(r: T, g: T, b: T) -> ColorRGBA<T> {
         ColorRGBA { r: r, g: g, b: b, a: Channel::max_value() }
     }

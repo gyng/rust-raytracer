@@ -1,9 +1,11 @@
 use geometry::prims::{Triangle, TriangleVertex};
 use geometry::{Mesh, Prim};
 use material::materials::CookTorranceMaterial;
+use png::PixelsByColorType;
 use raytracer::compositor::{Surface, ColorRGBA};
 use std::fs::File;
-use std::io::{Read, BufRead, BufReader};
+use std::path::Path;
+use std::io::{BufRead, BufReader};
 use vec3::Vec3;
 
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
@@ -111,41 +113,35 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 }
 
 #[allow(dead_code)]
-pub fn from_ppm(filename: &str) -> Surface {
-    let mut file = BufReader::new(File::open(&filename).ok().expect(
-        "Couldn't open file"));
+pub fn from_png<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
+    let image = try!(::png::load_png(path));
+    let mut surface = Surface::new(image.width as usize, image.height as usize, ColorRGBA::black());
 
-    let mut tex = String::new();
-    if let Err(e) = file.read_to_string(&mut tex) {
-        panic!("Could not open file {} (file missing?): {}", filename, e)
+    match image.pixels {
+        PixelsByColorType::K8(ref bytes) => {
+            assert_eq!((image.width * image.height) as usize, bytes.len());
+            for (&k, pixel) in bytes.iter().zip(surface.iter_pixels_mut()) {
+                *pixel = ColorRGBA::new_rgb(k, k, k);
+            }
+        },
+        PixelsByColorType::KA8(ref bytes) => {
+            assert_eq!((2 * image.width * image.height) as usize, bytes.len());
+            for (value, pixel) in bytes.chunks(2).zip(surface.iter_pixels_mut()) {
+                *pixel = ColorRGBA::new_rgba(value[0], value[0], value[0], value[1]);
+            }
+        },
+        PixelsByColorType::RGB8(ref bytes) => {
+            assert_eq!((3 * image.width * image.height) as usize, bytes.len());
+            for (value, pixel) in bytes.chunks(3).zip(surface.iter_pixels_mut()) {
+                *pixel = ColorRGBA::new_rgb(value[0], value[1], value[2]);
+            }
+        },
+        PixelsByColorType::RGBA8(ref bytes) => {
+            assert_eq!((4 * image.width * image.height) as usize, bytes.len());
+            for (value, pixel) in bytes.chunks(4).zip(surface.iter_pixels_mut()) {
+                *pixel = ColorRGBA::new_rgba(value[0], value[1], value[2], value[3]);
+            }
+        },
     }
-    let mut tokens: Vec<&str> = tex[..].split_whitespace().collect();
-
-    tokens.remove(0); // PPM type
-    let width  = tokens.remove(0).parse().unwrap();
-    let height = tokens.remove(0).parse().unwrap();
-    tokens.remove(0); // Max color value
-
-    print!("Importing image texture {}", filename);
-    println!(" {}x{}", width, height);
-
-    let mut surface = Surface::new(width, height, ColorRGBA::new_rgb(0, 0, 0));
-
-    let mut i = 0usize;
-
-    for chunk in tokens[..].chunks(3) {
-        let x = i % width;
-        let y = i / width;
-        i += 1;
-
-        if x >= width || y >= height { break };
-
-        surface[(x, y)] = ColorRGBA::new_rgb(
-            chunk[0].parse::<u8>().unwrap(),
-            chunk[1].parse::<u8>().unwrap(),
-            chunk[2].parse::<u8>().unwrap()
-        );
-    }
-
-    surface
+    Ok(surface)
 }

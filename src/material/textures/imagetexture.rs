@@ -11,7 +11,7 @@ pub struct ImageTexture {
 impl ImageTexture {
     #[allow(dead_code)]
     pub fn load(filename: &str) -> ImageTexture {
-        ImageTexture { image: ::util::import::from_ppm(filename) }
+        ImageTexture { image: ::util::import::from_png(filename).unwrap() }
     }
 
     // Alias, used by skybox sampling. This is needed because we aren't storing the skybox

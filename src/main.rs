@@ -7,6 +7,7 @@ extern crate rand;
 extern crate rustc_serialize;
 extern crate threadpool;
 extern crate time;
+extern crate png;
 
 use scene::{Camera, Scene};
 
