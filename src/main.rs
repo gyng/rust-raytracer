@@ -1,4 +1,4 @@
-#![feature(collections, convert, core, exit_status, float_consts, semaphore, slice_extras, std_misc, vec_push_all)]
+#![feature(convert, float_consts, semaphore, slice_extras, vec_push_all)]
 #![deny(unused_imports)]
 
 extern crate num;
@@ -13,6 +13,7 @@ use scene::{Camera, Scene};
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::env;
+use std::process;
 use std::sync::Arc;
 use rustc_serialize::json;
 use rustc_serialize::json::DecoderError::MissingFieldError;
@@ -175,24 +176,21 @@ fn main() {
         Ok(program_args) => program_args,
         Err(error_str) => {
             write!(&mut io::stderr(), "{}\n", error_str).unwrap();
-            env::set_exit_status(1);
-            return
+            process::exit(1);
         }
     };
     let mut file_handle = match File::open(&program_args.config_file) {
         Ok(file) => file,
         Err(err) => {
             write!(&mut io::stderr(), "{}\n", err).unwrap();
-            env::set_exit_status(1);
-            return
+            process::exit(1);
         }
     };
 
     let mut json_data = String::new();
     if let Err(ref err) = file_handle.read_to_string(&mut json_data) {
         write!(&mut io::stderr(), "{}\n", err).unwrap();
-        env::set_exit_status(1);
-        return
+        process::exit(1);
     }
 
     let config: SceneConfig = match json::decode(&json_data) {
@@ -207,8 +205,7 @@ fn main() {
                 }
             };
             write!(&mut io::stderr(), "{}\n", msg).unwrap();
-            env::set_exit_status(1);
-            return
+            process::exit(1);
         }
     };
 
@@ -219,8 +216,7 @@ fn main() {
         Some(pair) => pair,
         None => {
             write!(&mut io::stderr(), "unknown scene ``{}''\n", config.name).unwrap();
-            env::set_exit_status(1);
-            return
+            process::exit(1);
         }
     };
 
