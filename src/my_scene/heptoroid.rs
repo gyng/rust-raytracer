@@ -48,12 +48,12 @@ pub fn get_scene(material_option: &str) -> Scene {
         octree: octree,
         background: Vec3 { x: 0.84, y: 0.34, z: 0.0 },
         skybox: Some(CubeMap::load(
-            "./docs/assets/textures/skyboxes/miramar_y_up/left.ppm",
-            "./docs/assets/textures/skyboxes/miramar_y_up/right.ppm",
-            "./docs/assets/textures/skyboxes/miramar_y_up/down.ppm",
-            "./docs/assets/textures/skyboxes/miramar_y_up/up.ppm",
-            "./docs/assets/textures/skyboxes/miramar_y_up/front.ppm",
-            "./docs/assets/textures/skyboxes/miramar_y_up/back.ppm"
+            "./docs/assets/textures/skyboxes/miramar_y_up/left.png",
+            "./docs/assets/textures/skyboxes/miramar_y_up/right.png",
+            "./docs/assets/textures/skyboxes/miramar_y_up/down.png",
+            "./docs/assets/textures/skyboxes/miramar_y_up/up.png",
+            "./docs/assets/textures/skyboxes/miramar_y_up/front.png",
+            "./docs/assets/textures/skyboxes/miramar_y_up/back.png"
         ))
     }
 }
