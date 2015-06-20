@@ -1,4 +1,4 @@
-#![feature(collections, convert, core, exit_status, std_misc)]
+#![feature(collections, convert, core, exit_status, float_consts, semaphore, slice_extras, std_misc, vec_push_all)]
 #![deny(unused_imports)]
 
 extern crate num;
