@@ -4,7 +4,7 @@ rust-raytracer
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
-A raytracer in Rust. [Does not compile on Rust stable, only on nightly](https://github.com/gyng/rust-raytracer/issues/34#issuecomment-112358227).
+A raytracer in Rust. Currently only compiles in Rust nightly.
 
 [Gallery](http://gyng.github.io/rust-raytracer-gallery/) <br>
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
@@ -13,34 +13,25 @@ A raytracer in Rust. [Does not compile on Rust stable, only on nightly](https://
 
 ## Usage
 
+*Note: [rust-raytracer currently does not compile on Rust stable, only on nightly](https://github.com/gyng/rust-raytracer/issues/34#issuecomment-112358227)*
+
 1. Clone the project. `--recursive` clones most sample models and textures into the project directory as well.
 
         git clone --recursive https://github.com/gyng/rust-raytracer.git
 
-2. Convert PNG textures into PPM by running appropriate scripts in `./docs/assets/textures/skyboxes/`.
-   This assumes you have, at the minimum, ImageMagick installed.
-
-        cd ./docs/assets/textures/skyboxes/
-
-        with Ruby and ImageMagick:
-        ruby ./all_to_ppm.rb
-
-        with plain ImageMagick:
-        find . -name '*.png' -execdir mogrify -format ppm {} \;
-
-3. Compile
+2. Compile
 
         cargo build --release
 
-4. Edit `sample-config.json` if you wish to render a scene besides the default,
+3. Edit `sample-config.json` if you wish to render a scene besides the default,
    or if you wish to tweak the renderer parameters
 
-5. Run the compiled program, passing the render configuration as an argument.
+4. Run the compiled program, passing the render configuration as an argument.
    If rendering a provided scene, run the binary in the project root so it can find the models and textures.
 
         ./main sample-config.json
 
-6. Alternatively
+  or alternatively to compile and run in one single command
 
         cargo run --release sample-config.json
 
@@ -92,4 +83,4 @@ These should use 30deg fov for squares and 45deg fov for 16:9.
 ## Missing/potential features
 
 * Scene description
-* Caustics/global illumination (in progress on `photon-trace` branch)
+* Caustics/global illumination (progress stalled on `photon-trace` branch)
