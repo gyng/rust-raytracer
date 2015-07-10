@@ -112,7 +112,6 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     }
 }
 
-#[allow(dead_code)]
 pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
     let image = match ::image::open(path) {
         Ok(image) => image.to_rgba(),
@@ -128,4 +127,30 @@ pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
     }
 
     Ok(surface)
+}
+
+#[test]
+pub fn test_from_png24() {
+    let surface = from_image("test/res/png24.png")
+            .ok().expect("failed to load test image `test/res/png24.png`");
+
+    let expected_image: [[(u8, u8, u8, u8); 10]; 2] = [[
+        (0, 0, 0, 255), (1, 1, 1, 255), (2, 2, 2, 255),
+        (3, 3, 3, 255), (4, 4, 4, 255), (5, 5, 5, 255),
+        (6, 6, 6, 255), (7, 7, 7, 255), (8, 8, 8, 255),
+        (9, 9, 9, 255)
+    ], [
+        (255, 0, 0, 255), (255, 0, 0, 127), (255, 0, 0, 0),
+        (0, 255, 0, 255), (0, 255, 0, 127), (0, 255, 0, 0),
+        (0, 0, 255, 255), (0, 0, 255, 127), (0, 0, 255, 0),
+        (0, 0, 0, 0)
+    ]];
+
+    for y in (0..1) {
+        for x in (0..9) {
+            let pixel = surface[(x, y)];
+            let expected = expected_image[y][x];
+            assert_eq!(expected, (pixel.r, pixel.g, pixel.b, pixel.a));
+        }
+    }
 }

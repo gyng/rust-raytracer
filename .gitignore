@@ -4,16 +4,16 @@
 /Makefile
 /config.mk
 
-main
-main.exe
-*.ppm
-*.webm
-*.mp4
-*.mpg
-*.gif
-*.png
-*.avi
-*.mkv
+/main
+/main.exe
+/*.ppm
+/*.webm
+/*.mp4
+/*.mpg
+/*.gif
+/*.png
+/*.avi
+/*.mkv
 
 # Windows image file caches
 Thumbs.db
