@@ -105,6 +105,14 @@ impl<T: Channel> ColorRGBA<T> {
             Channel::max_value())
     }
 
+    pub fn transparent() -> ColorRGBA<T> {
+        ColorRGBA::new_rgba(
+            Channel::min_value(),
+            Channel::min_value(),
+            Channel::min_value(),
+            Channel::min_value())
+    }
+
     pub fn channel_f64(&self) -> ColorRGBA<f64> {
         let max_val: T = Channel::max_value();
         ColorRGBA {

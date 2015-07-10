@@ -1,13 +1,13 @@
 #![feature(convert, semaphore, slice_extras, vec_push_all)]
 #![deny(unused_imports)]
 
+extern crate image;
 extern crate num;
 extern crate num_cpus;
 extern crate rand;
 extern crate rustc_serialize;
 extern crate threadpool;
 extern crate time;
-extern crate png;
 
 use scene::{Camera, Scene};
 

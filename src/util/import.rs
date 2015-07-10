@@ -1,7 +1,7 @@
 use geometry::prims::{Triangle, TriangleVertex};
 use geometry::{Mesh, Prim};
+use image::GenericImage;
 use material::materials::CookTorranceMaterial;
-use png::PixelsByColorType;
 use raytracer::compositor::{Surface, ColorRGBA};
 use std::fs::File;
 use std::path::Path;
@@ -113,35 +113,19 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
 }
 
 #[allow(dead_code)]
-pub fn from_png<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
-    let image = try!(::png::load_png(path));
-    let mut surface = Surface::new(image.width as usize, image.height as usize, ColorRGBA::black());
+pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
+    let image = match ::image::open(path) {
+        Ok(image) => image.to_rgba(),
+        Err(err) => return Err(format!("{}", err))
+    };
 
-    match image.pixels {
-        PixelsByColorType::K8(ref bytes) => {
-            assert_eq!((image.width * image.height) as usize, bytes.len());
-            for (&k, pixel) in bytes.iter().zip(surface.iter_pixels_mut()) {
-                *pixel = ColorRGBA::new_rgb(k, k, k);
-            }
-        },
-        PixelsByColorType::KA8(ref bytes) => {
-            assert_eq!((2 * image.width * image.height) as usize, bytes.len());
-            for (value, pixel) in bytes.chunks(2).zip(surface.iter_pixels_mut()) {
-                *pixel = ColorRGBA::new_rgba(value[0], value[0], value[0], value[1]);
-            }
-        },
-        PixelsByColorType::RGB8(ref bytes) => {
-            assert_eq!((3 * image.width * image.height) as usize, bytes.len());
-            for (value, pixel) in bytes.chunks(3).zip(surface.iter_pixels_mut()) {
-                *pixel = ColorRGBA::new_rgb(value[0], value[1], value[2]);
-            }
-        },
-        PixelsByColorType::RGBA8(ref bytes) => {
-            assert_eq!((4 * image.width * image.height) as usize, bytes.len());
-            for (value, pixel) in bytes.chunks(4).zip(surface.iter_pixels_mut()) {
-                *pixel = ColorRGBA::new_rgba(value[0], value[1], value[2], value[3]);
-            }
-        },
+    let mut surface = Surface::new(image.width() as usize,
+                                   image.height() as usize,
+                                   ColorRGBA::transparent());
+
+    for (src, dst_pixel) in image.pixels().zip(surface.iter_pixels_mut()) {
+        *dst_pixel = ColorRGBA::new_rgba(src[0], src[1], src[2], src[3]);
     }
+
     Ok(surface)
 }
