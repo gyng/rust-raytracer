@@ -38,7 +38,7 @@ impl Prim for Sphere {
                 let intersection_point = ray.origin + ray.direction.scale(t);
                 let n = (intersection_point - self.center).unit();
 
-                let u = 0.5 + n.z.atan2(n.x) / ::std::f64::consts::PI_2;
+                let u = 0.5 + n.z.atan2(n.x) / (::std::f64::consts::PI * 2.0);
                 let v = 0.5 - n.y.asin() / ::std::f64::consts::PI;
 
                 Some(Intersection {
