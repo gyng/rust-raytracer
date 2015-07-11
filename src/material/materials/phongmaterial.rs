@@ -58,3 +58,22 @@ impl Material for PhongMaterial {
         self.ior
     }
 }
+
+impl Default for PhongMaterial {
+    fn default() -> PhongMaterial {
+        PhongMaterial {
+            k_a: 0.0,
+            k_d: 1.0,
+            k_s: 1.0,
+            k_sg: 0.0,
+            k_tg: 0.0,
+            shininess: 10.0,
+            ior: 1.0,
+            ambient: Vec3::one(),
+            diffuse: Vec3 { x: 0.5, y: 0.5, z: 0.5 },
+            specular: Vec3::one(),
+            transmission: Vec3::zero(),
+            diffuse_texture: None
+        }
+    }
+}

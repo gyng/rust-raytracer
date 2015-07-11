@@ -2,7 +2,7 @@ use std::cmp;
 use std::fmt;
 use std::ops::{Add, Mul, Div, Neg, Sub};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,

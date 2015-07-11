@@ -132,7 +132,7 @@ pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
 
 #[test]
 pub fn test_obj_loads_correct_number_of_triangles() {
-    let material = CookTorranceMaterial::gray();
+    let material: CookTorranceMaterial = Default::default();
     let mesh = from_obj(material, false, "test/res/cube.obj")
             .ok().expect("failed to laod test obj `test/res/cube.obj`");
 

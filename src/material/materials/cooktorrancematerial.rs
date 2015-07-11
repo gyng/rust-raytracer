@@ -81,9 +81,8 @@ impl Material for CookTorranceMaterial {
     }
 }
 
-#[allow(dead_code)]
-impl CookTorranceMaterial {
-    pub fn gray() -> CookTorranceMaterial {
+impl Default for CookTorranceMaterial {
+    fn default() -> CookTorranceMaterial {
         CookTorranceMaterial {
             k_a: 0.0,
             k_d: 1.0,
@@ -94,7 +93,7 @@ impl CookTorranceMaterial {
             roughness: 0.15,
             ior: 1.5,
             ambient: Vec3::one(),
-            diffuse: Vec3 { x: 0.6, y: 0.6, z: 0.6 },
+            diffuse: Vec3 { x: 0.5, y: 0.5, z: 0.5 },
             specular: Vec3::one(),
             transmission: Vec3::zero(),
             diffuse_texture: None

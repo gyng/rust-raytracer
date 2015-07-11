@@ -36,3 +36,9 @@ impl Material for FlatMaterial {
         1.0
     }
 }
+
+impl Default for FlatMaterial {
+    fn default() -> FlatMaterial {
+        FlatMaterial { color: Vec3 { x: 0.5, y: 0.5, z: 0.5 } }
+    }
+}
