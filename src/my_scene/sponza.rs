@@ -40,13 +40,13 @@ pub fn get_scene() -> Scene {
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: Box::new(ground) }));
 
-    let sponza_other = ::util::import::from_obj(stone, false, "./docs/assets/models/sponza_other.obj");
+    let sponza_other = ::util::import::from_obj(stone, false, "./docs/assets/models/sponza_other.obj").ok().expect("failed to load obj model");;
     for triangle in sponza_other.triangles.into_iter() { prims.push(triangle); }
 
-    let sponza_column_shrubbery = ::util::import::from_obj(shrubbery, false, "./docs/assets/models/sponza_column_shrubbery.obj");
+    let sponza_column_shrubbery = ::util::import::from_obj(shrubbery, false, "./docs/assets/models/sponza_column_shrubbery.obj").ok().expect("failed to load obj model");;
     for triangle in sponza_column_shrubbery.triangles.into_iter() { prims.push(triangle); }
 
-    let sponza_cloth = ::util::import::from_obj(cloth, false, "./docs/assets/models/sponza_cloth.obj");
+    let sponza_cloth = ::util::import::from_obj(cloth, false, "./docs/assets/models/sponza_cloth.obj").ok().expect("failed to load obj model");;
     for triangle in sponza_cloth.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

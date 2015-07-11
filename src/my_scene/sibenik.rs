@@ -59,7 +59,7 @@ pub fn get_scene() -> Scene {
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0,  b: -1.0, c: 0.0, d: -14.9, material: Box::new(ground.clone()) }));
 
-    let sibenik = ::util::import::from_obj(stone, false, "./docs/assets/models/sibenik.obj");
+    let sibenik = ::util::import::from_obj(stone, false, "./docs/assets/models/sibenik.obj").ok().expect("failed to load obj model");;
     for triangle in sibenik.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");

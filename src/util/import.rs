@@ -10,15 +10,18 @@ use vec3::Vec3;
 
 /// This is limited to only CookTorranceMaterials, as I couldn't get a Box<Material> to clone
 /// a new material for each triangle primitive in the object model.
-#[allow(dead_code)]
-pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
-                flip_normals: bool, filename: &str)
-                -> Mesh {
+pub fn from_obj(material: CookTorranceMaterial, flip_normals: bool, filename: &str) -> Result<Mesh, String> {
+    let file_handle = match File::open(&filename) {
+        Ok(f) => f,
+        Err(err) => return Err(format!("{}", err))
+    };
 
-    let file = File::open(&filename).ok().expect("Couldn't open file");
-    let total_bytes = file.metadata().ok().expect("Couldn't load metadata").len();
+    let total_bytes = match file_handle.metadata() {
+        Ok(metadata) => metadata.len(),
+        Err(err) => return Err(format!("{}", err))
+    };
 
-    let file = BufReader::new(file);
+    let file = BufReader::new(file_handle);
 
     let start_time = ::time::get_time();
     let print_every = 2048u32;
@@ -29,6 +32,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     let mut normals : Vec<Vec3> = Vec::new();
     let mut triangles: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let mut tex_coords: Vec<Vec<f64>> = Vec::new();
+    let normal_scale = if flip_normals { -1.0 } else { 1.0 };
 
     for line_iter in file.lines() {
         let line = line_iter.unwrap();
@@ -50,7 +54,6 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                 ]);
             },
             "vn" => {
-                let normal_scale = if flip_normals { -1.0 } else { 1.0 };
                 normals.push(Vec3 {
                     x: tokens[1].parse::<f64>().unwrap() * normal_scale,
                     y: tokens[2].parse::<f64>().unwrap() * normal_scale,
@@ -63,14 +66,14 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
                     let str_tokens: Vec<&str> = token.split('/').collect();
                     str_tokens.iter().map( |str_tok| {
                         match str_tok.parse::<usize>().ok() {
-                            Some(usize_tok) => usize_tok - 1,
-                            None => !0 // No data available/not supplied
+                            Some(usize_tok) => usize_tok - 1, // Have to offset as OBJ is 1-indexed
+                            None => !0 // No data available/not supplied (eg. `//` as a token)
                         }
                     }).collect()
                 }).collect();
 
                 // If no texture coordinates were supplied, default to zero.
-                // We store nothing supplied as !0
+                // We stored nothing supplied as !0
                 let (u, v) = if pairs[0][1] != !0 {
                     (vec![
                         tex_coords[pairs[0][1]][0],
@@ -107,9 +110,7 @@ pub fn from_obj(material: CookTorranceMaterial /*Box<Material>*/,
     // Cheat the progress meter
     ::util::print_progress("Bytes", start_time, total_bytes as usize, total_bytes as usize);
 
-    Mesh {
-        triangles: triangles
-    }
+    Ok(Mesh { triangles: triangles })
 }
 
 pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
@@ -127,6 +128,15 @@ pub fn from_image<P: AsRef<Path>>(path: P) -> Result<Surface, String> {
     }
 
     Ok(surface)
+}
+
+#[test]
+pub fn test_obj_loads_correct_number_of_triangles() {
+    let material = CookTorranceMaterial::gray();
+    let mesh = from_obj(material, false, "test/res/cube.obj")
+            .ok().expect("failed to laod test obj `test/res/cube.obj`");
+
+    assert_eq!(mesh.triangles.len(), 12);
 }
 
 #[test]

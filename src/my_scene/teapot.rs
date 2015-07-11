@@ -36,7 +36,7 @@ pub fn get_teapot_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     // prims.push(Box::new(Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: Box::new(green) }));
-    let mut teapot = ::util::import::from_obj(porcelain, false, "./docs/assets/models/teapot.obj");
+    let mut teapot = ::util::import::from_obj(porcelain, false, "./docs/assets/models/teapot.obj").ok().expect("failed to load obj model");;
     let rotate = Transform::new(Mat4::rotate_x_deg_matrix(1.0));
     teapot.mut_transform(&rotate);
     for triangle in teapot.triangles.into_iter() { prims.push(triangle); }
