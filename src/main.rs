@@ -42,6 +42,7 @@ struct SceneConfig {
     reflect_depth: u32,
     refract_depth: u32,
     shadow_samples: u32,
+    gloss_samples: u32,
     pixel_samples: u32,
     output_file: String,
     animating: bool,
@@ -230,6 +231,7 @@ fn main() {
         reflect_depth: config.reflect_depth,
         refract_depth: config.refract_depth,
         shadow_samples: config.shadow_samples,
+        gloss_samples: config.gloss_samples,
         pixel_samples: config.pixel_samples,
         // Number of tasks to spawn. Will use up max available cores.
         tasks: ::num_cpus::get()

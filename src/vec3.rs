@@ -1,6 +1,8 @@
 use std::cmp;
 use std::fmt;
 use std::ops::{Add, Mul, Div, Neg, Sub};
+use rand;
+use rand::{thread_rng, Rng};
 
 #[derive(Clone, Copy, Default)]
 pub struct Vec3 {
@@ -107,6 +109,23 @@ impl Vec3 {
             x: self.x.max(min).min(max),
             y: self.y.max(min).min(max),
             z: self.z.max(min).min(max)
+        }
+    }
+
+    /// http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
+    pub fn random() -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let phi: f64      = rng.gen_range( 0.0, 2.0 * ::std::f64::consts::PI);
+        let costheta: f64 = rng.gen_range(-1.0, 1.0);
+        let u: f64        = rng.gen_range( 0.0, 1.0);
+
+        let theta = costheta.acos();
+        let r = u.powf(1.0 / 3.0);
+
+        Vec3 {
+            x: r * theta.sin() * phi.cos(),
+            y: r * theta.sin() * phi.sin(),
+            z: r * theta.cos()
         }
     }
 }

@@ -30,9 +30,9 @@ pub fn get_scene(material_option: &str) -> Scene {
 
     // Defaults to white
     let heptoroid_material = match material_option {
-        "shiny" => CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 0.55, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None },
-        "refractive" => CookTorranceMaterial { k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, ior: 1.50, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3 { x: 0.8, y: 0.8, z: 0.8 }, diffuse_texture: None },
-        _ => CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.15, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None }
+        "shiny" => CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 0.55, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None },
+        "refractive" => CookTorranceMaterial { k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 1.50, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3 { x: 0.8, y: 0.8, z: 0.8 }, diffuse_texture: None },
+        _ => CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.15, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.5, glossiness: 0.0, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None }
     };
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();

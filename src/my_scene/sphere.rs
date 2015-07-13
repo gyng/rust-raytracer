@@ -81,7 +81,7 @@ pub fn get_scene() -> Scene {
     lights.push(Box::new(SphereLight { position: Vec3 { x: 3.0, y: 10.0, z: 6.0 }, color: Vec3::one(), radius: 5.0 }));
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
-    let shiny = CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, ior: 0.05, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None };
+    let shiny = CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 1.0, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 0.05, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None };
     prims.push(Box::new(Sphere { center: Vec3::zero(), radius: 2.0, material: Box::new(shiny) }));
 
     println!("Generating octree...");

@@ -9,4 +9,6 @@ pub trait Material {
     fn global_transmissive(&self, color: &Vec3) -> Vec3;
     fn transmission(&self) -> Vec3;
     fn ior(&self) -> f64;
+    fn is_glossy(&self) -> bool;
+    fn glossiness(&self) -> f64;
 }

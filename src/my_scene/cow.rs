@@ -28,8 +28,8 @@ pub fn get_scene() -> Scene {
     let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(Box::new(SphereLight { position: Vec3 {x: 3.0, y: 10.0, z: 6.0}, color: Vec3::one(), radius: 5.0 }));
 
-    let red   = CookTorranceMaterial { k_a: 0.0, k_d: 0.6, k_s: 1.0, k_sg: 0.2, k_tg: 0.0, gauss_constant: 30.0, roughness: 0.1, ior: 0.8, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 0.25, z: 0.1 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
-    let green = CookTorranceMaterial { k_a: 0.0, k_d: 0.5, k_s: 0.4, k_sg: 0.1, k_tg: 0.0, gauss_constant: 25.0, roughness: 0.4, ior: 0.95, ambient: Vec3::one(), diffuse: Vec3 { x: 0.2, y: 0.7, z: 0.2 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let red   = CookTorranceMaterial { k_a: 0.0, k_d: 0.6, k_s: 1.0, k_sg: 0.2, k_tg: 0.0, gauss_constant: 30.0, roughness: 0.1, glossiness: 0.0, ior: 0.8, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 0.25, z: 0.1 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let green = CookTorranceMaterial { k_a: 0.0, k_d: 0.5, k_s: 0.4, k_sg: 0.1, k_tg: 0.0, gauss_constant: 25.0, roughness: 0.4, glossiness: 0.0, ior: 0.95, ambient: Vec3::one(), diffuse: Vec3 { x: 0.2, y: 0.7, z: 0.2 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0, b: 1.0, c: 0.0, d: 3.6, material: Box::new(green) }));

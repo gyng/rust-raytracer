@@ -16,6 +16,7 @@ pub struct CookTorranceMaterial {
     pub transmission: Vec3,  // Transmissive color
     pub specular: Vec3,      // Specular color
     pub roughness: f64,      // Smaller = shininer => smaller highlight spot on surface
+    pub glossiness: f64,     // How glossy reflections are. 0 for non-glossy surfaces.
     pub gauss_constant: f64, // Controls curve of distribution of microfacets
     pub ior: f64,            // Index of refraction, also used for specular highlights
     pub diffuse_texture: Option<Box<Texture+Send+Sync>>
@@ -79,6 +80,14 @@ impl Material for CookTorranceMaterial {
     fn ior(&self) -> f64 {
         self.ior
     }
+
+    fn is_glossy(&self) -> bool {
+        self.glossiness > ::std::f64::EPSILON
+    }
+
+    fn glossiness(&self) -> f64 {
+        self.glossiness
+    }
 }
 
 impl Default for CookTorranceMaterial {
@@ -91,6 +100,7 @@ impl Default for CookTorranceMaterial {
             k_tg: 0.0,
             gauss_constant: 1.0,
             roughness: 0.15,
+            glossiness: 0.0,
             ior: 1.5,
             ambient: Vec3::one(),
             diffuse: Vec3 { x: 0.5, y: 0.5, z: 0.5 },

@@ -16,6 +16,7 @@ pub struct Renderer {
     pub reflect_depth: u32,  // Maximum reflection recursions.
     pub refract_depth: u32,  // Maximum refraction recursions. A sphere takes up 2 recursions.
     pub shadow_samples: u32, // Number of samples for soft shadows and area lights.
+    pub gloss_samples: u32,  // Number of samples for glossy reflections.
     pub pixel_samples: u32,  // The square of this is the number of samples per pixel.
     pub tasks: usize         // Minimum number of tasks to spawn.
 }
@@ -62,6 +63,7 @@ impl Renderer {
 
         let shadow_samples = self.shadow_samples;
         let pixel_samples = self.pixel_samples;
+        let gloss_samples = self.gloss_samples;
         let reflect_depth = self.reflect_depth;
         let refract_depth = self.refract_depth;
 
@@ -89,7 +91,7 @@ impl Renderer {
                         };
 
                         let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
-                        let result = Renderer::trace(scene, &ray, shadow_samples,
+                        let result = Renderer::trace(scene, &ray, shadow_samples, gloss_samples,
                                                      reflect_depth, refract_depth, false);
                         // Clamp subpixels for now to avoid intense aliasing when combined value is clamped later
                         // Should think of a better way to handle this
@@ -103,7 +105,7 @@ impl Renderer {
         tile
     }
 
-    fn trace(scene: &Scene, ray: &Ray, shadow_samples: u32,
+    fn trace(scene: &Scene, ray: &Ray, shadow_samples: u32, gloss_samples: u32,
              reflect_depth: u32, refract_depth: u32, inside: bool) -> Vec3 {
 
         if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
@@ -129,8 +131,18 @@ impl Renderer {
                     if hit.material.is_reflective() {
                         let r = Vec3::reflect(&i, &n);
                         let reflect_ray = Ray::new(hit.position, r);
-                        let reflection = Renderer::trace(scene, &reflect_ray, shadow_samples,
-                                                         reflect_depth - 1, refract_depth, inside);
+
+                        let reflection = if hit.material.is_glossy() {
+                            // For glossy materials, average multiple perturbed reflection rays
+                            (0..gloss_samples).fold(Vec3::zero(), |acc, _| {
+                                let gloss_reflect_ray = reflect_ray.perturb(hit.material.glossiness());
+                                acc + Renderer::trace(scene, &gloss_reflect_ray, shadow_samples, gloss_samples,
+                                                      reflect_depth - 1, refract_depth, inside)
+                            }).scale(1.0 / gloss_samples as f64)
+                        } else {
+                            Renderer::trace(scene, &reflect_ray, shadow_samples, gloss_samples,
+                                            reflect_depth - 1, refract_depth, inside)
+                        };
 
                         result = result + hit.material.global_specular(&reflection).scale(reflect_fresnel);
                     }
@@ -145,8 +157,9 @@ impl Renderer {
                             }
                         };
 
+                        // Offset ray origin by EPSILON * direction to avoid hitting self when refracting
                         let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
-                        let refraction = Renderer::trace(scene, &refract_ray, shadow_samples,
+                        let refraction = Renderer::trace(scene, &refract_ray, shadow_samples, gloss_samples,
                                                          reflect_depth, refract_depth - 1, !inside);
 
                         result = result + hit.material.global_transmissive(&refraction).scale(refract_fresnel);
@@ -250,6 +263,7 @@ fn it_renders_the_background_of_an_empty_scene() {
         reflect_depth: 1,
         refract_depth: 1,
         shadow_samples: 1,
+        gloss_samples: 1,
         pixel_samples: 1,
         tasks: 2
     };

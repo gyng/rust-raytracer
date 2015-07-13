@@ -66,6 +66,21 @@ impl Ray {
 
         nearest_hit
     }
+
+    pub fn perturb(&self, magnitude: f64) -> Ray {
+        let rand_vec = Vec3::random() * magnitude;
+
+        // Force random vectors to be in same direction as original vector
+        let corrected_rand_vec = if rand_vec.dot(&self.direction) < 0.0 {
+            rand_vec * -1.0
+        } else {
+            rand_vec
+        };
+
+        let direction = (corrected_rand_vec + self.direction).unit();
+
+        Ray::new(self.origin, direction)
+    }
 }
 
 #[test]

@@ -29,9 +29,9 @@ pub fn get_scene() -> Scene {
     lights.push(Box::new(SphereLight { position: Vec3 { x: 200.0, y: -200.0, z: 100.0 }, color: Vec3::one(), radius: 40.0 }));
     lights.push(Box::new(SphereLight { position: Vec3 { x: -95.0, y: 20.0, z: 170.0 }, color: Vec3 { x: 0.5, y: 0.5, z: 0.3 }, radius: 15.0 }));
 
-    let red   = CookTorranceMaterial { k_a: 0.1, k_d: 0.4, k_s: 0.5, k_sg: 0.5, k_tg: 0.0, gauss_constant: 5.0,  roughness: 0.05, ior: 0.98, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 0.25, z: 0.1 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let green = CookTorranceMaterial { k_a: 0.0, k_d: 0.4, k_s: 0.6, k_sg: 0.7, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.3,  ior: 1.5,  ambient: Vec3::one(), diffuse: Vec3 { x: 0.2, y: 0.7, z: 0.2 },  specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
-    let shiny = CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 0.7, k_sg: 1.0, k_tg: 0.0, gauss_constant: 25.0, roughness: 0.01, ior: 0.2,  ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.9, z: 0.1 },  specular: Vec3 {x: 0.9, y: 0.9, z: 0.1}, transmission: Vec3::zero(), diffuse_texture: None};
+    let red   = CookTorranceMaterial { k_a: 0.1, k_d: 0.4, k_s: 0.5, k_sg: 0.5, k_tg: 0.0, gauss_constant: 5.0,  roughness: 0.05, glossiness: 0.0, ior: 0.98, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 0.25, z: 0.1 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let green = CookTorranceMaterial { k_a: 0.0, k_d: 0.4, k_s: 0.6, k_sg: 0.7, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.3,  glossiness: 0.0, ior: 1.5,  ambient: Vec3::one(), diffuse: Vec3 { x: 0.2, y: 0.7, z: 0.2 },  specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None};
+    let shiny = CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 0.7, k_sg: 1.0, k_tg: 0.0, gauss_constant: 25.0, roughness: 0.01, glossiness: 0.0, ior: 0.2,  ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.9, z: 0.1 },  specular: Vec3 {x: 0.9, y: 0.9, z: 0.1}, transmission: Vec3::zero(), diffuse_texture: None};
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0, b: 0.0, c: 1.0, d: -10.0, material: Box::new(green)}));

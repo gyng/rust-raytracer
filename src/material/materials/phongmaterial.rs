@@ -15,6 +15,7 @@ pub struct PhongMaterial {
     pub transmission: Vec3, // Transmissive color
     pub specular: Vec3,     // Specular color
     pub shininess: f64,     // Size of Phong specular highlight
+    pub glossiness: f64,    // How glossy reflections are. 0 for non-glossy surfaces.
     pub ior: f64,           // Index of refraction
     pub diffuse_texture: Option<Box<Texture+Send+Sync>>
 }
@@ -57,6 +58,14 @@ impl Material for PhongMaterial {
     fn ior(&self) -> f64 {
         self.ior
     }
+
+    fn is_glossy(&self) -> bool {
+        self.glossiness > ::std::f64::EPSILON
+    }
+
+    fn glossiness(&self) -> f64 {
+        self.glossiness
+    }
 }
 
 impl Default for PhongMaterial {
@@ -68,6 +77,7 @@ impl Default for PhongMaterial {
             k_sg: 0.0,
             k_tg: 0.0,
             shininess: 10.0,
+            glossiness: 0.0,
             ior: 1.0,
             ambient: Vec3::one(),
             diffuse: Vec3 { x: 0.5, y: 0.5, z: 0.5 },

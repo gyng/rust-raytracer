@@ -35,6 +35,14 @@ impl Material for FlatMaterial {
     fn ior(&self) -> f64 {
         1.0
     }
+
+    fn is_glossy(&self) -> bool {
+        false
+    }
+
+    fn glossiness(&self) -> f64 {
+        0.0
+    }
 }
 
 impl Default for FlatMaterial {

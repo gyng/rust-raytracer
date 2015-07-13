@@ -32,10 +32,10 @@ pub fn get_scene() -> Scene {
 
     let checker: Box<Texture+Send+Sync> = Box::new(CheckerTexture { color1: ColorRGBA::white(), color2: ColorRGBA::new_rgb(0.15, 0.11, 0.1), scale: 32.0 });
 
-    let stone     = CookTorranceMaterial { k_a: 0.1,  k_d: 0.8, k_s: 0.2, k_sg: 0.2,  k_tg: 0.0, gauss_constant: 50.0, roughness: 1.0, ior: 1.5, ambient: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, diffuse: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
-    let ground    = CookTorranceMaterial { k_a: 0.03, k_d: 0.9, k_s: 0.3, k_sg: 0.5,  k_tg: 0.0, gauss_constant: 25.0, roughness: 0.1, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.38, y: 0.38, z: 0.5 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone()) };
-    let cloth     = CookTorranceMaterial { k_a: 0.03, k_d: 0.8, k_s: 0.1, k_sg: 0.05, k_tg: 0.0, gauss_constant: 40.0, roughness: 0.8, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 { x: 0.85, y: 0.05, z: 0.05 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
-    let shrubbery = CookTorranceMaterial { k_a: 0.03, k_d: 0.8, k_s: 0.2, k_sg: 0.05, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.2, ior: 1.2, ambient: Vec3::one(), diffuse: Vec3 { x: 0.16, y: 0.47, z: 0.11 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let stone     = CookTorranceMaterial { k_a: 0.1,  k_d: 0.8, k_s: 0.2, k_sg: 0.2,  k_tg: 0.0, gauss_constant: 50.0, roughness: 1.0, glossiness: 0.0, ior: 1.5, ambient: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, diffuse: Vec3 { x: 0.88, y: 0.83, z: 0.77 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let ground    = CookTorranceMaterial { k_a: 0.03, k_d: 0.9, k_s: 0.3, k_sg: 0.5,  k_tg: 0.0, gauss_constant: 25.0, roughness: 0.1, glossiness: 0.0, ior: 0.5, ambient: Vec3::one(), diffuse: Vec3 { x: 0.38, y: 0.38, z: 0.5 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: Some(checker.clone()) };
+    let cloth     = CookTorranceMaterial { k_a: 0.03, k_d: 0.8, k_s: 0.1, k_sg: 0.05, k_tg: 0.0, gauss_constant: 40.0, roughness: 0.8, glossiness: 0.0, ior: 1.3, ambient: Vec3::one(), diffuse: Vec3 { x: 0.85, y: 0.05, z: 0.05 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
+    let shrubbery = CookTorranceMaterial { k_a: 0.03, k_d: 0.8, k_s: 0.2, k_sg: 0.05, k_tg: 0.0, gauss_constant: 50.0, roughness: 0.2, glossiness: 0.0, ior: 1.2, ambient: Vec3::one(), diffuse: Vec3 { x: 0.16, y: 0.47, z: 0.11 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None };
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0, b: 1.0, c: 0.0, d: 0.0, material: Box::new(ground) }));
