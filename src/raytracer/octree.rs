@@ -1,6 +1,6 @@
 use std::slice::Iter;
-use geometry::bbox::get_bounds_from_objects;
-use geometry::{BBox, Prim};
+use std::iter::FromIterator;
+use geometry::{BBox, PartialBoundingBox, Prim};
 use raytracer::Ray;
 use vec3::Vec3;
 
@@ -102,15 +102,18 @@ impl OctreeNode {
     }
 }
 
-// TODO: sell: Prims can later implement a Bounded3D trait containing a method
-//             that returns Option<BBox>.  Some if finite, None if infinite.
-//             Then we can use impl<T: Bounded3D> Octree<Box<T>>, probably!
+impl<T> FromIterator<T> for Octree<T> where T: PartialBoundingBox {
+    fn from_iter<I>(iterator: I) -> Self where I: IntoIterator<Item=T> {
+        let iterator = iterator.into_iter();
 
-impl Octree<Box<Prim+Send+Sync>> {
-    #[allow(dead_code)]
-    pub fn new_from_prims(prims: Vec<Box<Prim+Send+Sync>>) -> Octree<Box<Prim+Send+Sync>> {
-        let bounds = get_bounds_from_objects(&prims);
-        let (finites, infinites): (Vec<Box<Prim+Send+Sync>>, Vec<Box<Prim+Send+Sync>>) = prims.into_iter().partition(|prim| prim.bounding().is_some());
+        let (finites, infinites): (Vec<T>, Vec<T>) =
+            iterator.partition(|item| item.partial_bounding_box().is_some());
+
+        // TODO(sell): why do we need to map here? &T isn't PartialBoundingBox,
+        //             but we need to find out how to make it so.
+        let bounds = BBox::from_union(finites.iter().map(|i| i.partial_bounding_box()))
+            .unwrap_or(BBox::zero());
+
         // pbrt recommended max depth for a k-d tree (though, we're using an octree)
         // For a k-d tree: 8 + 1.3 * log2(N)
         let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as i32;
@@ -118,7 +121,7 @@ impl Octree<Box<Prim+Send+Sync>> {
         println!("Octree maximum depth {}", depth);
         let mut root_node = OctreeNode::new(bounds, depth);
         for (i, prim) in finites.iter().enumerate() {
-            root_node.insert(i, prim.bounding().unwrap());
+            root_node.insert(i, prim.partial_bounding_box().unwrap());
         }
 
         Octree {
@@ -127,12 +130,13 @@ impl Octree<Box<Prim+Send+Sync>> {
             root: root_node,
         }
     }
+}
 
+impl Octree<Box<Prim+Send+Sync>> {
     pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
         OctreeIterator::new(self, ray)
     }
 }
-
 
 struct OctreeIterator<'a, T:'a> {
     prims: &'a [T],

@@ -252,7 +252,7 @@ fn it_renders_the_background_of_an_empty_scene() {
 
     let test_scene = Scene {
         lights: vec!(),
-        octree: ::raytracer::Octree::new_from_prims(vec!()),
+        octree: vec!().into_iter().collect(),
         background: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
         skybox: None
     };

@@ -1,4 +1,4 @@
-use geometry::bbox::BBox;
+use geometry::bbox::{BBox, PartialBoundingBox};
 use geometry::prim::Prim;
 use material::Material;
 use mat4::{Mat4, Transform};
@@ -13,6 +13,23 @@ pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
     pub material: Box<Material+Send+Sync>
+}
+
+impl PartialBoundingBox for Sphere {
+    fn partial_bounding_box(&self) -> Option<BBox> {
+        Some(BBox {
+            min: Vec3 {
+                x: self.center.x - self.radius,
+                y: self.center.y - self.radius,
+                z: self.center.z - self.radius
+            },
+            max: Vec3 {
+                x: self.center.x + self.radius,
+                y: self.center.y + self.radius,
+                z: self.center.z + self.radius
+            }
+        })
+    }
 }
 
 impl Prim for Sphere {
@@ -53,21 +70,6 @@ impl Prim for Sphere {
                 None
             }
         }
-    }
-
-    fn bounding(&self) -> Option<BBox> {
-        Some(BBox {
-            min: Vec3 {
-                x: self.center.x - self.radius,
-                y: self.center.y - self.radius,
-                z: self.center.z - self.radius
-            },
-            max: Vec3 {
-                x: self.center.x + self.radius,
-                y: self.center.y + self.radius,
-                z: self.center.z + self.radius
-            }
-        })
     }
 
     fn mut_transform(&mut self, transform: &Transform) {

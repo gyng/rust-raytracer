@@ -7,7 +7,6 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
-use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
 use raytracer::compositor::ColorRGBA;
 use scene::{Camera, Scene};
@@ -86,7 +85,7 @@ pub fn get_scene() -> Scene {
     prims.push(Box::new(Sphere { center: Vec3 {x: 70.0, y: 17.0, z: 60.0 }, radius: 17.0, material: Box::new(refract.clone()) }));
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(prims);
+    let octree = prims.into_iter().collect();
     println!("Octree generated...");
 
     Scene {

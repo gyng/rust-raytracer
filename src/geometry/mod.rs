@@ -1,6 +1,6 @@
 pub use self::prim::Prim;
 pub use self::mesh::Mesh;
-pub use self::bbox::BBox;
+pub use self::bbox::{BBox, PartialBoundingBox};
 
 pub mod bbox;
 pub mod prim;
