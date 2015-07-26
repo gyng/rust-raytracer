@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use geometry::bbox::{union_point, union_points, BBox};
+use geometry::bbox::{union_point, union_points, BBox, PartialBoundingBox};
 use geometry::prim::Prim;
 use material::Material;
 use mat4::{Mat4, Transform};
@@ -38,6 +38,12 @@ impl Triangle {
             v2: TriangleVertex{ pos: v2, n: n, u: ut2, v: vt2 },
             material: material
         }
+    }
+}
+
+impl PartialBoundingBox for Triangle {
+    fn partial_bounding_box(&self) -> Option<BBox> {
+        Some(union_point(&union_points(&self.v0.pos, &self.v1.pos), &self.v2.pos))
     }
 }
 
@@ -89,10 +95,6 @@ impl Prim for Triangle {
                 material: &self.material
             })
         }
-    }
-
-    fn bounding(&self) -> Option<BBox> {
-        return Some(union_point(&union_points(&self.v0.pos, &self.v1.pos), &self.v2.pos));
     }
 
     fn mut_transform(&mut self, transform: &Transform) {

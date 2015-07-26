@@ -7,7 +7,6 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
-use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
 use raytracer::compositor::ColorRGBA;
 use scene::{Camera, Scene};
@@ -50,7 +49,7 @@ pub fn get_scene() -> Scene {
     for triangle in sponza_cloth.triangles.into_iter() { prims.push(triangle); }
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(prims);
+    let octree = prims.into_iter().collect();
     println!("Octree generated...");
 
     Scene {

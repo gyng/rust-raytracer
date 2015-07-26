@@ -7,7 +7,6 @@ use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
-use raytracer::Octree;
 use raytracer::animator::CameraKeyframe;
 use raytracer::compositor::ColorRGBA;
 use scene::{Camera, Scene};
@@ -57,7 +56,7 @@ pub fn get_scene() -> Scene {
     prims.push(Box::new(Triangle::auto_normal(Vec3 { x: 20.0, y: 95.0, z: 20.0 }, Vec3 { x: 15.0, y: 50.0, z: 40.0 }, Vec3 { x: 35.0, y: 50.0, z: 35.0 }, (0.5, 1.0), (0.0, 0.0), (1.0, 0.0), Box::new(blue))));
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(prims);
+    let octree = prims.into_iter().collect();
     println!("Octree generated...");
 
     Scene {

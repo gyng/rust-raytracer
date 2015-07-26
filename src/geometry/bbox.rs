@@ -1,14 +1,27 @@
 #![allow(dead_code)]
-
-use geometry::Prim;
 use raytracer::Ray;
-use std::f64;
 use vec3::Vec3;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct BBox {
     pub min: Vec3,
     pub max: Vec3
+}
+
+pub trait PartialBoundingBox {
+    fn partial_bounding_box(&self) -> Option<BBox>;
+}
+
+impl PartialBoundingBox for BBox {
+    fn partial_bounding_box(&self) -> Option<BBox> {
+        Some(*self)
+    }
+}
+
+impl PartialBoundingBox for Option<BBox> {
+    fn partial_bounding_box(&self) -> Option<BBox> {
+        *self
+    }
 }
 
 /// Given a bounding box and a point, compute and return a new BBox that
@@ -47,6 +60,12 @@ pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
 /// Given two bounding boxes, compute and return a new BBox that encompasses
 /// both spaces the original two boxes encompassed.
 pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
+    if *b1 == BBox::zero() {
+        return *b2
+    }
+    if *b2 == BBox::zero() {
+        return *b1
+    }
     BBox {
         min: Vec3 {
             x: b1.min.x.min(b2.min.x),
@@ -61,34 +80,28 @@ pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
     }
 }
 
-/// Given a vector of prims, compute and return a new BBox that encompasses
-/// all finite prims (ie. not including planes) in that vector.
-pub fn get_bounds_from_objects(prims: &Vec<Box<Prim+Send+Sync>>) -> BBox {
-    let mut max = Vec3 { x: f64::MIN, y: f64::MIN, z: f64::MIN };
-    let mut min = Vec3 { x: f64::MAX, y: f64::MAX, z: f64::MAX };
-
-    for prim in prims.iter() {
-        match prim.bounding() {
-            Some(bounding) => {
-                min.x = min.x.min(bounding.min.x);
-                min.y = min.y.min(bounding.min.y);
-                min.z = min.z.min(bounding.min.z);
-
-                max.x = max.x.max(bounding.max.x);
-                max.y = max.y.max(bounding.max.y);
-                max.z = max.z.max(bounding.max.z);
-            }
-            None => {}
+impl BBox {
+    pub fn zero() -> Self {
+        BBox {
+            min: Vec3::zero(),
+            max: Vec3::zero(),
         }
     }
 
-    BBox {
-        min: min,
-        max: max
-    }
-}
+    pub fn from_union<P, I>(obj_iter: I) -> Option<Self>
+        where
+            P: PartialBoundingBox,
+            I: Iterator<Item=P> {
 
-impl BBox {
+        obj_iter
+            .filter_map(|item| item.partial_bounding_box())
+            .fold(None, |acc, item| {
+                Some(acc
+                    .map(|a| union_bbox(&a, &item))
+                    .unwrap_or(item))
+            })
+    }
+    
     pub fn intersects(&self, ray: &Ray) -> bool {
         // Using ray.inverse_dir is an optimisation. Normally, for simplicity we would do
         //

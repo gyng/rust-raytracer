@@ -1,4 +1,4 @@
-use geometry::{BBox, Prim};
+use geometry::{BBox, PartialBoundingBox, Prim};
 use material::Material;
 use mat4::{Mat4, Transform};
 use raytracer::{Ray, Intersection};
@@ -14,6 +14,12 @@ pub struct Plane {
     pub c: f64, // normal.z
     pub d: f64,
     pub material: Box<Material+Send+Sync>
+}
+
+impl PartialBoundingBox for Plane {
+    fn partial_bounding_box(&self) -> Option<BBox> {
+        None // more infinite than infinityb
+    }
 }
 
 impl Prim for Plane {
@@ -41,10 +47,6 @@ impl Prim for Plane {
                 material: &self.material
             })
         }
-    }
-
-    fn bounding(&self) -> Option<BBox> {
-        None // more infinite than infinityb
     }
 
     /// This transformation is entirely ad-hoc, do not trust this

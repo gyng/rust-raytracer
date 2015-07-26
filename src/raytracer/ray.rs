@@ -11,8 +11,6 @@ use geometry::prims::Sphere;
 use light::light::Light;
 #[cfg(test)]
 use material::materials::FlatMaterial;
-#[cfg(test)]
-use raytracer::Octree;
 
 pub struct Ray {
     pub origin: Vec3,
@@ -109,7 +107,7 @@ fn it_gets_the_nearest_hit() {
     prims.push(Box::new(sphere_bot));
 
     println!("Generating octree...");
-    let octree = Octree::new_from_prims(prims);
+    let octree = prims.into_iter().collect();
     println!("Octree generated...");
 
     let scene = Scene {
