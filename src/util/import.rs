@@ -1,4 +1,4 @@
-use geometry::prims::{Triangle, TriangleVertex};
+use geometry::prims::TriangleOptions;
 use geometry::{Mesh, Prim};
 use image::GenericImage;
 use material::materials::CookTorranceMaterial;
@@ -90,12 +90,20 @@ pub fn from_obj(material: CookTorranceMaterial, flip_normals: bool, filename: &s
                      vec![0.0, 0.0, 0.0])
                 };
 
-                triangles.push(Box::new(Triangle {
-                    v0: TriangleVertex { pos: vertices[pairs[0][0]], n: normals[pairs[0][2]], u: u[0], v: v[0] },
-                    v1: TriangleVertex { pos: vertices[pairs[1][0]], n: normals[pairs[1][2]], u: u[1], v: v[1] },
-                    v2: TriangleVertex { pos: vertices[pairs[2][0]], n: normals[pairs[2][2]], u: u[2], v: v[2] },
-                    material: Box::new(material.clone()),
-                }));
+                let mut triopts = TriangleOptions::new(
+                    vertices[pairs[0][0]],
+                    vertices[pairs[1][0]],
+                    vertices[pairs[2][0]]);
+
+                triopts.material(Box::new(material.clone()));
+                triopts.normals([
+                    normals[pairs[0][2]],
+                    normals[pairs[1][2]],
+                    normals[pairs[2][2]],
+                ]);
+                triopts.texinfo([(u[0], v[0]), (u[1], v[1]), (u[2], v[2])]);
+
+                triangles.push(Box::new(triopts.build()));
             },
             _ => {}
         }
