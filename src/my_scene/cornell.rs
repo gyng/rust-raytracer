@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 
 use geometry::prim::{Prim};
-use geometry::prims::{Plane, Sphere, Triangle};
+use geometry::prims::{Plane, Sphere, Triangle, TriangleOptions};
 use light::light::{Light};
 use light::lights::{PointLight, SphereLight};
 use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
@@ -53,7 +53,14 @@ pub fn get_scene() -> Scene {
     prims.push(Box::new(Sphere { center: Vec3 { x: 70.0, y: 17.0, z: 60.0 }, radius: 17.0, material: Box::new(refract.clone())}));
     prims.push(Box::new(Sphere { center: Vec3 { x: 50.0, y: 50.0, z: 20.0 }, radius: 10.0, material: Box::new(shiny_glossy.clone())}));
     prims.push(Box::new(Sphere { center: Vec3 { x: 20.0, y: 13.0, z: 90.0 }, radius: 13.0, material: Box::new(blue.clone())}));
-    prims.push(Box::new(Triangle::auto_normal(Vec3 { x: 20.0, y: 95.0, z: 20.0 }, Vec3 { x: 15.0, y: 50.0, z: 40.0 }, Vec3 { x: 35.0, y: 50.0, z: 35.0 }, (0.5, 1.0), (0.0, 0.0), (1.0, 0.0), Box::new(blue))));
+
+    let mut triopts = TriangleOptions::new(
+        Vec3 { x: 20.0, y: 95.0, z: 20.0 },
+        Vec3 { x: 15.0, y: 50.0, z: 40.0 },
+        Vec3 { x: 35.0, y: 50.0, z: 35.0 });
+    triopts.texinfo([(0.5, 1.0), (0.0, 0.0), (1.0, 0.0)]);
+    triopts.material(Box::new(blue));
+    prims.push(Box::new(triopts.build()));
 
     println!("Generating octree...");
     let octree = prims.into_iter().collect();

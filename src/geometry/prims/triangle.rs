@@ -7,43 +7,101 @@ use mat4::{Mat4, Transform};
 use raytracer::{Ray, Intersection};
 use vec3::Vec3;
 
-#[cfg(test)]
 use material::materials::FlatMaterial;
 
-pub struct Triangle {
-    pub v0: TriangleVertex,
-    pub v1: TriangleVertex,
-    pub v2: TriangleVertex,
-    pub material: Box<Material+Send+Sync>
+
+struct UvValue {
+    u: f64,
+    v: f64
 }
 
-pub struct TriangleVertex {
-    pub pos: Vec3,
-    pub n: Vec3,
-    pub u: f64,
-    pub v: f64
+impl UvValue {
+    pub fn from_tuple(uv: (f64, f64)) -> UvValue {
+        UvValue { u: uv.0, v: uv.1 }
+    }
+
+    fn default3() -> [UvValue; 3] {
+        [
+            UvValue { u: 0.5, v: 1.0 },
+            UvValue { u: 0.0, v: 0.0 },
+            UvValue { u: 1.0, v: 0.0 },
+        ]
+    }
 }
 
-impl Triangle {
-    /// All three normals at vertices are perpendicular to the triangle plane
-    pub fn auto_normal(v0: Vec3, v1: Vec3, v2: Vec3, uv0: (f64, f64), uv1: (f64, f64), uv2: (f64, f64), material: Box<Material+Send+Sync>) -> Triangle {
-        let n = (v1 - v0).cross(&(v2 - v0));
-        let (ut0, vt0) = uv0;
-        let (ut1, vt1) = uv1;
-        let (ut2, vt2) = uv2;
+pub struct TriangleOptions {
+    vertices: [Vec3; 3],
+    normals: Option<[Vec3; 3]>,
+    texinfo: Option<[UvValue; 3]>,
+    material: Option<Box<Material+Send+Sync>>,
+}
+
+fn get_auto_normals(v: [Vec3; 3]) -> [Vec3; 3] {
+    let n = (v[1] - v[0]).cross(&(v[2] - v[0]));
+    [n, n, n]
+}
+
+impl TriangleOptions {   
+    pub fn new(v0: Vec3, v1: Vec3, v2: Vec3) -> TriangleOptions {
+        TriangleOptions {
+            vertices: [v0, v1, v2],
+            normals: None,
+            texinfo: None,
+            material: None,
+        }
+    }
+
+    /// In the default case, all three normals at vertices are perpendicular
+    /// to the triangle plane.
+    pub fn normals(&mut self, normals: [Vec3; 3]) -> &mut Self {
+        self.normals = Some(normals);
+        self
+    }
+
+    pub fn texinfo(&mut self, texinfo: [(f64, f64); 3]) -> &mut Self {
+        self.texinfo = Some([
+            UvValue::from_tuple(texinfo[0]),
+            UvValue::from_tuple(texinfo[1]),
+            UvValue::from_tuple(texinfo[2]),
+        ]);
+        self
+    }
+
+    pub fn material(&mut self, material: Box<Material+Send+Sync>) -> &mut Self {
+        self.material = Some(material);
+        self
+    }
+
+    pub fn build(self) -> Triangle {
+        let normals = self.normals.unwrap_or_else(|| get_auto_normals(self.vertices));
+        let texinfo = self.texinfo.unwrap_or_else(UvValue::default3);
+        let material = self.material.unwrap_or_else(|| Box::new(FlatMaterial { color: Vec3::one() }));
 
         Triangle {
-            v0: TriangleVertex{ pos: v0, n: n, u: ut0, v: vt0 },
-            v1: TriangleVertex{ pos: v1, n: n, u: ut1, v: vt1 },
-            v2: TriangleVertex{ pos: v2, n: n, u: ut2, v: vt2 },
-            material: material
+            vertices: self.vertices,
+            normals: normals,
+            texinfo: texinfo,
+            material: material,
         }
     }
 }
 
+pub struct Triangle {
+    vertices: [Vec3; 3],
+
+    // All the same if our triangle is ``flat''.
+    // Values differ when we want interpolation. e.g. round things like teapot.
+    normals: [Vec3; 3],
+
+    // Used in textured triangles, can be [UvValue; 3]::default() otherwise.
+    texinfo: [UvValue; 3],
+
+    material: Box<Material+Send+Sync>
+}
+
 impl PartialBoundingBox for Triangle {
     fn partial_bounding_box(&self) -> Option<BBox> {
-        Some(union_point(&union_points(&self.v0.pos, &self.v1.pos), &self.v2.pos))
+        Some(union_point(&union_points(&self.vertices[0], &self.vertices[1]), &self.vertices[2]))
     }
 }
 
@@ -51,8 +109,8 @@ impl Prim for Triangle {
     /// http://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
     /// Barycentric coordinates.
     fn intersects<'a>(&'a self, ray: &Ray, t_min: f64, t_max: f64) -> Option<Intersection<'a>> {
-        let e1 = self.v1.pos - self.v0.pos;
-        let e2 = self.v2.pos - self.v0.pos;
+        let e1 = self.vertices[1] - self.vertices[0];
+        let e2 = self.vertices[2] - self.vertices[0];
         let p = ray.direction.cross(&e2);
         let det = e1.dot(&p);
 
@@ -62,7 +120,7 @@ impl Prim for Triangle {
         }
 
         let inv_det = 1.0 / det;
-        let s = ray.origin - self.v0.pos;
+        let s = ray.origin - self.vertices[0];
         let beta = inv_det * s.dot(&p);
         if beta < 0.0 || beta > 1.0 { return None }
 
@@ -80,11 +138,11 @@ impl Prim for Triangle {
             let alpha = 1.0 - beta - gamma;
 
             // Interpolate normals at vertices to get normal
-            let n = self.v0.n.scale(alpha) + self.v1.n.scale(beta) + self.v2.n.scale(gamma);
+            let n = self.normals[0].scale(alpha) + self.normals[1].scale(beta) + self.normals[2].scale(gamma);
 
             // Interpolate UVs at vertices to get UV
-            let u = self.v0.u * alpha + self.v1.u * beta + self.v2.u * gamma;
-            let v = self.v0.v * alpha + self.v1.v * beta + self.v2.v * gamma;
+            let u = self.texinfo[0].u * alpha + self.texinfo[1].u * beta + self.texinfo[2].u * gamma;
+            let v = self.texinfo[0].v * alpha + self.texinfo[1].v * beta + self.texinfo[2].v * gamma;
 
             Some(Intersection {
                 n: n,
@@ -98,32 +156,37 @@ impl Prim for Triangle {
     }
 
     fn mut_transform(&mut self, transform: &Transform) {
-        let v0_t = Mat4::mult_p(&transform.m, &self.v0.pos);
-        let v1_t = Mat4::mult_p(&transform.m, &self.v1.pos);
-        let v2_t = Mat4::mult_p(&transform.m, &self.v2.pos);
+        let v0_t = Mat4::mult_p(&transform.m, &self.vertices[0]);
+        let v1_t = Mat4::mult_p(&transform.m, &self.vertices[1]);
+        let v2_t = Mat4::mult_p(&transform.m, &self.vertices[2]);
 
-        let n0_t = Mat4::transform_normal(&self.v0.n, &transform.m);
-        let n1_t = Mat4::transform_normal(&self.v1.n, &transform.m);
-        let n2_t = Mat4::transform_normal(&self.v2.n, &transform.m);
+        let n0_t = Mat4::transform_normal(&self.normals[0], &transform.m);
+        let n1_t = Mat4::transform_normal(&self.normals[1], &transform.m);
+        let n2_t = Mat4::transform_normal(&self.normals[2], &transform.m);
 
-        self.v0.pos = v0_t;
-        self.v1.pos = v1_t;
-        self.v2.pos = v2_t;
+        self.vertices[0] = v0_t;
+        self.vertices[1] = v1_t;
+        self.vertices[2] = v2_t;
 
-        self.v0.n = n0_t;
-        self.v1.n = n1_t;
-        self.v2.n = n2_t;
+        self.normals[0] = n0_t;
+        self.normals[1] = n1_t;
+        self.normals[2] = n2_t;
     }
 }
 
 #[test]
 fn it_intersects_and_interpolates() {
-    let triangle = Triangle {
-        v0: TriangleVertex {pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, u: 0.0, v: 0.0 },
-        v1: TriangleVertex {pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, u: 1.0, v: 0.0 },
-        v2: TriangleVertex {pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, u: 0.0, v: 1.0 },
-        material: Box::new(FlatMaterial { color: Vec3::one() })
-    };
+    let mut triopts = TriangleOptions::new(
+        Vec3 { x: -1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  0.0, y: 1.0, z: 0.0 });
+    triopts.normals([
+        Vec3 { x: -1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  0.0, y: 1.0, z: 0.0 }]);
+    triopts.texinfo([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]);
+
+    let triangle = triopts.build();
 
     // Tests actual intersection
     let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
@@ -154,12 +217,14 @@ fn it_intersects_and_interpolates() {
 
 #[test]
 fn it_intersects_only_in_tmin_tmax() {
-    let triangle = Triangle {
-        v0: TriangleVertex { pos: Vec3 { x: -1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 0.0, v: 0.0 },
-        v1: TriangleVertex { pos: Vec3 { x:  1.0, y: 0.0, z: 0.0 }, n: Vec3::zero(), u: 1.0, v: 0.0 },
-        v2: TriangleVertex { pos: Vec3 { x:  0.0, y: 1.0, z: 0.0 }, n: Vec3::one(),  u: 0.0, v: 1.0 },
-        material: Box::new(FlatMaterial {color: Vec3::one()})
-    };
+    let mut triopts = TriangleOptions::new(
+        Vec3 { x: -1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  1.0, y: 0.0, z: 0.0 },
+        Vec3 { x:  0.0, y: 1.0, z: 0.0 });
+    triopts.normals([Vec3::zero(), Vec3::zero(), Vec3::one()]);
+    triopts.texinfo([(0.0, 0.0), (1.0, 0.0), (0.0, 1.0)]);
+
+    let triangle = triopts.build();
 
     // Tests tmin
     let intersecting_ray = Ray::new(Vec3 { x: 0.0, y: 0.5, z: -1.0 }, Vec3 { x: 0.0, y: 0.0, z: 1.0 });
