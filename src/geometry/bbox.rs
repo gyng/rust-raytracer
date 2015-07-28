@@ -60,12 +60,6 @@ pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
 /// Given two bounding boxes, compute and return a new BBox that encompasses
 /// both spaces the original two boxes encompassed.
 pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
-    if *b1 == BBox::zero() {
-        return *b2
-    }
-    if *b2 == BBox::zero() {
-        return *b1
-    }
     BBox {
         min: Vec3 {
             x: b1.min.x.min(b2.min.x),
