@@ -2,7 +2,7 @@ pub use self::animator::{Animator, CameraKeyframe};
 pub use self::intersection::Intersection;
 pub use self::ray::Ray;
 pub use self::octree::Octree;
-pub use self::renderer::Renderer;
+pub use self::renderer::{Renderer, RenderOptions};
 
 pub mod animator;
 pub mod compositor;

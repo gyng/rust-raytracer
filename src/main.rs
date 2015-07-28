@@ -227,14 +227,17 @@ fn main() {
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
 
-    let renderer = raytracer::Renderer {
+    let render_options = raytracer::RenderOptions {
         reflect_depth: config.reflect_depth,
         refract_depth: config.refract_depth,
         shadow_samples: config.shadow_samples,
         gloss_samples: config.gloss_samples,
         pixel_samples: config.pixel_samples,
-        // Number of tasks to spawn. Will use up max available cores.
-        tasks: ::num_cpus::get()
+    };
+
+    let renderer = raytracer::Renderer {
+        options: render_options,
+        tasks: ::num_cpus::get(), // Number of tasks to spawn. Will use up max available cores.
     };
 
     if config.animating {

@@ -11,14 +11,19 @@ use threadpool::ThreadPool;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
 
-#[derive(Clone)]
-pub struct Renderer {
+#[derive(Clone, Copy)]
+pub struct RenderOptions {
     pub reflect_depth: u32,  // Maximum reflection recursions.
     pub refract_depth: u32,  // Maximum refraction recursions. A sphere takes up 2 recursions.
     pub shadow_samples: u32, // Number of samples for soft shadows and area lights.
     pub gloss_samples: u32,  // Number of samples for glossy reflections.
     pub pixel_samples: u32,  // The square of this is the number of samples per pixel.
-    pub tasks: usize         // Minimum number of tasks to spawn.
+}
+
+#[derive(Clone)]
+pub struct Renderer {
+    pub tasks: usize, // Minimum number of tasks to spawn.
+    pub options: RenderOptions,
 }
 
 impl Renderer {
@@ -58,18 +63,10 @@ impl Renderer {
         surface
     }
 
-    fn render_tile(&self, camera: Camera, scene: &Scene,
-                   tile_factory: SurfaceFactory) -> Surface {
-
-        let shadow_samples = self.shadow_samples;
-        let pixel_samples = self.pixel_samples;
-        let gloss_samples = self.gloss_samples;
-        let reflect_depth = self.reflect_depth;
-        let refract_depth = self.refract_depth;
-
+    fn render_tile(&self, camera: Camera, scene: &Scene, tile_factory: SurfaceFactory) -> Surface {
         let mut tile = tile_factory.create();
-
         let mut rng: Isaac64Rng = thread_rng().gen();
+        let pixel_samples = self.options.pixel_samples;
 
         for rel_y in 0usize..tile.height {
             let abs_y = camera.image_height as usize - (tile.y_off + rel_y) - 1;
@@ -91,8 +88,7 @@ impl Renderer {
                         };
 
                         let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
-                        let result = Renderer::trace(scene, &ray, shadow_samples, gloss_samples,
-                                                     reflect_depth, refract_depth, false);
+                        let result = Renderer::trace(scene, &ray, self.options, false);
                         // Clamp subpixels for now to avoid intense aliasing when combined value is clamped later
                         // Should think of a better way to handle this
                         color = color + result.clamp(0.0, 1.0).scale(1.0 / (pixel_samples * pixel_samples) as f64);
@@ -105,10 +101,8 @@ impl Renderer {
         tile
     }
 
-    fn trace(scene: &Scene, ray: &Ray, shadow_samples: u32, gloss_samples: u32,
-             reflect_depth: u32, refract_depth: u32, inside: bool) -> Vec3 {
-
-        if reflect_depth <= 0 || refract_depth <= 0 { return Vec3::zero() }
+    fn trace(scene: &Scene, ray: &Ray, options: RenderOptions, inside: bool) -> Vec3 {
+        if options.reflect_depth <= 0 || options.refract_depth <= 0 { return Vec3::zero() }
 
         match ray.get_nearest_hit(scene) {
             Some(hit) => {
@@ -117,52 +111,25 @@ impl Renderer {
 
                 // Local lighting computation: surface shading, shadows
                 let mut result = scene.lights.iter().fold(Vec3::zero(), |color_acc, light| {
-                    let shadow = Renderer::shadow_intensity(scene, &hit, light, shadow_samples);
+                    let shadow = Renderer::shadow_intensity(scene, &hit, light, options.shadow_samples);
                     let l = (light.center() - hit.position).unit();
 
                     color_acc + light.color() * hit.material.sample(n, i, l, hit.u, hit.v) * shadow
                 });
 
+                // Global lighting computation: reflections, refractions
                 if hit.material.is_reflective() || hit.material.is_refractive() {
                     let reflect_fresnel = Renderer::fresnel_reflect(hit.material.ior(), &i, &n, inside);
-                    let mut refract_fresnel = 1.0 - reflect_fresnel;
+                    let refract_fresnel = 1.0 - reflect_fresnel;
 
-                    // Global reflection
                     if hit.material.is_reflective() {
-                        let r = Vec3::reflect(&i, &n);
-                        let reflect_ray = Ray::new(hit.position, r);
-
-                        let reflection = if hit.material.is_glossy() {
-                            // For glossy materials, average multiple perturbed reflection rays
-                            (0..gloss_samples).fold(Vec3::zero(), |acc, _| {
-                                let gloss_reflect_ray = reflect_ray.perturb(hit.material.glossiness());
-                                acc + Renderer::trace(scene, &gloss_reflect_ray, shadow_samples, gloss_samples,
-                                                      reflect_depth - 1, refract_depth, inside)
-                            }).scale(1.0 / gloss_samples as f64)
-                        } else {
-                            Renderer::trace(scene, &reflect_ray, shadow_samples, gloss_samples,
-                                            reflect_depth - 1, refract_depth, inside)
-                        };
-
-                        result = result + hit.material.global_specular(&reflection).scale(reflect_fresnel);
+                        result = result + Renderer::global_reflection(scene, &hit, options, inside,
+                                                                      &i, &n, reflect_fresnel);
                     }
 
-                    // Global refraction
                     if hit.material.is_refractive() {
-                        let t = match Vec3::refract(&i, &n, hit.material.ior(), inside) {
-                            Some(ref t) => *t,
-                            None => {
-                                refract_fresnel = 1.0; // Total internal reflection (TODO: verify)
-                                Vec3::reflect(&i, &n)
-                            }
-                        };
-
-                        // Offset ray origin by EPSILON * direction to avoid hitting self when refracting
-                        let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
-                        let refraction = Renderer::trace(scene, &refract_ray, shadow_samples, gloss_samples,
-                                                         reflect_depth, refract_depth - 1, !inside);
-
-                        result = result + hit.material.global_transmissive(&refraction).scale(refract_fresnel);
+                        result = result + Renderer::global_transmission(scene, &hit, options, inside,
+                                                                        &i, &n, refract_fresnel);
                     }
                 }
 
@@ -175,6 +142,46 @@ impl Renderer {
                 }
             }
         }
+    }
+
+    fn global_reflection(scene: &Scene, hit: &Intersection, options: RenderOptions, inside: bool,
+                         i: &Vec3, n: &Vec3, reflect_fresnel: f64) -> Vec3 {
+
+        let r = Vec3::reflect(&i, &n);
+        let reflect_ray = Ray::new(hit.position, r);
+        let next_reflect_options = RenderOptions { reflect_depth: options.reflect_depth - 1, ..options };
+
+        let reflection = if hit.material.is_glossy() {
+            // For glossy materials, average multiple perturbed reflection rays
+            // Potential overflow by scaling after everything is done instead of scaling every iteration?
+            (0..options.gloss_samples).fold(Vec3::zero(), |acc, _| {
+                let gloss_reflect_ray = reflect_ray.perturb(hit.material.glossiness());
+                acc + Renderer::trace(scene, &gloss_reflect_ray, next_reflect_options, inside)
+            }).scale(1.0 / options.gloss_samples as f64)
+        } else {
+            // For mirror-like materials just shoot a perfectly reflected ray instead
+            Renderer::trace(scene, &reflect_ray, next_reflect_options, inside)
+        };
+
+        hit.material.global_specular(&reflection).scale(reflect_fresnel)
+    }
+
+    fn global_transmission(scene: &Scene, hit: &Intersection, options: RenderOptions, inside: bool,
+                           i: &Vec3, n: &Vec3, refract_fresnel: f64) -> Vec3 {
+
+        let (t, actual_refract_fresnel) = match Vec3::refract(&i, &n, hit.material.ior(), inside) {
+            Some(ref t) => (*t, refract_fresnel),
+            None => {
+                (Vec3::reflect(&i, &n), 1.0) // Fresnel of 1.0 = total internal reflection (TODO: verify)
+            }
+        };
+
+        // Offset ray origin by EPSILON * direction to avoid hitting self when refracting
+        let refract_ray = Ray::new(hit.position + t.scale(EPSILON), t);
+        let next_refract_options = RenderOptions { refract_depth: options.refract_depth - 1, ..options };
+        let refraction = Renderer::trace(scene, &refract_ray, next_refract_options, !inside);
+
+        hit.material.global_transmissive(&refraction).scale(actual_refract_fresnel)
     }
 
     fn shadow_intensity(scene: &Scene, hit: &Intersection,
@@ -259,13 +266,18 @@ fn it_renders_the_background_of_an_empty_scene() {
 
     let shared_scene = Arc::new(test_scene);
 
-    let renderer = Renderer {
+    let render_options = RenderOptions {
         reflect_depth: 1,
         refract_depth: 1,
         shadow_samples: 1,
         gloss_samples: 1,
         pixel_samples: 1,
-        tasks: 2
+    };
+
+
+    let renderer = Renderer {
+        options: render_options,
+        tasks: 2,
     };
 
     let image_data = renderer.render(camera, shared_scene);
