@@ -16,7 +16,7 @@ pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
     pub inverse_dir: Vec3, // This is used to optimise ray-bbox intersection checks
-    pub signs: Vec<bool> // Handle degenerate case in bbox intersection
+    pub signs: [bool; 3], // Handle degenerate case in bbox intersection
 }
 
 impl Ray {
@@ -33,7 +33,7 @@ impl Ray {
                 y: inv_y,
                 z: inv_z
             },
-            signs: vec![
+            signs: [
                 inv_x > 0.0,
                 inv_y > 0.0,
                 inv_z > 0.0
