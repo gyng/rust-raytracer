@@ -62,7 +62,12 @@ pub fn from_obj(material: CookTorranceMaterial, flip_normals: bool, filename: &s
             },
             "f" => {
                 // ["f", "1/2/3", "2/2/2", "12//4"] => [[1, 2, 3], [2, 2, 2], [12, -1u, 4]]
-                let pairs: Vec<Vec<usize>> = tokens.tail().iter().map( |token| {
+                let tail = match tokens.split_first() {
+                    Some((_, tail)) => tail,
+                    None => return Err("Face syntax of OBJ not supported or malformed".to_owned())
+                };
+
+                let pairs: Vec<Vec<usize>> = tail.iter().map( |token| {
                     let str_tokens: Vec<&str> = token.split('/').collect();
                     str_tokens.iter().map( |str_tok| {
                         match str_tok.parse::<usize>().ok() {

@@ -1,4 +1,4 @@
-#![feature(convert, semaphore, slice_extras, vec_push_all)]
+#![feature(convert, semaphore, slice_splits, vec_push_all)]
 #![deny(unused_imports)]
 
 extern crate image;
