@@ -169,8 +169,8 @@ pub fn test_from_png24() {
         (0, 0, 0, 0)
     ]];
 
-    for y in (0..1) {
-        for x in (0..9) {
+    for y in 0..1 {
+        for x in 0..9 {
             let pixel = surface[(x, y)];
             let expected = expected_image[y][x];
             assert_eq!(expected, (pixel.r, pixel.g, pixel.b, pixel.a));
