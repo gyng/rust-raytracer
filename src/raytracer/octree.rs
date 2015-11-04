@@ -23,14 +23,6 @@ struct OctreeData {
     pub index: usize
 }
 
-
-impl OctreeData {
-    pub fn intersects(&self, ray: &Ray) -> bool {
-        self.bbox.intersects(ray)
-    }
-}
-
-
 impl OctreeNode {
     #[allow(dead_code)]
     pub fn new(bbox: BBox, depth: i32) -> OctreeNode {
@@ -141,7 +133,7 @@ impl Octree<Box<Prim+Send+Sync>> {
 struct OctreeIterator<'a, T:'a> {
     prims: &'a [T],
     stack: Vec<&'a OctreeNode>,
-    cur_iter: Option<Iter<'a, OctreeData>>,
+    leaf_iter: Option<Iter<'a, OctreeData>>,
     ray: &'a Ray,
     infinites: Iter<'a, T>,
     just_infinites: bool
@@ -153,7 +145,7 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
             OctreeIterator {
             prims: &octree.prims[..],
             stack: vec![&octree.root],
-            cur_iter: None,
+            leaf_iter: None,
             ray: ray,
             infinites: octree.infinites.iter(),
             just_infinites: false
@@ -169,35 +161,28 @@ impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
         if self.just_infinites {
             return self.infinites.next();
         }
+
         loop {
-            let (new_cur_iter, val) = match self.cur_iter.take() {
-                Some(mut cur_iter) => match cur_iter.next() {
-                    Some(val) => (Some(cur_iter), Some(val)),
-                    None => (None, None)
-                },
-                None => match self.stack.pop() {
-                    Some(node) => {
-                        for child in node.children.iter() {
-                            if child.bbox.intersects(self.ray) {
-                                self.stack.push(child);
-                            }
-                        }
-                        (Some(node.leaf_data.iter()), None)
-                    },
-                    None => break  // Empty stack and no iterator
+            let ray = self.ray;
+            if let Some(leaf_iter) = self.leaf_iter.as_mut() {
+                if let Some(val) = leaf_iter.filter(|x| x.bbox.intersects(ray)).next() {
+                    return Some(&self.prims[val.index]);
                 }
-            };
-            self.cur_iter = new_cur_iter;
-            match val {
-                Some(val) => {
-                    if val.intersects(self.ray) {
-                        return Some(&self.prims[val.index]);
+                // iterator went empty, so we'll pop from the stack and
+                // iterate on the next node's children now,
+            }
+            
+            if let Some(node) = self.stack.pop() {
+                for child in node.children.iter() {
+                    if child.bbox.intersects(self.ray) {
+                        self.stack.push(child);
                     }
-                },
-                None => (),
+                }
+                self.leaf_iter = Some(node.leaf_data.iter());
+            } else {
+                self.just_infinites = true;
+                return self.infinites.next()
             }
         }
-        self.just_infinites = true;
-        self.infinites.next()
     }
 }
