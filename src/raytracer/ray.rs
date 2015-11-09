@@ -46,7 +46,7 @@ impl Ray {
         let mut nearest_hit = None;
         let mut nearest_t = INFINITY;
 
-        for prim in scene.octree.get_intersected_objects(self) {
+        for prim in scene.octree.intersect_iter(self) {
             let intersection = prim.intersects(self, t_min, nearest_t);
 
             nearest_hit = match intersection {
