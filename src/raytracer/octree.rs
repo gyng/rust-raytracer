@@ -1,13 +1,51 @@
 use std::slice::Iter;
 use std::iter::FromIterator;
-use geometry::{BBox, PartialBoundingBox, Prim};
+use geometry::{BBox, PartialBoundingBox};
 use raytracer::Ray;
 use vec3::Vec3;
 
-pub struct Octree<T> {
+// 
+
+pub struct Octree<T> where T: PartialBoundingBox {
     prims: Vec<T>,
     infinites: Vec<T>, // for infinite prims (planes)
     root: OctreeNode,
+}
+
+impl<T> FromIterator<T> for Octree<T> where T: PartialBoundingBox {
+    fn from_iter<I>(iterator: I) -> Self where I: IntoIterator<Item=T> {
+        let iterator = iterator.into_iter();
+
+        let (finites, infinites): (Vec<T>, Vec<T>) =
+            iterator.partition(|item| item.partial_bounding_box().is_some());
+
+        // TODO(sell): why do we need to map here? &T isn't PartialBoundingBox,
+        //             but we need to find out how to make it so.
+        let bounds = BBox::from_union(finites.iter().map(|i| i.partial_bounding_box()))
+            .unwrap_or(BBox::zero());
+
+        // pbrt recommended max depth for a k-d tree (though, we're using an octree)
+        // For a k-d tree: 8 + 1.3 * log2(N)
+        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as i32;
+
+        println!("Octree maximum depth {}", depth);
+        let mut root_node = OctreeNode::new(bounds, depth);
+        for (i, prim) in finites.iter().enumerate() {
+            root_node.insert(i, prim.partial_bounding_box().unwrap());
+        }
+
+        Octree {
+            prims: finites,
+            infinites: infinites,
+            root: root_node,
+        }
+    }
+}
+
+impl<T> Octree<T> where T: PartialBoundingBox {
+    pub fn intersect_iter<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, T> {
+        OctreeIterator::new(self, ray)
+    }
 }
 
 pub struct OctreeNode {
@@ -94,42 +132,6 @@ impl OctreeNode {
     }
 }
 
-impl<T> FromIterator<T> for Octree<T> where T: PartialBoundingBox {
-    fn from_iter<I>(iterator: I) -> Self where I: IntoIterator<Item=T> {
-        let iterator = iterator.into_iter();
-
-        let (finites, infinites): (Vec<T>, Vec<T>) =
-            iterator.partition(|item| item.partial_bounding_box().is_some());
-
-        // TODO(sell): why do we need to map here? &T isn't PartialBoundingBox,
-        //             but we need to find out how to make it so.
-        let bounds = BBox::from_union(finites.iter().map(|i| i.partial_bounding_box()))
-            .unwrap_or(BBox::zero());
-
-        // pbrt recommended max depth for a k-d tree (though, we're using an octree)
-        // For a k-d tree: 8 + 1.3 * log2(N)
-        let depth = (1.2 * (finites.len() as f64).log(8.0)).round() as i32;
-
-        println!("Octree maximum depth {}", depth);
-        let mut root_node = OctreeNode::new(bounds, depth);
-        for (i, prim) in finites.iter().enumerate() {
-            root_node.insert(i, prim.partial_bounding_box().unwrap());
-        }
-
-        Octree {
-            prims: finites,
-            infinites: infinites,
-            root: root_node,
-        }
-    }
-}
-
-impl Octree<Box<Prim+Send+Sync>> {
-    pub fn get_intersected_objects<'a>(&'a self, ray: &'a Ray) -> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-        OctreeIterator::new(self, ray)
-    }
-}
-
 struct OctreeIterator<'a, T:'a> {
     prims: &'a [T],
     stack: Vec<&'a OctreeNode>,
@@ -140,9 +142,9 @@ struct OctreeIterator<'a, T:'a> {
 }
 
 
-impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    fn new<'b>(octree: &'b Octree<Box<Prim+Send+Sync>>, ray: &'b Ray) -> OctreeIterator<'b, Box<Prim+Send+Sync>> {
-            OctreeIterator {
+impl<'a, T> OctreeIterator<'a, T> where T: PartialBoundingBox {
+    fn new<'b>(octree: &'b Octree<T>, ray: &'b Ray) -> OctreeIterator<'b, T> {
+        OctreeIterator {
             prims: &octree.prims[..],
             stack: vec![&octree.root],
             leaf_iter: None,
@@ -154,10 +156,10 @@ impl<'a> OctreeIterator<'a, Box<Prim+Send+Sync>> {
 }
 
 
-impl<'a> Iterator for OctreeIterator<'a, Box<Prim+Send+Sync>> {
-    type Item = &'a Box<Prim+Send+Sync>;
+impl<'a, T> Iterator for OctreeIterator<'a, T> where T: PartialBoundingBox {
+    type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a Box<Prim+Send+Sync>> {
+    fn next(&mut self) -> Option<&'a T> {
         if self.just_infinites {
             return self.infinites.next();
         }
