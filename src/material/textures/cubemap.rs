@@ -1,6 +1,5 @@
 use material::textures::ImageTexture;
 use std::sync::mpsc::channel;
-use std::sync::{Semaphore, Arc};
 use std::thread;
 use vec3::Vec3;
 
@@ -18,28 +17,25 @@ impl CubeMap {
             y.clone(), y_neg.clone(),
             z.clone(), z_neg.clone()
         ];
+
         let mut faces: Vec<ImageTexture> = Vec::with_capacity(6);
         unsafe { faces.set_len(6); }
 
         let (tx, rx) = channel();
-        let sema = Arc::new(Semaphore::new(::num_cpus::get() as isize));
 
         for i in 0usize..6 {
-            let task_sema = sema.clone();
             let task_tx = tx.clone();
             let filename = filenames[i].clone().to_string();
 
             thread::spawn(move || {
-                task_sema.acquire();
-                let _ = task_tx.send((i, ImageTexture::load(&filename)));
+                task_tx.send((i, ImageTexture::load(&filename))).unwrap();
             });
         }
+        drop(tx);
 
-        for _ in 0usize..6 {
-            let (i, tex) = rx.recv().unwrap();
+        for (i, tex) in rx {
             let p = faces.as_mut_ptr();
             unsafe { ::std::ptr::write::<ImageTexture>(p.offset(i as isize), tex); }
-            sema.release();
         }
 
         CubeMap { faces: faces }

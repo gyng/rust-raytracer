@@ -1,7 +1,8 @@
 use raytracer::animator::CameraKeyframe;
 use raytracer::Renderer;
 use scene::{Camera, Scene};
-use std::sync::{Arc, Semaphore};
+use std::sync::mpsc::sync_channel;
+use std::sync::Arc;
 use std::thread;
 use vec3::Vec3;
 
@@ -22,30 +23,36 @@ impl Animator {
         let length = self.animate_to - self.animate_from;
         let total_frames = (self.fps * length).floor() as u32;
 
-        let sema = Arc::new(Semaphore::new(1));
+        // Allow one frame to be renderered while the previous one is being written
+        let (frame_tx, frame_rx) = sync_channel(0);
+        let (exit_tx, exit_rx) = sync_channel(0);
+
+        let starting_frame_number = self.starting_frame_number;
+
+        let filename = filename.to_string();
+        thread::spawn(move || {
+            for (frame_num, frame_data) in frame_rx.iter().enumerate() {
+                let file_frame_number = starting_frame_number as usize + frame_num;
+
+                let shared_name = format!("{}{:06}.ppm", filename, file_frame_number);
+                ::util::export::to_ppm(frame_data, &shared_name);
+            }
+
+            exit_tx.send(()).unwrap();
+        });
 
         for frame_number in 0..total_frames {
             let time = self.animate_from + frame_number as f64 / self.fps;
             let lerped_camera = Animator::lerp_camera(&camera, time);
             let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
-
-            let file_frame_number = self.starting_frame_number + frame_number;
-            let shared_name = format!("{}{:06}.ppm", filename, file_frame_number);
-
-            let child_sema = sema.clone();
-            sema.acquire();
-
-            // Continue animating next frame as writing rendered frame to disk (slow) occurs
-            thread::spawn(move || {
-                ::util::export::to_ppm(frame_data, &shared_name);
-                child_sema.release();
-            });
+            frame_tx.send(frame_data).unwrap();
 
             ::util::print_progress("*** Frame", animate_start.clone(), frame_number as usize + 1usize, total_frames as usize);
             println!("");
         }
+        drop(frame_tx);
 
-        sema.acquire();
+        let () = exit_rx.recv().unwrap();
     }
 
     fn get_neighbour_keyframes(keyframes: Vec<CameraKeyframe>, time: f64)
