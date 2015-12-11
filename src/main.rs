@@ -1,4 +1,3 @@
-#![feature(slice_splits)]
 #![deny(unused_imports)]
 
 extern crate image;
