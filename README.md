@@ -4,7 +4,7 @@ rust-raytracer
 
 ![ScreenShot](https://raw.githubusercontent.com/gyng/rust-raytracer/master/docs/sample_render.png)
 
-A raytracer in Rust. Currently only compiles in Rust nightly.
+A raytracer in Rust. Compiles on Rust stable > 1.5.
 
 [Gallery](http://gyng.github.io/rust-raytracer-gallery/) <br>
 [Gallery repository](https://github.com/gyng/rust-raytracer-gallery) <br>
@@ -12,8 +12,6 @@ A raytracer in Rust. Currently only compiles in Rust nightly.
 
 
 ## Usage
-
-*Note: [rust-raytracer currently does not compile on Rust stable, only on nightly](https://github.com/gyng/rust-raytracer/issues/34#issuecomment-112358227)*
 
 1. Clone the project. `--recursive` clones most sample models and textures into the project directory as well.
 
