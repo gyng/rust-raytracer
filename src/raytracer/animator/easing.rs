@@ -42,30 +42,13 @@ impl Easing {
 }
 
 #[test]
-fn test_interpolate_linear_easing() {
+fn test_easing() {
+    // This also tests Bezier easing as linear easing
+    // is implemented using Bezier easing.
     let linear_easing = Easing::linear();;
     assert_eq!(linear_easing.t(0.0), 0.0);
     assert_eq!(linear_easing.t(0.25), 0.25);
     assert_eq!(linear_easing.t(0.5), 0.5);
     assert_eq!(linear_easing.t(0.75), 0.75);
     assert_eq!(linear_easing.t(1.0), 1.0);
-}
-
-#[test]
-fn test_interpolate_bezier_easing() {
-    let one_third = 1.0 / 3.0;
-    let two_thirds = 2.0 / 3.0;
-    let bezier_easing = Easing { a: 0.0, b: one_third, c: two_thirds, d: 1.0 };
-
-    assert_eq!(bezier_easing.t(0.0), 0.0);
-
-    let abs_diff_third = (bezier_easing.t(one_third) - one_third).abs();
-    assert!(abs_diff_third < 1e-10);
-
-    assert_eq!(bezier_easing.t(0.5), 0.5);
-
-    let abs_diff_two_thirds = (bezier_easing.t(two_thirds) - two_thirds).abs();
-    assert!(abs_diff_two_thirds < 1e-10);
-
-    assert_eq!(bezier_easing.t(1.0), 1.0);
 }
