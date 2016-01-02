@@ -1,5 +1,6 @@
 use raytracer::Ray;
 use raytracer::animator::CameraKeyframe;
+use raytracer::animator::easing::Easing;
 use vec3::Vec3;
 
 #[derive(Clone)]
@@ -74,7 +75,8 @@ impl Camera {
             time: 0.0,
             position: self.position,
             look_at: self.look_at,
-            up: self.up
+            up: self.up,
+            easing: Easing::linear()
         };
 
         let mut keyframes = vec![t0_keyframe];

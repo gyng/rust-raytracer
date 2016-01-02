@@ -82,7 +82,7 @@ impl Animator {
         let alpha = if keyframe_length == 0.0 {
             0.0
         } else {
-            (time - first.time) / keyframe_length
+            second.easing.t((time - first.time) / keyframe_length)
         };
 
         (first.clone(), second.clone(), alpha)
@@ -114,6 +114,9 @@ impl Animator {
     }
 }
 
+#[cfg(test)]
+use raytracer::animator::Easing;
+
 #[test]
 fn test_lerp_camera_position() {
     // Camera rotates 180 degrees
@@ -129,13 +132,15 @@ fn test_lerp_camera_position() {
                 time: 5.0,
                 position: Vec3 { x: 0.0, y: 0.0, z: 0.0 },
                 look_at: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
-                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 }
+                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+                easing: Easing::linear()
             },
             CameraKeyframe {
                 time: 10.0,
                 position: Vec3 { x: 10.0, y: 0.0, z: 0.0 },
                 look_at: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
-                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 }
+                up: Vec3 { x: 0.0, y: 1.0, z: 0.0 },
+                easing: Easing::linear()
             },
         ]
     );

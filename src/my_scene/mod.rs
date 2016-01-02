@@ -3,6 +3,7 @@
 pub mod bunny;
 pub mod cornell;
 pub mod cow;
+pub mod easing;
 pub mod fresnel;
 pub mod heptoroid;
 pub mod lucy;

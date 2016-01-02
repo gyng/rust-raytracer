@@ -166,6 +166,15 @@ fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
             let scene = my_scene::fresnel::get_scene();
             Some((camera, scene))
         },
+        "easing" => {
+            // Easing test scene
+            let camera = match config.animating {
+                true => my_scene::easing::get_animation_camera(image_width, image_height, fov),
+                false => my_scene::easing::get_camera(image_width, image_height, fov)
+            };
+            let scene = my_scene::easing::get_scene();
+            Some((camera, scene))
+        },
         _ => None
     };
 }

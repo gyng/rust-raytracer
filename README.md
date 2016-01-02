@@ -48,6 +48,7 @@ These should use 30deg fov for squares and 45deg fov for 16:9.
 * box
 * bunny
 * cow
+* easing (0s-10s animation)
 * fresnel (0s-10s animation)
 * lucy
 * sibenik (0s-7s animation)
@@ -76,7 +77,7 @@ These should use 30deg fov for squares and 45deg fov for 16:9.
 * Basic spatial partitioning (octree)
 * Basic textures (checker, uv, image)
 * Skybox (cubemap)
-* Basic camera animation
+* Camera animation with Bézier easing
 
 
 ## Missing/potential features

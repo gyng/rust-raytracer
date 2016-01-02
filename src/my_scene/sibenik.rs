@@ -8,6 +8,7 @@ use material::materials::{CookTorranceMaterial, FlatMaterial, PhongMaterial};
 use material::Texture;
 use material::textures::{CheckerTexture, CubeMap, UVTexture, ImageTexture};
 use raytracer::animator::CameraKeyframe;
+use raytracer::animator::easing::Easing;
 use raytracer::compositor::ColorRGBA;
 use scene::{Camera, Scene};
 use vec3::Vec3;
@@ -37,7 +38,8 @@ pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Ca
                 time: 7.0,
                 position: Vec3 { x: 8.0, y: -13.5, z: 0.2 },
                 look_at: Vec3 { x: 8.5, y: 8.0, z: 2.0 },
-                up: Vec3 { x: -0.9, y: 0.0, z: -0.7 }
+                up: Vec3 { x: -0.9, y: 0.0, z: -0.7 },
+                easing: Easing::linear()
             }
         ]
     )
