@@ -2,7 +2,7 @@ use std::cmp;
 use std::fmt;
 use std::ops::{Add, Mul, Div, Neg, Sub};
 use rand;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 
 #[derive(Clone, Copy, Default)]
 pub struct Vec3 {

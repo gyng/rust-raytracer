@@ -132,7 +132,7 @@ impl IndexMut<(usize, usize)> for Surface {
     }
 }
 
-struct SubsurfaceIterator {
+pub struct SubsurfaceIterator {
     x_delta: usize,
     x_off: usize,
     y_delta: usize,

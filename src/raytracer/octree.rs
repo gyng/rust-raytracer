@@ -4,7 +4,7 @@ use geometry::{BBox, PartialBoundingBox};
 use raytracer::Ray;
 use vec3::Vec3;
 
-// 
+//
 
 pub struct Octree<T> where T: PartialBoundingBox {
     prims: Vec<T>,
@@ -132,7 +132,7 @@ impl OctreeNode {
     }
 }
 
-struct OctreeIterator<'a, T:'a> {
+pub struct OctreeIterator<'a, T:'a> {
     prims: &'a [T],
     stack: Vec<&'a OctreeNode>,
     leaf_iter: Option<Iter<'a, OctreeData>>,
@@ -173,7 +173,7 @@ impl<'a, T> Iterator for OctreeIterator<'a, T> where T: PartialBoundingBox {
                 // iterator went empty, so we'll pop from the stack and
                 // iterate on the next node's children now,
             }
-            
+
             if let Some(node) = self.stack.pop() {
                 for child in node.children.iter() {
                     if child.bbox.intersects(self.ray) {
