@@ -74,3 +74,20 @@ pub fn get_scene() -> Scene {
         skybox: None
     }
 }
+
+
+pub struct SibenikConfig;
+
+impl super::SceneConfig for SibenikConfig {
+    fn get_camera(&self, image_width: u32, image_height: u32, fov: f64) -> Camera {
+        get_camera(image_width, image_height, fov)
+    }
+
+    fn get_animation_camera(&self, image_width: u32, image_height: u32, fov: f64) -> Camera {
+        get_animation_camera(image_width, image_height, fov)
+    }
+
+    fn get_scene(&self) -> Scene {
+        get_scene()
+    }
+}

@@ -23,15 +23,20 @@ pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     )
 }
 
-pub fn get_scene(material_option: &str) -> Scene {
+pub fn get_scene(material_option: HeptoroidMaterial) -> Scene {
     let mut lights: Vec<Box<Light+Send+Sync>> = Vec::new();
     lights.push(Box::new(SphereLight { position: Vec3 { x: 2.0, y: 3.0, z: -2.0 }, color: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, radius: 1.0 }));
 
-    // Defaults to white
     let heptoroid_material = match material_option {
-        "shiny" => CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 0.55, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None },
-        "refractive" => CookTorranceMaterial { k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 1.50, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3 { x: 0.8, y: 0.8, z: 0.8 }, diffuse_texture: None },
-        _ => CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.15, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.5, glossiness: 0.0, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None }
+        HeptoroidMaterial::Shiny => {
+            CookTorranceMaterial { k_a: 0.0, k_d: 0.2, k_s: 1.0, k_sg: 0.55, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 0.25, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3::zero(), diffuse_texture: None }
+        }
+        HeptoroidMaterial::Refractive => {
+            CookTorranceMaterial { k_a: 0.0, k_d: 0.0, k_s: 1.0, k_sg: 1.0, k_tg: 1.0, gauss_constant: 5.0, roughness: 0.01, glossiness: 0.0, ior: 1.50, ambient: Vec3::one(), diffuse: Vec3 { x: 1.0, y: 1.0, z: 1.0 }, specular: Vec3 { x: 0.9, y: 0.9, z: 0.9 }, transmission: Vec3 { x: 0.8, y: 0.8, z: 0.8 }, diffuse_texture: None }
+        }
+        HeptoroidMaterial::White => {
+            CookTorranceMaterial { k_a: 0.0, k_d: 0.9, k_s: 1.0, k_sg: 0.15, k_tg: 0.0, gauss_constant: 5.0, roughness: 0.1, ior: 0.5, glossiness: 0.0, ambient: Vec3::one(), diffuse: Vec3 { x: 0.9, y: 0.85, z: 0.7 }, specular: Vec3::one(), transmission: Vec3::zero(), diffuse_texture: None }
+        }
     };
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
@@ -54,5 +59,40 @@ pub fn get_scene(material_option: &str) -> Scene {
             "./docs/assets/textures/skyboxes/miramar_y_up/front.png",
             "./docs/assets/textures/skyboxes/miramar_y_up/back.png"
         ))
+    }
+}
+
+#[derive(Copy, Clone)]
+pub enum HeptoroidMaterial {
+    Shiny,
+    Refractive,
+    White,
+}
+
+pub struct HeptoroidConfig {
+    material: HeptoroidMaterial,
+}
+
+impl HeptoroidConfig {
+    pub fn shiny() -> HeptoroidConfig {
+        HeptoroidConfig { material: HeptoroidMaterial::Shiny }
+    }
+
+    pub fn white() -> HeptoroidConfig {
+        HeptoroidConfig { material: HeptoroidMaterial::White }
+    }
+
+    pub fn refractive() -> HeptoroidConfig {
+        HeptoroidConfig { material: HeptoroidMaterial::Refractive }
+    }
+}
+
+impl super::SceneConfig for HeptoroidConfig {
+    fn get_camera(&self, image_width: u32, image_height: u32, fov: f64) -> Camera {
+        get_camera(image_width, image_height, fov)
+    }
+
+    fn get_scene(&self) -> Scene {
+        get_scene(self.material)
     }
 }

@@ -8,8 +8,6 @@ extern crate rustc_serialize;
 extern crate threadpool;
 extern crate time;
 
-use scene::{Camera, Scene};
-
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::env;
@@ -66,119 +64,6 @@ fn parse_args(args: env::Args) -> Result<ProgramArgs, String> {
     }
 }
 
-fn get_camera_and_scene(config: &SceneConfig) -> Option<(Camera, Scene)> {
-    let scene_name = config.name.clone();
-    let (image_width, image_height) = config.size;
-    let fov = config.fov;
-
-    // Cameras, scenes created in ./my_scene.rs
-    // Scenes with an octree supplied (see my_scene.rs) will use it.
-    // Lower the render quality (especially shadow_samples) for complex scenes
-    return match scene_name.as_ref() {
-        "box" => {
-            // Box. Simplest scene with 9 primitives, no octree
-            let camera = my_scene::cornell::get_camera(image_width, image_height, fov);
-            let scene = my_scene::cornell::get_scene();
-            Some((camera, scene))
-        },
-        "bunny" => {
-            // Bunny. Around 300 primitives, 2 lights. Uses octree. Has skybox, textures are
-            // in another repository.
-            let camera = my_scene::bunny::get_camera(image_width, image_height, fov);
-            let scene = my_scene::bunny::get_scene();
-            Some((camera, scene))
-        },
-        "teapot" => {
-            // Teapot. Around 2500 polygons. Octree helps a bit. Has skybox.
-            let camera = my_scene::teapot::get_teapot_camera(image_width, image_height, fov);
-            let scene = my_scene::teapot::get_teapot_scene();
-            Some((camera, scene))
-        },
-        "cow" => {
-            // Cow. Around 5000 polygons. Octree helps considerably.
-            let camera = my_scene::cow::get_camera(image_width, image_height, fov);
-            let scene = my_scene::cow::get_scene();
-            Some((camera, scene))
-        },
-        "lucy" => {
-            // Lucy. Around 525814+1 primitives. Octree pretty much required. The model is included
-            // separately, in another repository. Has skybox.
-            let camera = my_scene::lucy::get_camera(image_width, image_height, fov);
-            let scene = my_scene::lucy::get_scene();
-            Some((camera, scene))
-        },
-        "sponza" => {
-            // Sponza. Around 28K triangles, but more complex than Lucy. 2 lights.
-            let camera = my_scene::sponza::get_camera(image_width, image_height, fov);
-            let scene = my_scene::sponza::get_scene();
-            Some((camera, scene))
-        },
-        "sibenik" => {
-            // Sibenik, around 70K triangles, no texture work, 3 lights.
-            let camera = match config.animating {
-                true => my_scene::sibenik::get_animation_camera(image_width, image_height, fov),
-                false => my_scene::sibenik::get_camera(image_width, image_height, fov)
-            };
-            let scene = my_scene::sibenik::get_scene();
-            Some((camera, scene))
-        },
-        "heptoroid-white" => {
-            // Heptoroid, 114688 tris, 57302 verts
-            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
-            let scene = my_scene::heptoroid::get_scene("white");
-            Some((camera, scene))
-        },
-        "heptoroid-shiny" => {
-            // Shiny heptoroid, 114688 tris, 57302 verts
-            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
-            let scene = my_scene::heptoroid::get_scene("shiny");
-            Some((camera, scene))
-        },
-        "heptoroid-refractive" => {
-            // Refractive heptoroid, you want to limit your reflect levels (2/3?)
-            // and up your refract levels (10/16?) for this
-            let camera = my_scene::heptoroid::get_camera(image_width, image_height, fov);
-            let scene = my_scene::heptoroid::get_scene("refractive");
-            Some((camera, scene))
-        },
-        "tachikoma" => {
-            // Shiny heptoroid, 114688 tris, 57302 verts
-            // You can forget about refractions, it's too complex a scene
-            let camera = my_scene::tachikoma::get_camera(image_width, image_height, fov);
-            let scene = my_scene::tachikoma::get_scene();
-            Some((camera, scene))
-        },
-        "sphere" => {
-            // Sphere skybox test scene
-            let camera = match config.animating {
-                true => my_scene::sphere::get_animation_camera(image_width, image_height, fov),
-                false => my_scene::sphere::get_camera(image_width, image_height, fov)
-            };
-            let scene = my_scene::sphere::get_scene();
-            Some((camera, scene))
-        },
-        "fresnel" => {
-            // Fresnel test scene
-            let camera = match config.animating {
-                true => my_scene::fresnel::get_animation_camera(image_width, image_height, fov),
-                false => my_scene::fresnel::get_camera(image_width, image_height, fov)
-            };
-            let scene = my_scene::fresnel::get_scene();
-            Some((camera, scene))
-        },
-        "easing" => {
-            // Easing test scene
-            let camera = match config.animating {
-                true => my_scene::easing::get_animation_camera(image_width, image_height, fov),
-                false => my_scene::easing::get_camera(image_width, image_height, fov)
-            };
-            let scene = my_scene::easing::get_scene();
-            Some((camera, scene))
-        },
-        _ => None
-    };
-}
-
 fn main() {
     let start_time = ::time::get_time().sec;
 
@@ -221,16 +106,25 @@ fn main() {
 
     println!("Job started at {}...\nLoading scene...", start_time);
 
-    let scenepair = get_camera_and_scene(&config);
-    let (camera, scene) = match scenepair {
-        Some(pair) => pair,
+    let scene_config = match my_scene::scene_by_name(&config.name) {
+        Some(scene_config) => scene_config,
         None => {
             write!(&mut io::stderr(), "unknown scene ``{}''\n", config.name).unwrap();
             process::exit(1);
         }
     };
 
-    let shared_scene = Arc::new(scene); // Hackish solution for animator
+    let (image_width, image_height) = config.size;
+    let fov = config.fov;
+
+    // Hackish solution for animator
+    let shared_scene = Arc::new(scene_config.get_scene());
+
+    let camera = if config.animating {
+        scene_config.get_animation_camera(image_width, image_height, fov)
+    } else {
+        scene_config.get_camera(image_width, image_height, fov)
+    };
 
     let scene_time = ::time::get_time().sec;
     println!("Scene loaded at {} ({}s)...", scene_time, scene_time - start_time);
