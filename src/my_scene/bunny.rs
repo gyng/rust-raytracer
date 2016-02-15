@@ -57,3 +57,15 @@ pub fn get_scene() -> Scene {
         ))
     }
 }
+
+pub struct BunnyConfig;
+
+impl super::SceneConfig for BunnyConfig {
+    fn get_camera(&self, image_width: u32, image_height: u32, fov: f64) -> Camera {
+        get_camera(image_width, image_height, fov)
+    }
+
+    fn get_scene(&self) -> Scene {
+        get_scene()
+    }
+}

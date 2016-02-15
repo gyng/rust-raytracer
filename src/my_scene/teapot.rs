@@ -58,3 +58,16 @@ pub fn get_teapot_scene() -> Scene {
         ))
     }
 }
+
+
+pub struct TeapotConfig;
+
+impl super::SceneConfig for TeapotConfig {
+    fn get_camera(&self, image_width: u32, image_height: u32, fov: f64) -> Camera {
+        get_teapot_camera(image_width, image_height, fov)
+    }
+
+    fn get_scene(&self) -> Scene {
+        get_teapot_scene()
+    }
+}

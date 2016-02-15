@@ -42,14 +42,15 @@ impl Renderer {
         for subsurface_factory in surface.divide(128, 8) {
             jobs += 1;
 
-            let renderer = self.clone();
+            let renderer_opts = self.options.clone();
             let child_tx = tx.clone();
             let scene_local = shared_scene.clone();
             let camera_local = camera.clone();
 
             pool.execute(move || {
-                let _ = child_tx.send(renderer.render_tile(camera_local.clone(),
-                    scene_local.deref(), subsurface_factory));
+                let scene = scene_local.deref();
+                let _ = child_tx.send(Renderer::render_tile(camera_local, scene,
+                    renderer_opts, subsurface_factory)).unwrap();
             });
         }
         drop(tx);
@@ -63,10 +64,10 @@ impl Renderer {
         surface
     }
 
-    fn render_tile(&self, camera: Camera, scene: &Scene, tile_factory: SurfaceFactory) -> Surface {
+    fn render_tile(camera: Camera, scene: &Scene, options: RenderOptions, tile_factory: SurfaceFactory) -> Surface {
         let mut tile = tile_factory.create();
         let mut rng: Isaac64Rng = thread_rng().gen();
-        let pixel_samples = self.options.pixel_samples;
+        let pixel_samples = options.pixel_samples;
 
         for rel_y in 0usize..tile.height {
             let abs_y = camera.image_height as usize - (tile.y_off + rel_y) - 1;
@@ -88,7 +89,7 @@ impl Renderer {
                         };
 
                         let ray = camera.get_ray(abs_x as f64 + j_x, abs_y as f64 + j_y);
-                        let result = Renderer::trace(scene, &ray, self.options, false);
+                        let result = Renderer::trace(scene, &ray, options, false);
                         // Clamp subpixels for now to avoid intense aliasing when combined value is clamped later
                         // Should think of a better way to handle this
                         color = color + result.clamp(0.0, 1.0).scale(1.0 / (pixel_samples * pixel_samples) as f64);
