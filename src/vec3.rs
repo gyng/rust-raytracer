@@ -1,8 +1,7 @@
 use std::cmp;
 use std::fmt;
 use std::ops::{Add, Mul, Div, Neg, Sub};
-use rand;
-use rand::Rng;
+use rand::{self, Rand, Rng};
 
 #[derive(Clone, Copy, Default)]
 pub struct Vec3 {
@@ -112,9 +111,15 @@ impl Vec3 {
         }
     }
 
-    /// http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
+    
     pub fn random() -> Vec3 {
-        let mut rng = rand::thread_rng();
+        rand::thread_rng().gen()        
+    }
+}
+
+impl Rand for Vec3 {
+    /// http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
+    fn rand<R: Rng>(rng: &mut R) -> Self {
         let phi: f64      = rng.gen_range( 0.0, 2.0 * ::std::f64::consts::PI);
         let costheta: f64 = rng.gen_range(-1.0, 1.0);
         let u: f64        = rng.gen_range( 0.0, 1.0);
