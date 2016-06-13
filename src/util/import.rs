@@ -1,6 +1,5 @@
 use geometry::prims::TriangleOptions;
 use geometry::{Mesh, Prim};
-use image::GenericImage;
 use material::materials::CookTorranceMaterial;
 use raytracer::compositor::{Surface, ColorRGBA};
 use std::fs::File;
