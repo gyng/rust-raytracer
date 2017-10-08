@@ -50,15 +50,11 @@ struct SceneConfig {
 
 fn parse_args(args: env::Args) -> Result<ProgramArgs, String> {
     let args = args.collect::<Vec<String>>();
-    if args.len() == 0 {
-        panic!("Args do not even include a program name");
-    }
 
     let program_name = &args[0];
     match args.len() {
         // I wouldn't expect this in the wild
-        0 => unreachable!(),
-        1 => Err(format!("Usage: {} scene_config.json", program_name)),
+        0 => panic!("Args do not even include a program name"),
         2 => Ok(ProgramArgs { config_file: args[1].clone() }),
         _ => Err(format!("Usage: {} scene_config.json", program_name)),
     }
@@ -71,14 +67,14 @@ fn main() {
         Ok(program_args) => program_args,
         Err(error_str) => {
             write!(&mut io::stderr(), "{}\n", error_str).unwrap();
-            process::exit(1);
+            process::exit(1)
         }
     };
     let mut file_handle = match File::open(&program_args.config_file) {
         Ok(file) => file,
         Err(err) => {
             write!(&mut io::stderr(), "{}\n", err).unwrap();
-            process::exit(1);
+            process::exit(1)
         }
     };
 
@@ -100,7 +96,7 @@ fn main() {
                 }
             };
             write!(&mut io::stderr(), "{}\n", msg).unwrap();
-            process::exit(1);
+            process::exit(1)
         }
     };
 
@@ -110,7 +106,7 @@ fn main() {
         Some(scene_config) => scene_config,
         None => {
             write!(&mut io::stderr(), "unknown scene ``{}''\n", config.name).unwrap();
-            process::exit(1);
+            process::exit(1)
         }
     };
 
@@ -169,7 +165,7 @@ fn main() {
                  render_time, render_time - scene_time);
 
         let out_file = format!("{}{}", config.output_file, ".ppm");
-        util::export::to_ppm(image_data, &out_file);
+        util::export::to_ppm(&image_data, &out_file).expect("ppm write failure");
         let export_time = ::time::get_time().sec;
 
         println!("Write done: {} ({}s). Written to {}\nTotal: {}s",

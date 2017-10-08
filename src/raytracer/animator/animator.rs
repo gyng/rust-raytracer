@@ -35,24 +35,24 @@ impl Animator {
                 let file_frame_number = starting_frame_number as usize + frame_num;
 
                 let shared_name = format!("{}{:06}.ppm", filename, file_frame_number);
-                ::util::export::to_ppm(frame_data, &shared_name);
+                ::util::export::to_ppm(&frame_data, &shared_name).expect("ppm write failure");
             }
 
             exit_tx.send(()).unwrap();
         });
 
         for frame_number in 0..total_frames {
-            let time = self.animate_from + frame_number as f64 / self.fps;
+            let time = self.animate_from + f64::from(frame_number) / self.fps;
             let lerped_camera = Animator::lerp_camera(&camera, time);
-            let frame_data = self.renderer.render(lerped_camera, shared_scene.clone());
+            let frame_data = self.renderer.render(lerped_camera, Arc::clone(&shared_scene));
             frame_tx.send(frame_data).unwrap();
 
-            ::util::print_progress("*** Frame", animate_start.clone(), frame_number as usize + 1usize, total_frames as usize);
+            ::util::print_progress("*** Frame", animate_start, frame_number as usize + 1usize, total_frames as usize);
             println!("");
         }
         drop(frame_tx);
 
-        let () = exit_rx.recv().unwrap();
+        exit_rx.recv().unwrap();
     }
 
     fn get_neighbour_keyframes(keyframes: Vec<CameraKeyframe>, time: f64)
@@ -66,7 +66,7 @@ impl Animator {
         let mut first = &keyframes[0];
         let mut second = &keyframes[1];
 
-        for keyframe in keyframes.iter() {
+        for keyframe in &keyframes {
             if keyframe.time <= time && time - keyframe.time >= first.time - time {
                 first = keyframe;
             }

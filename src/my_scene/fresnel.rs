@@ -30,7 +30,7 @@ pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
 pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
     // State at time t=0
     // A keyframe at time t=0 is automatically created when insert_keyframes is called
-    let camera = Camera::new_with_keyframes(
+    Camera::new_with_keyframes(
         Vec3 { x: 0.0, y: 1.0, z: 250.0 },
         Vec3 { x: 0.0, y: 1.0, z: 50.0 },
         Vec3 { x: 0.0, y: 1.0, z: 0.0 },
@@ -67,9 +67,7 @@ pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Ca
                 easing: Easing::linear()
             },
         ]
-    );
-
-    camera
+    )
 }
 
 pub fn get_scene() -> Scene {

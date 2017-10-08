@@ -24,7 +24,7 @@ impl PartialBoundingBox for Option<BBox> {
     }
 }
 
-/// Given a bounding box and a point, compute and return a new BBox that
+/// Given a bounding box and a point, compute and return a new `BBox` that
 /// encompasses the point and the space the original box encompassed.
 pub fn union_point(b: &BBox, p: &Vec3) -> BBox {
     BBox {
@@ -41,7 +41,7 @@ pub fn union_point(b: &BBox, p: &Vec3) -> BBox {
     }
 }
 
-/// Given two points, compute and return a new BBox that encompasses both points
+/// Given two points, compute and return a new `BBox` that encompasses both points
 pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
     BBox {
         min: Vec3 {
@@ -57,7 +57,7 @@ pub fn union_points(p1: &Vec3, p2: &Vec3) -> BBox {
     }
 }
 
-/// Given two bounding boxes, compute and return a new BBox that encompasses
+/// Given two bounding boxes, compute and return a new `BBox` that encompasses
 /// both spaces the original two boxes encompassed.
 pub fn union_bbox(b1: &BBox, b2: &BBox) -> BBox {
     BBox {
