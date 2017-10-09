@@ -3,6 +3,7 @@
 use geometry::bbox::BBox;
 use raytracer::Ray;
 use std::cmp;
+use std::f64;
 use std::f64::consts::PI;
 use std::fmt;
 use std::ops::{Add, Mul, Sub};
@@ -28,6 +29,14 @@ impl Transform {
             inv: mat.inverse()
         }
     }
+}
+
+fn are_equal_rel(a: f64, b: f64) -> bool {
+    let mut max = a;
+    if max < b {
+        max = b;
+    }
+    (a - b).abs() <= f64::EPSILON * max
 }
 
 /// Most implementations adapted from pbrt
@@ -309,7 +318,7 @@ impl Mat4 {
         let zp = m.m[2][0] * p.x + m.m[2][1] * p.y + m.m[2][2] * p.z + m.m[2][3];
         let wp = m.m[3][0] * p.x + m.m[3][1] * p.y + m.m[3][2] * p.z + m.m[3][3];
 
-        if wp == 1.0 {
+        if are_equal_rel(wp, 1.0) {
             // Optimisation, wp == 1.0 is common
             Vec3 {
                 x: xp,
@@ -356,10 +365,6 @@ impl cmp::PartialEq for Mat4 {
         self.m[3][1] == other.m[3][1] &&
         self.m[3][2] == other.m[3][2] &&
         self.m[3][3] == other.m[3][3]
-    }
-
-    fn ne(&self, other: &Mat4) -> bool {
-        !(self.eq(other))
     }
 }
 

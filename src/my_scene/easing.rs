@@ -26,7 +26,7 @@ pub fn get_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
 }
 
 pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Camera {
-    let camera = Camera::new_with_keyframes(
+    Camera::new_with_keyframes(
         Vec3 { x: 0.0, y: 0.0, z: 150.0 },
         Vec3 { x: 0.0, y: 0.0, z: 0.0 },
         Vec3 { x: 0.0, y: 1.0, z: 0.0 },
@@ -42,9 +42,7 @@ pub fn get_animation_camera(image_width: u32, image_height: u32, fov: f64) -> Ca
                 easing: Easing { a: 0.0, b: 0.05, c: 0.1, d: 1.0 }
             },
         ]
-    );
-
-    camera
+    )
 }
 
 pub fn get_scene() -> Scene {

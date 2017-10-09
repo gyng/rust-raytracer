@@ -20,17 +20,17 @@ pub fn print_progress(noun: &str, start_time: ::time::Timespec, done: usize, tot
       println!(" (took {:.2} min)     ", (current_time - start_time.sec) as f64 / 60.0);
     } else {
       print!(" ETA {:.2} min           ", remaining_time / 60.0);
-      ::std::io::stdout().flush().ok().expect("failed to flush io");
+      ::std::io::stdout().flush().expect("failed to flush io");
     }
 }
 
 fn make_progress_bar(ratio: f64, length: usize) -> String {
     let filled = (ratio * length as f64).round() as usize;
-    let mut bar: String = repeat('|').take(filled).collect();
+    let mut pbar: String = repeat('|').take(filled).collect();
 
     for _ in 0..(length - filled) {
-        bar.push('-');
+        pbar.push('-');
     }
 
-    bar
+    pbar
 }

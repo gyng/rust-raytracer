@@ -68,7 +68,7 @@ impl Prim for Plane {
         let t_z = transform.m.m[2][3].powf(2.0) * if trans.z < 0.0 { -1.0 } else { 1.0 };
         let add_sub = if t_x + t_y + t_z < 0.0 { -1.0 } else { 1.0 };
 
-        self.d = self.d + trans.len() * add_sub;
+        self.d += trans.len() * add_sub;
     }
 }
 

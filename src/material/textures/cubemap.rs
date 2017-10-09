@@ -13,9 +13,9 @@ impl CubeMap {
     #[allow(dead_code)]
     pub fn load(x: &str, x_neg: &str, y: &str, y_neg: &str, z: &str, z_neg: &str) -> CubeMap {
         let filenames = vec![
-            x.clone(), x_neg.clone(),
-            y.clone(), y_neg.clone(),
-            z.clone(), z_neg.clone()
+            x, x_neg,
+            y, y_neg,
+            z, z_neg,
         ];
 
         let mut faces: Vec<ImageTexture> = Vec::with_capacity(6);
@@ -23,9 +23,9 @@ impl CubeMap {
 
         let (tx, rx) = channel();
 
-        for i in 0usize..6 {
+        for (i, filename) in filenames.iter().take(6).enumerate() {
             let task_tx = tx.clone();
-            let filename = filenames[i].clone().to_string();
+            let filename = filename.to_string();
 
             thread::spawn(move || {
                 task_tx.send((i, ImageTexture::load(&filename))).unwrap();

@@ -247,25 +247,11 @@ impl cmp::PartialEq for Vec3 {
     fn eq(&self, other: &Vec3) -> bool {
         self.x == other.x && self.y == other.y && self.z == other.z
     }
-
-    fn ne(&self, other: &Vec3) -> bool {
-        !(self.eq(other))
-    }
 }
 
 impl fmt::Debug for Vec3 {
     fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
-    }
-}
-
-macro_rules! vec3 {
-    ($x:expr, $y:expr, $z:expr) => {
-        Vec3 { x: $x, y: $y, z: $z }
-    };
-
-    ($s:expr) => {
-        Vec3 { x: $s, y: $s, z: $s }
     }
 }
 
@@ -330,12 +316,4 @@ fn it_linearly_interpolates() {
     assert_eq!(Vec3::zero(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.0));
     assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.5));
     assert_eq!(Vec3::one(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 1.0));
-}
-
-#[test]
-fn its_macro_definitions_work() {
-    let four = 4.0;
-    assert_eq!(Vec3 { x: 2.0, y: 4.0, z: -6.0 }, vec3!(2.0, 1.0 * four, -1.0 * 6.0));
-    assert_eq!(Vec3::one(), vec3!(1.0, 1.0, 1.0));
-    assert_eq!(Vec3::zero(), vec3!(0.0));
 }

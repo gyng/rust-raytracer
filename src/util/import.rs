@@ -23,20 +23,22 @@ pub fn from_obj(material: CookTorranceMaterial, flip_normals: bool, filename: &s
     let file = BufReader::new(file_handle);
 
     let start_time = ::time::get_time();
-    let print_every = 2048u32;
-    let mut current_line = 0;
+    let print_every = 2048;
     let mut processed_bytes = 0;
 
     let mut vertices: Vec<Vec3> = Vec::new();
     let mut normals : Vec<Vec3> = Vec::new();
     let mut triangles: Vec<Box<Prim+Send+Sync>> = Vec::new();
     let mut tex_coords: Vec<Vec<f64>> = Vec::new();
+    let mut current_line = 0;
     let normal_scale = if flip_normals { -1.0 } else { 1.0 };
 
-    for line_iter in file.lines() {
-        let line = line_iter.unwrap();
+    for line_res in file.lines() {
+        let line = line_res.unwrap();
         let tokens: Vec<&str> = line[..].split_whitespace().collect();
-        if tokens.len() == 0 { continue }
+        if tokens.is_empty() {
+            continue;
+        }
 
         match tokens[0] {
             "v" => {
@@ -115,7 +117,7 @@ pub fn from_obj(material: CookTorranceMaterial, flip_normals: bool, filename: &s
         current_line += 1;
         processed_bytes += line.as_bytes().len();
         if current_line % print_every == 0 {
-            ::util::print_progress("Bytes", start_time.clone(), processed_bytes, total_bytes as usize);
+            ::util::print_progress("Bytes", start_time, processed_bytes, total_bytes as usize);
         }
     }
 

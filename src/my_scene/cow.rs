@@ -32,8 +32,8 @@ pub fn get_scene() -> Scene {
 
     let mut prims: Vec<Box<Prim+Send+Sync>> = Vec::new();
     prims.push(Box::new(Plane { a: 0.0, b: 1.0, c: 0.0, d: 3.6, material: Box::new(green) }));
-    let cow = ::util::import::from_obj(red, true, "./docs/assets/models/cow.obj").ok().expect("failed to load obj model");;
-    for triangle in cow.triangles.into_iter() { prims.push(triangle); }
+    let cow = ::util::import::from_obj(red, true, "./docs/assets/models/cow.obj").expect("failed to load obj model");;
+    for triangle in cow.triangles { prims.push(triangle); }
 
     println!("Generating octree...");
     let octree = prims.into_iter().collect();
