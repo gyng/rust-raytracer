@@ -1,13 +1,13 @@
+use rand::{thread_rng, Rng};
 use std::cmp;
 use std::fmt;
-use std::ops::{Add, Mul, Div, Neg, Sub};
-use rand::{self, Rand, Rng};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
-    pub z: f64
+    pub z: f64,
 }
 
 impl Vec3 {
@@ -15,7 +15,7 @@ impl Vec3 {
         Vec3 {
             x: 0.0,
             y: 0.0,
-            z: 0.0
+            z: 0.0,
         }
     }
 
@@ -23,27 +23,23 @@ impl Vec3 {
         Vec3 {
             x: 1.0,
             y: 1.0,
-            z: 1.0
+            z: 1.0,
         }
     }
 
     pub fn len(&self) -> f64 {
-        (self.x * self.x +
-         self.y * self.y +
-         self.z * self.z).sqrt()
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
     pub fn dot(&self, other: &Vec3) -> f64 {
-        self.x * other.x +
-        self.y * other.y +
-        self.z * other.z
+        self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     pub fn cross(&self, other: &Vec3) -> Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
-            z: self.x * other.y - self.y * other.x
+            z: self.x * other.y - self.y * other.x,
         }
     }
 
@@ -53,7 +49,7 @@ impl Vec3 {
         Vec3 {
             x: self.x / len,
             y: self.y / len,
-            z: self.z / len
+            z: self.z / len,
         }
     }
 
@@ -61,7 +57,7 @@ impl Vec3 {
         Vec3 {
             x: self.x * scalar,
             y: self.y * scalar,
-            z: self.z * scalar
+            z: self.z * scalar,
         }
     }
 
@@ -99,7 +95,7 @@ impl Vec3 {
         Vec3 {
             x: v1.x + (v2.x - v1.x) * alpha,
             y: v1.y + (v2.y - v1.y) * alpha,
-            z: v1.z + (v2.z - v1.z) * alpha
+            z: v1.z + (v2.z - v1.z) * alpha,
         }
     }
 
@@ -107,22 +103,17 @@ impl Vec3 {
         Vec3 {
             x: self.x.max(min).min(max),
             y: self.y.max(min).min(max),
-            z: self.z.max(min).min(max)
+            z: self.z.max(min).min(max),
         }
     }
 
-    
-    pub fn random() -> Vec3 {
-        rand::thread_rng().gen()        
-    }
-}
-
-impl Rand for Vec3 {
+    /// Generates a random vector across a uniform distribution using the answer found in
     /// http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
-    fn rand<R: Rng>(rng: &mut R) -> Self {
-        let phi: f64      = rng.gen_range( 0.0, 2.0 * ::std::f64::consts::PI);
+    pub fn random() -> Vec3 {
+        let mut rng = thread_rng();
+        let phi: f64 = rng.gen_range(0.0, 2.0 * ::std::f64::consts::PI);
         let costheta: f64 = rng.gen_range(-1.0, 1.0);
-        let u: f64        = rng.gen_range( 0.0, 1.0);
+        let u: f64 = rng.gen_range(0.0, 1.0);
 
         let theta = costheta.acos();
         let r = u.powf(1.0 / 3.0);
@@ -130,7 +121,7 @@ impl Rand for Vec3 {
         Vec3 {
             x: r * theta.sin() * phi.cos(),
             y: r * theta.sin() * phi.sin(),
-            z: r * theta.cos()
+            z: r * theta.cos(),
         }
     }
 }
@@ -142,7 +133,7 @@ impl Add for Vec3 {
         Vec3 {
             x: self.x + other.x,
             y: self.y + other.y,
-            z: self.z + other.z
+            z: self.z + other.z,
         }
     }
 }
@@ -154,7 +145,7 @@ impl Add<f64> for Vec3 {
         Vec3 {
             x: self.x + other,
             y: self.y + other,
-            z: self.z + other
+            z: self.z + other,
         }
     }
 }
@@ -166,7 +157,7 @@ impl Sub for Vec3 {
         Vec3 {
             x: self.x - other.x,
             y: self.y - other.y,
-            z: self.z - other.z
+            z: self.z - other.z,
         }
     }
 }
@@ -178,7 +169,7 @@ impl Sub<f64> for Vec3 {
         Vec3 {
             x: self.x - other,
             y: self.y - other,
-            z: self.z - other
+            z: self.z - other,
         }
     }
 }
@@ -190,7 +181,7 @@ impl Mul for Vec3 {
         Vec3 {
             x: self.x * other.x,
             y: self.y * other.y,
-            z: self.z * other.z
+            z: self.z * other.z,
         }
     }
 }
@@ -202,7 +193,7 @@ impl Mul<f64> for Vec3 {
         Vec3 {
             x: self.x * other,
             y: self.y * other,
-            z: self.z * other
+            z: self.z * other,
         }
     }
 }
@@ -214,7 +205,7 @@ impl Div for Vec3 {
         Vec3 {
             x: self.x / other.x,
             y: self.y / other.y,
-            z: self.z / other.z
+            z: self.z / other.z,
         }
     }
 }
@@ -226,7 +217,7 @@ impl Div<f64> for Vec3 {
         Vec3 {
             x: self.x / other,
             y: self.y / other,
-            z: self.z / other
+            z: self.z / other,
         }
     }
 }
@@ -238,7 +229,7 @@ impl Neg for Vec3 {
         Vec3 {
             x: -self.x,
             y: -self.y,
-            z: -self.z
+            z: -self.z,
         }
     }
 }
@@ -250,14 +241,18 @@ impl cmp::PartialEq for Vec3 {
 }
 
 impl fmt::Debug for Vec3 {
-    fn fmt(&self, f: &mut  fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 
 #[test]
 fn it_implements_debug() {
-    let vec = Vec3 { x: 0.0, y: 1.0, z: 1.3 };
+    let vec = Vec3 {
+        x: 0.0,
+        y: 1.0,
+        z: 1.3,
+    };
     let formatted_string = format!("{:?}", vec);
     let expected_string = "(0, 1, 1.3)";
     assert_eq!(&formatted_string, expected_string);
@@ -265,19 +260,67 @@ fn it_implements_debug() {
 
 #[test]
 fn it_does_cross_product() {
-    assert_eq!(Vec3 { x: -1.0, y: 2.0, z: -1.0 }, Vec3 { x: 1.0, y: 2.0, z: 3.0 }.cross(&Vec3 { x: 2.0, y: 3.0, z: 4.0 }));
+    assert_eq!(
+        Vec3 {
+            x: -1.0,
+            y: 2.0,
+            z: -1.0
+        },
+        Vec3 {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0
+        }.cross(&Vec3 {
+            x: 2.0,
+            y: 3.0,
+            z: 4.0
+        })
+    );
 }
 
 #[test]
 fn it_does_dot_product() {
-    assert_eq!(5.0, Vec3 { x: 0.0, y: 1.0, z: 2.0 }.dot(&Vec3 { x: 0.0, y: 1.0, z: 2.0 }));
+    assert_eq!(
+        5.0,
+        Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 2.0
+        }.dot(&Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 2.0
+        })
+    );
 }
 
 #[test]
 fn it_computes_length_of_a_vec3() {
-    assert_eq!(Vec3 { x: -1.0, y: -1.0, z: -1.0 }, -Vec3::one());
-    assert_eq!(29.0_f64.sqrt(), Vec3 { x: 2.0, y: 3.0, z: 4.0 }.len());
-    assert_eq!(1.0, Vec3 { x: 10.0, y: 0.0, z: 0.0 }.unit().len());
+    assert_eq!(
+        Vec3 {
+            x: -1.0,
+            y: -1.0,
+            z: -1.0
+        },
+        -Vec3::one()
+    );
+    assert_eq!(
+        29.0_f64.sqrt(),
+        Vec3 {
+            x: 2.0,
+            y: 3.0,
+            z: 4.0
+        }.len()
+    );
+    assert_eq!(
+        1.0,
+        Vec3 {
+            x: 10.0,
+            y: 0.0,
+            z: 0.0
+        }.unit()
+            .len()
+    );
 }
 
 #[test]
@@ -288,8 +331,22 @@ fn it_has_vec3vec3_equality() {
 
 #[test]
 fn it_adds_vec3s_and_scalars() {
-    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() + Vec3::one());
-    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() + 1.0);
+    assert_eq!(
+        Vec3 {
+            x: 2.0,
+            y: 2.0,
+            z: 2.0
+        },
+        Vec3::one() + Vec3::one()
+    );
+    assert_eq!(
+        Vec3 {
+            x: 2.0,
+            y: 2.0,
+            z: 2.0
+        },
+        Vec3::one() + 1.0
+    );
 }
 
 #[test]
@@ -300,20 +357,74 @@ fn it_subtracts_vec3s_and_scalars() {
 
 #[test]
 fn it_multiplies_vec3s_and_scalars_elementwise() {
-    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one().scale(2.0));
-    assert_eq!(Vec3 { x: 2.0, y: 2.0, z: 2.0 }, Vec3::one() * 2.0);
-    assert_eq!(Vec3 { x: 4.0, y: 9.0, z: -4.0 }, Vec3 { x: 2.0, y: 3.0, z: 4.0 } * Vec3 { x: 2.0, y: 3.0, z: -1.0 });
+    assert_eq!(
+        Vec3 {
+            x: 2.0,
+            y: 2.0,
+            z: 2.0
+        },
+        Vec3::one().scale(2.0)
+    );
+    assert_eq!(
+        Vec3 {
+            x: 2.0,
+            y: 2.0,
+            z: 2.0
+        },
+        Vec3::one() * 2.0
+    );
+    assert_eq!(
+        Vec3 {
+            x: 4.0,
+            y: 9.0,
+            z: -4.0
+        },
+        Vec3 {
+            x: 2.0,
+            y: 3.0,
+            z: 4.0
+        } * Vec3 {
+            x: 2.0,
+            y: 3.0,
+            z: -1.0
+        }
+    );
 }
 
 #[test]
 fn it_divides_vec3s_and_scalars_elementwise() {
-    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::one() / 2.0);
-    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::one() / Vec3 { x: 2.0, y: 2.0, z: 2.0 });
+    assert_eq!(
+        Vec3 {
+            x: 0.5,
+            y: 0.5,
+            z: 0.5
+        },
+        Vec3::one() / 2.0
+    );
+    assert_eq!(
+        Vec3 {
+            x: 0.5,
+            y: 0.5,
+            z: 0.5
+        },
+        Vec3::one() / Vec3 {
+            x: 2.0,
+            y: 2.0,
+            z: 2.0
+        }
+    );
 }
 
 #[test]
 fn it_linearly_interpolates() {
     assert_eq!(Vec3::zero(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.0));
-    assert_eq!(Vec3 { x: 0.5, y: 0.5, z: 0.5 }, Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.5));
+    assert_eq!(
+        Vec3 {
+            x: 0.5,
+            y: 0.5,
+            z: 0.5
+        },
+        Vec3::lerp(&Vec3::zero(), &Vec3::one(), 0.5)
+    );
     assert_eq!(Vec3::one(), Vec3::lerp(&Vec3::zero(), &Vec3::one(), 1.0));
 }

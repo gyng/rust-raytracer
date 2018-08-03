@@ -6,7 +6,7 @@ use std::ops::Deref;
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 use vec3::Vec3;
-use rand::{thread_rng, Rng, Isaac64Rng};
+use rand::{thread_rng, Rng};
 use threadpool::ThreadPool;
 
 pub static EPSILON: f64 = ::std::f64::EPSILON * 10000.0;
@@ -66,7 +66,7 @@ impl Renderer {
 
     fn render_tile(camera: Camera, scene: &Scene, options: RenderOptions, tile_factory: SurfaceFactory) -> Surface {
         let mut tile = tile_factory.create();
-        let mut rng: Isaac64Rng = thread_rng().gen();
+        let mut rng = thread_rng();
         let pixel_samples = options.pixel_samples;
 
         for rel_y in 0usize..tile.height {
